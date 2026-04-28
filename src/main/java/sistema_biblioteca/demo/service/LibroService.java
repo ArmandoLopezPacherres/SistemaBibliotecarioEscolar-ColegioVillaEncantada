@@ -7,6 +7,8 @@ public interface LibroService {
 
     List<Libro> listarLibros();
 
+    List<Libro> buscarPorTitulo(String titulo);
+
     Libro guardarLibro(Libro libro);
 
     Libro obtenerPorId(Long id);

@@ -7,6 +7,8 @@ public interface PrestamoService {
 
     List<Prestamo> listarPrestamos();
 
+    List<Prestamo> listarPorUsuario(Long usuarioId);
+
     Prestamo guardarPrestamo(Prestamo prestamo);
 
     Prestamo obtenerPorId(Long id);

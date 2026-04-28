@@ -3,6 +3,7 @@ package sistema_biblioteca.demo.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import sistema_biblioteca.demo.model.Usuario;
+import sistema_biblioteca.demo.model.enums.RolUsuario;
 import sistema_biblioteca.demo.repository.UsuarioRepository;
 import sistema_biblioteca.demo.service.UsuarioService;
 
@@ -17,6 +18,11 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public List<Usuario> listarUsuarios() {
         return usuarioRepository.findAll();
+    }
+
+    @Override
+    public List<Usuario> buscarPorRol(RolUsuario rol) {
+        return usuarioRepository.findByRol(rol);
     }
 
     @Override
