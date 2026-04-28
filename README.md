@@ -80,7 +80,7 @@ Sistema de gestión bibliotecaria completo enfocado al entorno escolar del Coleg
 Ubicaciones de evidencias:
 
 - Mockups: `/docs/Mockups`
-- Imágenes del proyecto: `/Evidencias`
+- Imágenes del proyecto: `docs/Evidencias`
 
 
 ### Capturas
