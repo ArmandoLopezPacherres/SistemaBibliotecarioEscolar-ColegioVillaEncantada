@@ -35,7 +35,7 @@ Sistema de gestión bibliotecaria completo enfocado al entorno escolar del Coleg
 2. **Configurar la base de datos**
    
    **Opción A: Configuración manual**
-   - Crear la base de datos MySQL ejecutando el script en `docs/script.sql`
+   - Crear la base de datos MySQL ejecutando el script en `database/script.sql`
    - Configurar las credenciales de la base de datos en `src/main/resources/application.properties`
    
    **Opción B: Configuración automática**
