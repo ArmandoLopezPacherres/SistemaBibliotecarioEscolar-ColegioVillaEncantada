@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Bibliotecario</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light d-flex align-items-center justify-content-center" style="height: 100vh; margin: 0;">
+    <div class="card shadow border-0" style="max-width: 500px; width: 90%; border-radius: 15px;">
+        <div class="card-body text-center p-5">
+            <img th:src="@{/img/logo-CVE.png}" width="80" class="mb-4" alt="Logo Colegio">
+            
+            <h2 class="text-success fw-bold mb-2" th:text="'Hola, ' + ${usuario.nombre}">Bienvenido</h2>
+            <span class="badge bg-success px-3 py-2 mb-4 fs-6 rounded-pill">Rol: BIBLIOTECARIO</span>
+            
+            <p class="text-muted mb-5">Este es el panel exclusivo de gestión de biblioteca. Pronto podrás administrar libros y préstamos.</p>
+            
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="btn btn-outline-danger w-100 fw-bold rounded-pill">Cerrar Sesión</button>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>
