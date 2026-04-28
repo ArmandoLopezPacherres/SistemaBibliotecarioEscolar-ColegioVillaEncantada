@@ -20,6 +20,9 @@ public class Libro {
     private Integer anioPublicacion;
     private int stock;
 
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
+    private boolean disponible = true;
+
     @ManyToOne
     @JoinColumn(name = "autor_id")
     private Autor autor;
@@ -48,6 +51,9 @@ public class Libro {
 
     public int getStock() { return stock; }
     public void setStock(int stock) { this.stock = stock; }
+
+    public boolean isDisponible() { return disponible; }
+    public void setDisponible(boolean disponible) { this.disponible = disponible; }
 
     public Autor getAutor() { return autor; }
     public void setAutor(Autor autor) { this.autor = autor; }

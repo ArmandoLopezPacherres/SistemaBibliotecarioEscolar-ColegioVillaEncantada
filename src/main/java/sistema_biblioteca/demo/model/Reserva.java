@@ -30,6 +30,9 @@ public class Reserva {
     @Column(nullable = false)
     private EstadoReserva estado;
 
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean notificado = false;
+
     public Reserva() {
     }
 
@@ -80,4 +83,7 @@ public class Reserva {
     public void setEstado(EstadoReserva estado) {
         this.estado = estado;
     }
+
+    public boolean isNotificado() { return notificado; }
+    public void setNotificado(boolean notificado) { this.notificado = notificado; }
 }
