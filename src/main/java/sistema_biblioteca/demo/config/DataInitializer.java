@@ -19,7 +19,10 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-   
+        crearUsuarioSiNoExiste("A12345678", "Administrador Principal", RolUsuario.ADMINISTRADOR);
+        crearUsuarioSiNoExiste("B87654321", "Bibliotecario Turno Mañana", RolUsuario.BIBLIOTECARIO);
+        crearUsuarioSiNoExiste("P11223344", "Profesor de Literatura", RolUsuario.PROFESOR);
+        crearUsuarioSiNoExiste("E55667788", "Estudiante Regular", RolUsuario.ESTUDIANTE);
     }
 
     private void crearUsuarioSiNoExiste(String codigo, String nombre, RolUsuario rol) {
