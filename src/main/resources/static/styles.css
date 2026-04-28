@@ -1,3 +1,4 @@
+/*Constantes y Globales*/
 * {
     font-family: "Inter", sans-serif !important;
     margin: 0;
@@ -21,6 +22,7 @@
     font-weight: 700;
 }
 
+/*Estilos para el Carrusel*/
 .slider {
     width: 60%;
     overflow: hidden;
