@@ -1,0 +1,629 @@
+* {
+    font-family: "Inter", sans-serif !important;
+    margin: 0;
+    padding: 0;
+}
+
+.c-principal {
+    color: #0F2A44;
+}
+
+.c-secundario {
+    color: #E0FCFF;
+}
+
+.btn-1 {
+    background-color: #0F2A44;
+    color: white;
+    border-radius: 10px;
+    border: 0;
+    padding: 8px 40px;
+    font-weight: 700;
+}
+
+.slider {
+    width: 60%;
+    overflow: hidden;
+    background: white;
+    padding: 20px 0;
+}
+
+.slide-track {
+    display: flex;
+    width: calc(200px * 8);
+    animation: scroll 20s linear infinite;
+}
+
+.slide {
+    width: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.slide img {
+    width: 120px;
+    opacity: 0.7;
+    transition: 0.3s;
+}
+
+.slide img:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+@keyframes scroll {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/*Estilos Header*/
+header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: white;
+
+    ul {
+        li {
+            padding-right: 2rem;
+        }
+    }
+}
+
+.navbar-toggler {
+    border: none;
+}
+
+.navbar-toggler-icon {
+    filter: invert(20%);
+}
+
+/*Estilos Main*/
+main {
+    .hero-index {
+        background-color: #E0FCFF;
+        padding: 4rem;
+
+        h1 {
+            font-size: 6rem;
+        }
+
+        @media (max-width: 768px) {
+            padding: 3rem 1.5rem;
+            text-align: center;
+
+            h1 {
+                font-size: 2.8rem;
+            }
+
+            p {
+                font-size: 1rem;
+
+                br {
+                    display: none;
+                }
+            }
+        }
+    }
+
+    .hero-img {
+        max-width: 450px;
+        height: auto;
+        border-radius: 20px;/
+    }
+
+    @media (max-width: 768px) {
+        .hero-img {
+            max-width: 80%;
+            margin-top: 2rem;
+        }
+    }
+}
+
+.hero-img {
+    max-width: 450px;
+}
+
+@media (max-width: 768px) {
+    .hero-img {
+        max-width: 250px;
+    }
+}
+
+.carrusel {
+    display: flex;
+    justify-content: center;
+}
+
+.categoriaLibros {
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+
+    .img-card-libro {
+        width: 200px;
+        height: auto;
+    }
+}
+
+/*Estilos Footer*/
+footer {
+    background-color: #0F2A44;
+    padding: 4rem 2rem;
+}
+
+footer h2 {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+footer span,
+footer p {
+    display: block;
+    color: #A0AAB4;
+    font-size: 0.9rem;
+    margin-bottom: 0.8rem;
+    text-decoration: none;
+}
+
+.footer-logo img {
+    width: 140px;
+    height: auto;
+    margin-bottom: 1.5rem;
+}
+
+footer svg {
+    width: 28px;
+    height: 28px;
+    margin-right: 10px;
+    color: #E0FCFF;
+    transition: transform 0.3s ease;
+}
+
+footer svg:hover {
+    transform: scale(1.1);
+    color: white;
+}
+
+@media (max-width: 768px) {
+    footer .row {
+        text-align: center;
+    }
+
+    .footer-logo {
+        display: flex;
+        justify-content: center;
+    }
+}
+
+/*Estilos Login*/
+.login-container {
+    background: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)),
+        url('img/img-fondo-login.png');
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-card {
+    background-color: #0F2A44;
+    width: 100%;
+    max-width: 450px;
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    position: relative;
+}
+
+.btn-atras {
+    display: flex;
+    justify-content: start;
+    width: 20%;
+    background-color: #E0FCFF;
+    color: #0F2A44;
+    border: none;
+    padding: 5px 15px;
+    border-radius: 5px;
+    font-weight: 800;
+    font-size: 0.7rem;
+    cursor: pointer;
+    text-align: center;
+}
+
+.btn-atras:hover {
+    color: #0F2A44;
+}
+
+.btn-atras {
+    background-color: #E0FCFF;
+    color: #0F2A44;
+    border: none;
+    padding: 5px 15px;
+    border-radius: 5px;
+    font-weight: 800;
+    font-size: 0.7rem;
+    cursor: pointer;
+}
+
+.logo-login {
+    width: 100px;
+    margin-bottom: 1rem;
+}
+
+.text-light {
+    color: white;
+}
+
+h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 0.5rem;
+}
+
+.login-form {
+    margin-top: 2rem;
+    text-align: left;
+}
+
+.input-group {
+    margin-bottom: 1.5rem;
+}
+
+.input-group label {
+    color: white;
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.8);
+    font-size: 1rem;
+}
+
+.btn-iniciar {
+    width: 100%;
+    background-color: #E0FCFF;
+    color: #0F2A44;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 800;
+    margin-top: 1rem;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-iniciar:hover {
+    background-color: white;
+    transform: translateY(-2px);
+
+}
+
+/*Estilos nosotros*/
+.nosotros-section {
+    background: #dff4f8;
+    padding: 90px 0;
+    width: 100%;
+}
+
+.nosotros-contenido {
+    width: 100%;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 35px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 60px;
+    flex-wrap: wrap;
+}
+
+.nosotros-imagen {
+    flex: 1 1 500px;
+}
+
+.nosotros-imagen img {
+    width: 100%;
+    max-width: 550px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    border-radius: 25px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+}
+
+.nosotros-texto {
+    flex: 1 1 550px;
+}
+
+.nosotros-texto h2 {
+    font-size: clamp(2.2rem, 4vw, 3.5rem);
+    font-weight: 800;
+    color: #0b2e59;
+    margin-bottom: 25px;
+    line-height: 1.2;
+}
+
+.nosotros-texto p,
+.nosotros-texto li {
+    font-size: clamp(1rem, 1.3vw, 1.15rem);
+    line-height: 1.9;
+    color: #334155;
+}
+
+.nosotros-texto ul {
+    padding-left: 25px;
+    margin-top: 20px;
+}
+
+/* FRASE */
+
+.frase-biblioteca {
+    max-width: 1200px;
+    margin: 70px auto 60px;
+    padding: 0 35px;
+    text-align: center;
+}
+
+.frase-biblioteca p {
+    font-size: clamp(1.2rem, 2vw, 1.7rem);
+    font-style: italic;
+    font-weight: 600;
+    color: #1e3a5f;
+    line-height: 1.6;
+}
+
+/* MISIÓN Y VISIÓN */
+
+.mision-vision {
+    width: 100%;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 35px 80px;
+
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 35px;
+}
+
+.card-info {
+    background: #0b2e59;
+    color: white;
+    padding: 45px 35px;
+    border-radius: 22px;
+    text-align: center;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+    transition: all 0.35s ease;
+}
+
+.card-info:hover {
+    transform: translateY(-10px);
+    background: #123f73;
+}
+
+.card-info h3 {
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    font-weight: 800;
+    margin-bottom: 25px;
+}
+
+.card-info p {
+    font-size: 1.05rem;
+    line-height: 1.9;
+    margin: 0;
+}
+
+
+/*Estilos Horario*/
+.horarios-section {
+    background: #ffffff;
+    padding: 100px 0;
+}
+
+.titulo-seccion {
+    font-size: 2.7rem;
+    font-weight: 800;
+    color: #0b2e59;
+    margin-bottom: 50px;
+}
+
+.horario-card {
+    background: #0b2e59;
+    border-radius: 25px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    margin-bottom: 70px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.18);
+    flex-wrap: wrap;
+}
+
+.horario-imagen {
+    flex: 1;
+    min-width: 320px;
+}
+
+.horario-imagen img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.horario-info {
+    flex: 1;
+    padding: 50px;
+    color: white;
+}
+
+.horario-info h3 {
+    font-size: 2rem;
+    margin-bottom: 25px;
+    font-weight: 700;
+}
+
+.horario-info p {
+    font-size: 1.4rem;
+    margin-bottom: 25px;
+}
+
+.horario-info span {
+    font-size: 1rem;
+    opacity: 0.9;
+    font-style: italic;
+}
+
+.contacto-card {
+    background: #0b2e59;
+    border-radius: 20px;
+    padding: 35px;
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.contacto-item {
+    color: white;
+    font-size: 1.6rem;
+    font-weight: 600;
+}
+
+/*Estilos Noticias*/
+
+.noticias-section {
+    background: #f8fafc;
+    padding: 100px 0;
+}
+
+.titulo-noticias {
+    text-align: center;
+    font-size: 3rem;
+    font-weight: 800;
+    color: #0b2e59;
+    margin-bottom: 70px;
+}
+
+.noticias-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 40px;
+}
+
+.noticia-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+    transition: all 0.4s ease;
+}
+
+.noticia-card:hover {
+    transform: translateY(-12px);
+}
+
+.noticia-card img {
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
+}
+
+.noticia-contenido {
+    padding: 30px;
+}
+
+.fecha {
+    display: inline-block;
+    background: #0b2e59;
+    color: white;
+    padding: 8px 18px;
+    border-radius: 50px;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.noticia-contenido h3 {
+    font-size: 1.8rem;
+    color: #0b2e59;
+    margin-bottom: 18px;
+    font-weight: 700;
+}
+
+.noticia-contenido p {
+    color: #4a5568;
+    line-height: 1.8;
+    font-size: 1.05rem;
+}
+
+/*responsibo*/
+
+@media (max-width: 992px) {
+
+    .nosotros-texto h2,
+    .titulo-seccion,
+    .titulo-noticias {
+        font-size: 2.4rem;
+    }
+
+    .horario-info {
+        padding: 35px;
+    }
+
+    .contacto-item {
+        font-size: 1.3rem;
+        text-align: center;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .nosotros-section,
+    .horarios-section,
+    .noticias-section {
+        padding: 70px 0;
+    }
+
+    .nosotros-texto h2,
+    .titulo-seccion,
+    .titulo-noticias {
+        font-size: 2rem;
+        text-align: center;
+    }
+
+    .frase-biblioteca p {
+        font-size: 1.2rem;
+    }
+
+    .horario-info h3 {
+        font-size: 1.6rem;
+    }
+
+    .horario-info p {
+        font-size: 1.1rem;
+    }
+
+    .contacto-card {
+        flex-direction: column;
+        text-align: center;
+    }
+}
