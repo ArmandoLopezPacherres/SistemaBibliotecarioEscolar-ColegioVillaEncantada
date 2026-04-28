@@ -35,6 +35,9 @@ public class Prestamo {
     @Column(length = 500)
     private String observaciones;
 
+    @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+    private int renovaciones = 0;
+
     public Prestamo() {}
 
     public Long getId() { return id; }
@@ -60,4 +63,7 @@ public class Prestamo {
 
     public String getObservaciones() { return observaciones; }
     public void setObservaciones(String observaciones) { this.observaciones = observaciones; }
+
+    public int getRenovaciones() { return renovaciones; }
+    public void setRenovaciones(int renovaciones) { this.renovaciones = renovaciones; }
 }

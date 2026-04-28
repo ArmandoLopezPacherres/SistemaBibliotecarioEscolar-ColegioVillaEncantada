@@ -20,6 +20,11 @@ public class PrestamoServiceImpl implements PrestamoService {
     }
 
     @Override
+    public List<Prestamo> listarPorUsuario(Long usuarioId) {
+        return prestamoRepository.findByUsuarioId(usuarioId);
+    }
+
+    @Override
     public Prestamo guardarPrestamo(Prestamo prestamo) {
         return prestamoRepository.save(prestamo);
     }

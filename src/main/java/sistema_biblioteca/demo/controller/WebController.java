@@ -5,6 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import sistema_biblioteca.demo.repository.UsuarioRepository;
+import sistema_biblioteca.demo.service.PrestamoService;
 import java.security.Principal;
 
 @Controller
@@ -12,6 +13,9 @@ public class WebController {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PrestamoService prestamoService;
 
     private void cargarUsuarioEnModelo(Model model, Principal principal) {
         if (principal != null) {
@@ -83,5 +87,16 @@ public class WebController {
     public String panelEstudiante(Model model, Principal principal) {
         cargarUsuarioEnModelo(model, principal);
         return "panel-estudiante";
+    }
+
+    @GetMapping("/mis-prestamos")
+    public String misPrestamos(Model model, Principal principal) {
+        cargarUsuarioEnModelo(model, principal);
+        if (principal != null) {
+            usuarioRepository.findByCodigo(principal.getName()).ifPresent(usuario -> {
+                model.addAttribute("prestamos", prestamoService.listarPorUsuario(usuario.getId()));
+            });
+        }
+        return "mis-prestamos";
     }
 }
