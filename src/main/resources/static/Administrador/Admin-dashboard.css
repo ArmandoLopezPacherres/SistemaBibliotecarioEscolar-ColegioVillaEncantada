@@ -231,7 +231,18 @@
         .chart-header select:hover{
             background:#f1f5ff;
         }
-        
+        /* TABLE */
+
+        .table-section{
+            background:white;
+            padding:20px;
+            border-radius:12px;
+            box-shadow:0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .table th{
+            background:#f8f9fb;
+        }
         /* RESPONSIVE */
 
         @media(max-width:1200px){
