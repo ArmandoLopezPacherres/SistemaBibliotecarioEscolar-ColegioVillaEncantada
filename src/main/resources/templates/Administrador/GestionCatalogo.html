@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Catálogo</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Iconos -->
+    <link rel="stylesheet" 
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Ruta Css -->
+    <link rel="stylesheet" href="../../static/Administrador/GestionCatalogo.css">
+
+   
+</head>
+
+<body>
+
+    <!--SIDEBAR-->
+
+    <aside class="sidebar">
+
+        <div>
+
+            <div class="logo-section">
+                <img src="../../static/img/logo-CVE.png" alt="logo">
+                <h5>Administrador</h5>
+            </div>
+
+            <nav class="menu">
+
+                <a href="#">
+                    <i class="bi bi-graph-up"></i>
+                    Dashboard
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-people-fill"></i>
+                    Gestión de usuarios
+                </a>
+
+                <a href="#" class="activo">
+                    <i class="bi bi-journal"></i>
+                    Gestión de catálogo
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-bar-chart-line"></i>
+                    Reportes
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-person"></i>
+                    Perfil
+                </a>
+
+            </nav>
+
+        </div>
+        <div class="logout">
+
+            <form href="../../templates/index.html" method="post">
+
+                <button type="submit"
+                    class="btn btn-outline-light w-100 rounded-pill fw-bold">
+
+                    <i class="bi bi-box-arrow-right"></i>
+                    Cerrar Sesión
+
+                </button>
+
+            </form>
+
+        </div>
+       
+
+    </aside>
+
+
+    <!-- CONTENIDO-->
+
+    <main class="contenido">
+
+        <!-- TOP -->
+        <div class="top">
+
+            <div>
+                <h1>Gestión de Catálogo</h1>
+                <p>Administra libros, autores, editoriales y categorías</p>
+            </div>
+
+            <div>
+                ¡Bienvenido <strong>Karolay</strong>!
+            </div>
+
+        </div>
+
+
+        <!-- BUSQUEDA -->
+        <div class="busqueda">
+
+            <input type="text"
+                placeholder="Busca libro, autor, editorial o categoría">
+            
+            <div class="botones">
+                <button class="btn-azul">
+                    Buscar
+                </button> 
+                <button class="btn-azul"
+                    onclick="abrirModal()">
+                    Crear nuevo
+                </button>
+            </div>
+            
+        </div>
+
+
+        <!-- TABS -->
+        <div class="tabs">
+
+            <div class="tab activo"
+                onclick="mostrarTabla('libros', this)">
+
+                <i class="bi bi-book-half"></i>
+                Libros
+
+            </div>
+
+            <div class="tab"
+                onclick="mostrarTabla('autores', this)">
+
+                <i class="bi bi-person"></i>
+                Autores
+
+            </div>
+
+            <div class="tab"
+                onclick="mostrarTabla('editoriales', this)">
+
+                <i class="bi bi-building"></i>
+                Editorial
+
+            </div>
+
+            <div class="tab"
+                onclick="mostrarTabla('categorias', this)">
+
+                <i class="bi bi-folder"></i>
+                Categoría
+
+            </div>
+
+        </div>
+
+
+        <!-- TABLA LIBROS-->
+
+        <div id="tabla-libros" class="tabla-contenedor">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Autor</th>
+                        <th>Editorial</th>
+                        <th>Categoría</th>
+                        <th>Disponibles</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    <tr>
+                        <td>Cien Años de Soledad</td>
+                        <td>Gabriel García Márquez</td>
+                        <td>Sudamericana</td>
+                        <td>Literatura</td>
+                        <td>3</td>
+
+                        <td class="acciones">
+
+                            <i class="bi bi-pencil"
+                                onclick="abrirModal()"></i>
+
+                            <i class="bi bi-trash"></i>
+
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Don Quijote</td>
+                        <td>Miguel de Cervantes</td>
+                        <td>Alfaguara</td>
+                        <td>Clásicos</td>
+                        <td>10</td>
+
+                        <td class="acciones">
+
+                            <i class="bi bi-pencil"
+                                onclick="abrirModal()"></i>
+
+                            <i class="bi bi-trash"></i>
+
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+
+
+    </script>
+
+</body>
+
+</html>
