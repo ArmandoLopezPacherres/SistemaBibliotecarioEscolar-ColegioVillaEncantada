@@ -216,7 +216,9 @@
             </table>
 
         </div>
-<!--  TABLA AUTORES-->
+
+
+        <!--  TABLA AUTORES-->
 
         <div id="tabla-autores"
             class="tabla-contenedor"
@@ -268,7 +270,9 @@
             </table>
 
         </div>
-       <!-- TABLA EDITORIALES-->
+
+
+        <!-- TABLA EDITORIALES-->
 
         <div id="tabla-editoriales"
             class="tabla-contenedor"
@@ -410,8 +414,195 @@
     </main>
 
 
+    <!-- MODAL -->
+
+    <div class="fondo-modal" id="modal">
+
+        <div class="modal-personalizado">
+
+            <h2 id="titulo-modal">
+                Crear Libro
+                
+            </h2>
+
+            <div id="contenido-modal">
+
+                <!-- EL CONTENIDO CAMBIA SEGUN TAB -->
+
+            </div>
+
+            <div class="acciones-modal">
+
+                <button class="btn-cancelar"
+                    onclick="cerrarModal()">
+
+                    Cancelar
+
+                </button>
+
+                <button class="btn-guardar">
+                    Guardar
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
 
 
+
+    <!-- JAVASCRIPT -->
+
+    <script>
+
+        let seccionActual = "libros";
+
+        // CAMBIAR TABLAS
+
+        function mostrarTabla(seccion, elemento){
+
+            seccionActual = seccion;
+
+            document.getElementById("tabla-libros").style.display="none";
+            document.getElementById("tabla-autores").style.display="none";
+            document.getElementById("tabla-editoriales").style.display="none";
+            document.getElementById("tabla-categorias").style.display="none";
+
+            document.getElementById("tabla-" + seccion)
+            .style.display="block";
+
+            let tabs = document.querySelectorAll(".tab");
+
+            tabs.forEach(tab => {
+                tab.classList.remove("activo");
+            });
+
+            elemento.classList.add("activo");
+
+        }
+
+        // ABRIR MODAL
+
+        function abrirModal(){
+
+            document.getElementById("modal")
+            .style.display="flex";
+
+            let contenido = "";
+
+            // LIBROS
+
+            if(seccionActual === "libros"){
+
+                document.getElementById("titulo-modal")
+                .innerHTML = "Crear Libro";
+
+                contenido = `
+
+                    <label>Título</label>
+                    <input type="text">
+
+                    <label>Autor</label>
+                    <input type="text">
+
+                    <label>Editorial</label>
+                    <input type="text">
+
+                    <label>Categoría</label>
+                    <input type="text">
+
+                    <label>Cantidad disponible</label>
+                    <input type="number">
+
+                `;
+            }
+
+            // AUTORES
+
+            if(seccionActual === "autores"){
+
+                document.getElementById("titulo-modal")
+                .innerHTML = "Crear Autor";
+
+                contenido = `
+
+                    <label>Foto de perfil</label>
+                    <input type="file">
+
+                    <label>Nombre completo</label>
+                    <input type="text">
+
+                    <label>Nacionalidad</label>
+                    <input type="text">
+
+                    <label>Descripción</label>
+                    <textarea></textarea>
+
+                    <label>Cantidad de libros</label>
+                    <input type="number">
+
+                `;
+            }
+
+            // EDITORIALES
+
+            if(seccionActual === "editoriales"){
+
+                document.getElementById("titulo-modal")
+                .innerHTML = "Crear Editorial";
+
+                contenido = `
+
+                    <label>Nombre editorial</label>
+                    <input type="text">
+
+                    <label>País</label>
+                    <input type="text">
+
+                    <label>Correo</label>
+                    <input type="email">
+
+                    <label>Cantidad de libros</label>
+                    <input type="number">
+
+                `;
+            }
+
+            // CATEGORIAS
+
+            if(seccionActual === "categorias"){
+
+                document.getElementById("titulo-modal")
+                .innerHTML = "Crear Categoría";
+
+                contenido = `
+
+                    <label>Nombre categoría</label>
+                    <input type="text">
+
+                    <label>Descripción</label>
+                    <textarea></textarea>
+
+                    <label>Cantidad libros</label>
+                    <input type="number">
+
+                `;
+            }
+
+            document.getElementById("contenido-modal")
+            .innerHTML = contenido;
+
+        }
+
+        // CERRAR MODAL
+
+        function cerrarModal(){
+
+            document.getElementById("modal")
+            .style.display="none";
+
+        }
 
     </script>
 
