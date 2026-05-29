@@ -209,8 +209,15 @@
 
     </div>
 
-    
+    <div class="tab"
+        onclick="mostrarTabla('usuarios', this)">
 
+        <i class="bi bi-people"></i>
+        Reporte de Usuarios
+
+    </div>
+
+    
 </div>
 
 
@@ -255,6 +262,51 @@
     </table>
 
 </div>
+
+
+<!--  TABLA USUARIOS-->
+
+<div id="tabla-usuarios"
+    class="tabla-contenedor"
+    style="display:none;">
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Correo</th>
+                <th>Rol</th>
+                <th>Fecha de registro</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>E050</td>
+                <td>Maria Gonzales</td>
+                <td>mariagonzales@gmail.com</td>
+                <td>Estudiante</td>
+                <td>01/04/2026</td>
+
+            </tr>
+
+            <tr>
+                <td>E010</td>
+                <td>Ana López</td>
+                <td>analopez@gmail.com</td>
+                <td>Profesor</td>
+                <td>17/03/2026</td>
+
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</div>
+
 
 
 
