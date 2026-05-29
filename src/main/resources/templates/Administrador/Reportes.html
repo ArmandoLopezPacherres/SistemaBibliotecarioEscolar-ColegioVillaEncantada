@@ -217,6 +217,14 @@
 
     </div>
 
+    <div class="tab"
+        onclick="mostrarTabla('morosidad', this)">
+
+        <i class="bi bi-exclamation-triangle"></i>
+        Reporte de Morosidad
+
+    </div>
+
     
 </div>
 
@@ -308,7 +316,55 @@
 </div>
 
 
+<!-- TABLA MOROSIDAD -->
 
+<div id="tabla-morosidad"
+    class="tabla-contenedor"
+    style="display:none;">
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Libro</th>
+                <th>Correo</th>
+                <th>Rol</th>
+                <th>Fecha de registro</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            <tr>
+                <td>E050</td>
+                <td>Maria Gonzales</td>
+                <td>El principito</td>
+                <td>mariagonzales@gmail.com</td>
+                <td>Estudiante</td>
+                <td>10/05/2026</td>
+            </tr>
+
+            <tr>
+                <td>P010</td>
+                <td>Carlos Ramírez</td>
+                <td>Cien años de soledad</td>
+                <td>carlosramirez@gmail.com</td>
+                <td>Profesor</td>
+                <td>15/05/2026</td>
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</div>
+
+
+
+
+</div>
 
 <script>
 
