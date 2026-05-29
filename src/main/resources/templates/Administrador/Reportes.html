@@ -225,7 +225,14 @@
 
     </div>
 
-    
+    <div class="tab"
+        onclick="mostrarTabla('catalogo', this)">
+
+        <i class="bi bi-journal-bookmark-fill"></i>
+        Reporte de Catálogo
+
+    </div>
+
 </div>
 
 
@@ -362,7 +369,48 @@
 </div>
 
 
+<!-- TABLA CATALOGO -->
 
+<div id="tabla-catalogo"
+    class="tabla-contenedor"
+    style="display:none;">
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>ID Libro</th>
+                <th>Titulo</th>
+                <th>Autor</th>
+                <th>Editorial</th>
+                <th>Categoria</th>
+                <th>Año</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            <tr>
+                <td>LIB-001</td>
+                <td>El principito</td>
+                <td>Antoine de Saint-Exupéry</td>
+                <td>Reynal & Hitchcock</td>
+                <td>Literatura Infantil</td>
+                <td>1943</td>
+            </tr>
+
+            <tr>
+                <td>LIB-002</td>
+                <td>Drácula</td>
+                <td>Bram Stoker</td>
+                <td>Archibals Constable & Co.</td>
+                <td>Novela Gótica</td>
+                <td>1897</td>
+            </tr>
+
+        </tbody>
+
+    </table>
 
 </div>
 
