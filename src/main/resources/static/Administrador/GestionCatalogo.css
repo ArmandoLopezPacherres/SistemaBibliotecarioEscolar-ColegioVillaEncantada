@@ -1,0 +1,315 @@
+ *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body{
+            background:#ffffff;
+        }
+        /* SIDEBAR */
+
+        .sidebar{
+            width:270px;
+            background:#072b4a;
+            color:white;
+            display:flex;
+            flex-direction:column;
+            justify-content:space-between;
+            padding:25px 20px;
+            height:100vh;
+            position:fixed;
+            left:0;
+            top:0;
+
+        }
+
+        .logo-section{
+            text-align:center;
+        }
+
+        .logo-section img{
+            width:90px;
+            margin-bottom:10px;
+        }
+
+        .logo-section h5{
+            font-size:18px;
+            font-weight:600px;
+        }
+
+        .sidebar hr {
+            border-color: rgba(255,255,255,0.2);
+            margin: 25px 0;
+        }
+
+        .menu{
+            margin-top:40px;
+            display:flex;
+            flex-direction:column;
+            gap:15px;
+            padding:0;
+        }
+
+        .menu a,
+        .logout a{
+            color:white;
+            text-decoration:none;
+            padding:12px 14px;
+            border-radius:10px;
+            display:flex;
+            align-items:center;
+            gap:12px;
+            transition:0.3s;
+            font-weight:500;
+        }
+
+        .menu a:hover,
+        .menu .activo{
+            background-color: rgba(255,255,255,0.12);
+        }
+
+        .menu i{
+            width:20px;
+        }
+
+       
+
+        .logout form{
+            color: white;
+            text-decoration: none;
+
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            padding: 10px;
+
+        }
+
+
+        /*  MAIN */
+
+        .contenido{
+            margin-left:260px;
+            padding:30px;
+        }
+
+        .top{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:25px;
+        }
+
+        .top h1{
+            color:#163252;
+            font-weight:bold;
+        }
+
+        .top p{
+            color:#6c757d;
+        }
+
+        .busqueda{
+            display:flex;
+            justify-content:flex-start;
+            margin-bottom:20px;
+            gap:20px;
+        }
+
+        .busqueda input{
+            width:100%;
+            border:none;
+            border-bottom:2px solid #ddd;
+            background:transparent;
+            padding:12px;
+            outline:none;
+        }
+
+        .botones{
+            display:flex;
+            flex-direction:column;
+            gap:15px;
+        }
+
+        .btn-azul{
+            width:140px; /* mismo tamaño */
+            height:45px; /* misma altura */
+            background:#0F2A44;
+            color:white;
+            border:none;
+            font-weight:bold;
+            border-radius:px;
+            transition:.3s;
+        }
+
+        .btn-azul:hover{
+        background:#163d68;
+        }
+
+        /* TABS*/
+
+        .tabs{
+            display:flex;
+            background:white;
+            border:1px solid #ddd;
+            width:fit-content;
+            margin-bottom:20px;
+        }
+
+        .tab{
+            padding:15px 25px;
+            border-right:1px solid #ddd;
+            cursor:pointer;
+            background:#ffffff;
+        }
+
+        .tab.activo{
+            background:#D7D6D6;
+            font-weight:bold;
+            border-bottom:3px solid #0d2b4d;
+        }
+
+        /* TABLAS*/
+
+        .tabla-contenedor{
+            background:white;
+            border:1px solid #ddd;
+            border-radius:10px;
+            overflow:hidden;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+        }
+
+        th{
+            background:#f8f9fa;
+            padding:15px;
+            text-align:left;
+            font-size:14px;
+        }
+
+        td{
+            padding:15px;
+            border-top:1px solid #eee;
+            font-size:14px;
+        }
+
+        .acciones i{
+            margin-right:12px;
+            cursor:pointer;
+            color:#555;
+        }
+
+        .acciones i:hover{
+            color:#0F2A44;
+        }
+
+        .foto-autor{
+            width:50px;
+            height:50px;
+            border-radius:50%;
+            object-fit:cover;
+        }
+
+        /* MODAL*/
+
+        .fondo-modal{
+            position:fixed;
+            width:100%;
+            height:100%;
+            background:rgba(0,0,0,.4);
+            backdrop-filter:blur(4px);
+            top:0;
+            left:0;
+            display:none;
+            justify-content:center;
+            align-items:center;
+            z-index:999;
+        }
+
+        .modal-personalizado{
+            width:450px;
+            background:#0F2A44;
+            padding:30px;
+            border-radius:20px;
+            color:white;
+            position:relative;
+        }
+
+    
+        .modal-personalizado h2{
+            margin-bottom:25px;
+        }
+
+        .modal-personalizado label{
+            margin-top:10px;
+            display:block;
+            margin-bottom:5px;
+            font-weight:bold;
+        }
+
+        .modal-personalizado input,
+        .modal-personalizado textarea,
+        .modal-personalizado select{
+            width:100%;
+            padding:12px;
+            border:none;
+            border-radius:15px;
+            background:#ddd;
+            outline:none;
+        }
+
+        .modal-personalizado textarea{
+            resize:none;
+            height:100px;
+        }
+
+        .acciones-modal{
+            margin-top:25px;
+            display:flex;
+            justify-content:space-between;
+        }
+
+        .acciones-modal button{
+            border:none;
+            padding:12px 25px;
+            border-radius:20px;
+            font-weight:bold;
+        }
+
+        .btn-cancelar{
+            background:white;
+        }
+
+        .btn-guardar{
+            background:white;
+        }
+
+        /* RESPONSIVE*/
+
+        @media(max-width:768px){
+
+            .sidebar{
+                width:100%;
+                height:auto;
+                position:relative;
+            }
+
+            .contenido{
+                margin-left:0;
+            }
+
+            .busqueda{
+                flex-direction:column;
+            }
+
+            .tabs{
+                flex-wrap:wrap;
+            }
+
+        }

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Administrador</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Iconos -->
+    <link rel="stylesheet" 
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+
+    <!-- Ruta Css -->
+    <link rel="stylesheet" href="../../static/Administrador/Admin-dashboard.css">
+
+
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <div>
+
+            <div class="logo-section">
+                <img src="../../static/img/logo-CVE.png" alt="Logo">
+                <h5>Administrador</h5>
+            </div>
+
+            <nav class="menu">
+                <a href="#" class="active">
+                    <i class="bi bi-graph-up"></i>
+                    Dashboard
+                </a>
+
+                <a href="#">
+                   <i class="bi bi-people-fill"></i>
+                    Gestión de usuarios
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-journal"></i>
+                    Gestión de catálogo
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-bar-chart-line"></i>
+                    Reportes
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-person"></i>
+                    Perfil
+                </a>
+
+            </nav>
+
+        </div>
+
+        <div class="logout">
+
+            <form href="../../templates/index.html" method="post">
+
+                <button type="submit"
+                    class="btn btn-outline-light w-100 rounded-pill fw-bold">
+
+                    <i class="bi bi-box-arrow-right"></i>
+                    Cerrar Sesión
+
+
+            </div>
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+        <!-- TOPBAR -->
+        <div class="topbar">
+
+            <div>
+                <h1>Dashboard</h1>
+                <p>Resumen general del sistema de biblioteca</p>
+            </div>
+
+            <div class="welcome">
+                <i class="bi bi-person"></i>
+                ¡Bienvenido <strong th:text="${usuario.nombre}">Administrador</strong>!
+            </div>
+
+        </div>
+
+ 
+        <!-- CARDS -->
+        <section class="cards">
+
+            <div class="card-box">
+                <div class="icon blue">
+                    <i class="bi bi-book-fill"></i>
+                </div>
+
+                <div>
+                    <h5>Total de libros</h5>
+                    <h3>3,245</h3>
+                </div>
+            </div>
+
+            <div class="card-box">
+                <div class="icon green">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+
+                <div>
+                    <h5>Total de usuarios</h5>
+                    <h3>132</h3>
+                </div>
+            </div>
+
+            <div class="card-box">
+                <div class="icon orange">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                </div>
+
+                <div>
+                    <h5>Préstamos activos</h5>
+                    <h3>478</h3>
+                </div>
+            </div>
+
+            <div class="card-box">
+                <div class="icon red">
+                    <i class="bi bi-person-fill-add"></i>
+                </div>
+
+                <div>
+                    <h5>Usuarios morosos</h5>
+                    <h3>8</h3>
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- GRAFICOS -->
+        <section class="charts">
+                <div class="chart-box">
+                   <!--menu desplegable--> 
+                <div class="chart-header">
+                    <h4>Préstamos por Mes</h4>
+
+                    <select id="meses">
+                         <option>Enero</option>
+                         <option>Febrero</option>
+                         <option>Marzo</option>
+                         <option>Abril</option>
+                        <option>Mayo</option>
+                        <option>Junio</option>
+                        <option>Julio</option>
+                        <option>Agosto</option>
+                        <option>Septiembre</option>
+                        <option>Octubre</option>
+                        <option>Noviembre</option>
+                        <option>Diciembre</option>
+
+                        <option value="3">Últimos 3 meses</option>
+                        <option value="6">Últimos 6 meses</option>
+                        <option value="12">Todo el año</option>
+                    </select>
+                </div>
+
+            <div class="chart-placeholder">
+                 Aquí irá el gráfico de préstamos
+            </div>
+            </div>
+
+            <div class="chart-box">
+                <h4>Libros más prestados</h4>
+
+                <div class="chart-placeholder">
+                    Aquí irá el ranking de libros
+                </div>
+            </div>
+
+             <div class="chart-box">
+                <h4>Usuarios por rol</h4>
+
+                <div class="chart-placeholder">
+                    Aquí irá el gráfico de usuarios por rol
+                </div>
+            </div>
+
+             <div class="chart-box">
+                <h4>Resumen de morosidad</h4>
+
+                <div class="chart-placeholder">
+                    Aquí irá el gráfico de morosidad
+                </div>
+            </div>
+
+        </section>
+        <!-- TABLA -->
+        <section class="table-section">
+
+            <h4 class="mb-4">Top usuarios más activos</h4>
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead>
+                        <tr>
+                            <th>Posición</th>
+                            <th>Usuario</th>
+                            <th>Rol</th>
+                            <th>Préstamos</th>
+                            <th>Devoluciones</th>
+                            <th>Tasa de devoluciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        <tr>
+                            <td>1</td>
+                            <td>Carlos Ramírez</td>
+                            <td>Profesor</td>
+                            <td>28</td>
+                            <td>26</td>
+                            <td>92%</td>
+                        </tr>
+
+                        <tr>
+                            <td>2</td>
+                            <td>Ana Pérez</td>
+                            <td>Estudiante</td>
+                            <td>22</td>
+                            <td>22</td>
+                            <td>100%</td>
+                        </tr>
+
+                        <tr>
+                            <td>3</td>
+                            <td>Luis Torres</td>
+                            <td>Estudiante</td>
+                            <td>19</td>
+                            <td>18</td>
+                            <td>94%</td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+   
+    </main>
+
+</body>
+
+</html>
