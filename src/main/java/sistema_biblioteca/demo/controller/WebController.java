@@ -65,12 +65,6 @@ public class WebController {
         return "redirect:/";
     }
 
-    @GetMapping("/panel-admin")
-    public String panelAdmin(Model model, Principal principal) {
-        cargarUsuarioEnModelo(model, principal);
-        return "panel-admin";
-    }
-
     @GetMapping("/panel-bibliotecario")
     public String panelBibliotecario(Model model, Principal principal) {
         cargarUsuarioEnModelo(model, principal);
