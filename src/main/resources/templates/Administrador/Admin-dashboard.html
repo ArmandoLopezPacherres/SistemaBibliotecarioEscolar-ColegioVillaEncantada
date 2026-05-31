@@ -10,12 +10,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Iconos -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 
     <!-- Ruta Css -->
     <link rel="stylesheet" th:href="@{/Administrador/Admin-dashboard.css}">
-
-
 </head>
 
 <body>
@@ -61,21 +60,12 @@
         </div>
 
         <div class="logout">
-
             <form th:action="@{/logout}" method="post">
-
                 <button type="submit" class="btn btn-outline-light w-100 rounded-pill fw-bold">
-
                     <i class="bi bi-box-arrow-right"></i>
                     Cerrar Sesión
-
-
-        </div>
-
-        </button>
-
-        </form>
-
+                </button>
+            </form>
         </div>
 
     </aside>
@@ -107,10 +97,9 @@
                 <div class="icon blue">
                     <i class="bi bi-book-fill"></i>
                 </div>
-
                 <div>
                     <h5>Total de libros</h5>
-                    <h3 th:text="${totalLibros}">3,245</h3>
+                    <h3 th:text="${totalLibros}">0</h3>
                 </div>
             </div>
 
@@ -118,10 +107,9 @@
                 <div class="icon green">
                     <i class="bi bi-people-fill"></i>
                 </div>
-
                 <div>
                     <h5>Total de usuarios</h5>
-                    <h3 th:text="${totalUsuarios}">132</h3>
+                    <h3 th:text="${totalUsuarios}">0</h3>
                 </div>
             </div>
 
@@ -129,10 +117,9 @@
                 <div class="icon orange">
                     <i class="bi bi-journal-bookmark-fill"></i>
                 </div>
-
                 <div>
                     <h5>Préstamos activos</h5>
-                    <h3 th:text="${prestamosActivos}">478</h3>
+                    <h3 th:text="${prestamosActivos}">0</h3>
                 </div>
             </div>
 
@@ -140,10 +127,9 @@
                 <div class="icon red">
                     <i class="bi bi-person-fill-add"></i>
                 </div>
-
                 <div>
                     <h5>Usuarios morosos</h5>
-                    <h3 th:text="${usuariosMorosos}">8</h3>
+                    <h3 th:text="${usuariosMorosos}">0</h3>
                 </div>
             </div>
 
@@ -152,61 +138,57 @@
 
         <!-- GRAFICOS -->
         <section class="charts">
+
+            <!-- Gráfico 1: Préstamos por Mes -->
             <div class="chart-box">
-                <!--menu desplegable-->
                 <div class="chart-header">
-                    <h4>Préstamos por Mes</h4>
-
-                    <select id="meses">
-                        <option>Enero</option>
-                        <option>Febrero</option>
-                        <option>Marzo</option>
-                        <option>Abril</option>
-                        <option>Mayo</option>
-                        <option>Junio</option>
-                        <option>Julio</option>
-                        <option>Agosto</option>
-                        <option>Septiembre</option>
-                        <option>Octubre</option>
-                        <option>Noviembre</option>
-                        <option>Diciembre</option>
-
+                    <h4>Préstamos por Período</h4>
+                    <select id="filtroMeses" onchange="actualizarGraficos()">
                         <option value="3">Últimos 3 meses</option>
                         <option value="6">Últimos 6 meses</option>
-                        <option value="12">Todo el año</option>
+                        <option value="12" selected>Todo el año</option>
                     </select>
                 </div>
+                <canvas id="chartPrestamos" height="130"></canvas>
+            </div>
 
-                <div class="chart-placeholder">
-                    Aquí irá el gráfico de préstamos
+            <!-- Gráfico 2: Libros más prestados -->
+            <div class="chart-box">
+                <div class="chart-header">
+                    <h4>Libros más Prestados</h4>
+                    <span class="chart-badge" id="badgeLibros">Top 5</span>
+                </div>
+                <canvas id="chartLibros" height="130"></canvas>
+            </div>
+
+            <!-- Gráfico 3: Usuarios por rol -->
+            <div class="chart-box">
+                <div class="chart-header">
+                    <h4>Usuarios por Rol</h4>
+                </div>
+                <div class="chart-doughnut-wrapper">
+                    <div class="doughnut-canvas-container">
+                        <canvas id="chartRoles"></canvas>
+                    </div>
+                    <div class="chart-legend" id="legendRoles"></div>
                 </div>
             </div>
 
+            <!-- Gráfico 4: Resumen de morosidad -->
             <div class="chart-box">
-                <h4>Libros más prestados</h4>
-
-                <div class="chart-placeholder">
-                    Aquí irá el ranking de libros
+                <div class="chart-header">
+                    <h4>Estado de Préstamos</h4>
                 </div>
-            </div>
-
-            <div class="chart-box">
-                <h4>Usuarios por rol</h4>
-
-                <div class="chart-placeholder">
-                    Aquí irá el gráfico de usuarios por rol
-                </div>
-            </div>
-
-            <div class="chart-box">
-                <h4>Resumen de morosidad</h4>
-
-                <div class="chart-placeholder">
-                    Aquí irá el gráfico de morosidad
+                <div class="chart-doughnut-wrapper">
+                    <div class="doughnut-canvas-container">
+                        <canvas id="chartMorosidad"></canvas>
+                    </div>
+                    <div class="chart-legend" id="legendMorosidad"></div>
                 </div>
             </div>
 
         </section>
+
         <!-- TABLA -->
         <section class="table-section">
 
@@ -229,12 +211,30 @@
 
                     <tbody>
                         <tr th:each="tu : ${topUsuarios}">
-                            <td th:text="${tu.posicion}">1</td>
+                            <td>
+                                <span th:switch="${tu.posicion}">
+                                    <span th:case="1" class="badge-pos gold">🥇 1°</span>
+                                    <span th:case="2" class="badge-pos silver">🥈 2°</span>
+                                    <span th:case="3" class="badge-pos bronze">🥉 3°</span>
+                                    <span th:case="*" th:text="${tu.posicion} + '°'">4°</span>
+                                </span>
+                            </td>
                             <td th:text="${tu.nombre}">Carlos Ramírez</td>
-                            <td th:text="${tu.rol}">Profesor</td>
+                            <td>
+                                <span class="rol-badge" th:text="${tu.rol}">Profesor</span>
+                            </td>
                             <td th:text="${tu.totalPrestamos}">28</td>
                             <td th:text="${tu.totalDevoluciones}">26</td>
-                            <td th:text="${tu.tasaDevolucion}">92%</td>
+                            <td>
+                                <div class="tasa-bar-wrapper">
+                                    <div class="tasa-bar"
+                                         th:style="'width:' + ${#strings.replace(tu.tasaDevolucion, '%', '')} + '%'"></div>
+                                    <span th:text="${tu.tasaDevolucion}">92%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(topUsuarios)}">
+                            <td colspan="6" class="text-center text-muted py-4">No hay datos de préstamos registrados aún.</td>
                         </tr>
                     </tbody>
 
@@ -244,8 +244,203 @@
 
         </section>
 
-
     </main>
+
+
+    <!-- JAVASCRIPT - Chart.js + AJAX -->
+    <script>
+        // Paleta de colores coherente con el diseño
+        const COLORS = {
+            blue:   { bg: 'rgba(51, 102, 255, 0.15)',   border: 'rgba(51, 102, 255, 1)' },
+            green:  { bg: 'rgba(0, 179, 92, 0.15)',     border: 'rgba(0, 179, 92, 1)' },
+            orange: { bg: 'rgba(255, 136, 0, 0.15)',    border: 'rgba(255, 136, 0, 1)' },
+            red:    { bg: 'rgba(255, 77, 77, 0.15)',    border: 'rgba(255, 77, 77, 1)' },
+            purple: { bg: 'rgba(130, 80, 255, 0.15)',   border: 'rgba(130, 80, 255, 1)' },
+        };
+
+        const PIE_COLORS_BG     = ['rgba(51,102,255,0.85)', 'rgba(130,80,255,0.85)',
+                                   'rgba(0,179,92,0.85)',   'rgba(255,77,77,0.85)'];
+        const PIE_COLORS_BORDER = ['rgba(51,102,255,1)',    'rgba(130,80,255,1)',
+                                   'rgba(0,179,92,1)',      'rgba(255,77,77,1)'];
+
+        const STATUS_BG     = ['rgba(0,179,92,0.85)',  'rgba(51,102,255,0.85)', 'rgba(255,77,77,0.85)'];
+        const STATUS_BORDER = ['rgba(0,179,92,1)',     'rgba(51,102,255,1)',     'rgba(255,77,77,1)'];
+
+        // Instancias de los gráficos (para poder destruirlos y recrearlos)
+        let chartPrestamos = null;
+        let chartLibros    = null;
+        let chartRoles     = null;
+        let chartMorosidad = null;
+
+        // ── Utilidades ──────────────────────────────────────────────────────
+        function truncar(texto, max) {
+            return texto.length > max ? texto.substring(0, max) + '…' : texto;
+        }
+
+        function buildLegend(containerId, labels, colors) {
+            const el = document.getElementById(containerId);
+            el.innerHTML = labels.map((l, i) =>
+                `<div class="legend-item">
+                    <span class="legend-dot" style="background:${colors[i]}"></span>
+                    <span>${l}</span>
+                 </div>`
+            ).join('');
+        }
+
+        // ── Renderizado de gráficos ──────────────────────────────────────────
+        function renderChartPrestamos(labels, data) {
+            if (chartPrestamos) chartPrestamos.destroy();
+            const ctx = document.getElementById('chartPrestamos').getContext('2d');
+            chartPrestamos = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Préstamos',
+                        data: data,
+                        backgroundColor: COLORS.blue.bg,
+                        borderColor: COLORS.blue.border,
+                        borderWidth: 2,
+                        borderRadius: 6,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 },
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function renderChartLibros(labels, data) {
+            if (chartLibros) chartLibros.destroy();
+            const ctx = document.getElementById('chartLibros').getContext('2d');
+            const truncated = labels.map(l => truncar(l, 22));
+            chartLibros = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: truncated,
+                    datasets: [{
+                        label: 'Veces prestado',
+                        data: data,
+                        backgroundColor: [
+                            COLORS.blue.bg, COLORS.green.bg,
+                            COLORS.orange.bg, COLORS.red.bg, COLORS.purple.bg
+                        ],
+                        borderColor: [
+                            COLORS.blue.border, COLORS.green.border,
+                            COLORS.orange.border, COLORS.red.border, COLORS.purple.border
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 6,
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: (items) => labels[items[0].dataIndex]
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 },
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        y: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function renderChartRoles(labels, data) {
+            if (chartRoles) chartRoles.destroy();
+            const ctx = document.getElementById('chartRoles').getContext('2d');
+            chartRoles = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: PIE_COLORS_BG,
+                        borderColor: PIE_COLORS_BORDER,
+                        borderWidth: 2,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    cutout: '65%',
+                    plugins: { legend: { display: false } }
+                }
+            });
+            buildLegend('legendRoles', labels, PIE_COLORS_BG);
+        }
+
+        function renderChartMorosidad(activos, devueltos, retrasados) {
+            if (chartMorosidad) chartMorosidad.destroy();
+            const ctx = document.getElementById('chartMorosidad').getContext('2d');
+            chartMorosidad = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Devueltos', 'Activos', 'Retrasados'],
+                    datasets: [{
+                        data: [devueltos, activos, retrasados],
+                        backgroundColor: STATUS_BG,
+                        borderColor: STATUS_BORDER,
+                        borderWidth: 2,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    cutout: '65%',
+                    plugins: { legend: { display: false } }
+                }
+            });
+            buildLegend('legendMorosidad',
+                ['Devueltos', 'Activos', 'Retrasados'],
+                STATUS_BG
+            );
+        }
+
+        // ── Carga y actualización vía AJAX ───────────────────────────────────
+        function actualizarGraficos() {
+            const meses = document.getElementById('filtroMeses').value;
+
+            fetch(`/api/admin/charts?meses=${meses}`)
+                .then(res => {
+                    if (!res.ok) throw new Error('Error en la respuesta del servidor: ' + res.status);
+                    return res.json();
+                })
+                .then(data => {
+                    renderChartPrestamos(data.mesesLabels, data.prestamosPorMes);
+                    renderChartLibros(data.librosLabels, data.librosCantidad);
+                    renderChartRoles(data.rolesLabels, data.rolesCantidad);
+                    renderChartMorosidad(data.prestamosActivos, data.prestamosDevueltos, data.prestamosRetrasados);
+                })
+                .catch(err => {
+                    console.error('Error cargando datos de gráficos:', err);
+                });
+        }
+
+        // Carga inicial al abrir la página
+        document.addEventListener('DOMContentLoaded', () => actualizarGraficos());
+    </script>
+
 
 </body>
 

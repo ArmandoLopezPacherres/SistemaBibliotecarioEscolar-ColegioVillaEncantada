@@ -212,12 +212,12 @@
                             th:class="${u.activo ? 'status-active' : 'status-inactive'}">Activo</td>
                         <td class="action-icons">
                             <i class="bi bi-pencil-square"
-                                th:onclick="|openEditModal('${u.id}', '${u.nombre}', '${u.codigo}', '${u.rol}')|"></i>
+                                th:attr="onclick=|openEditModal('${u.id}', '${u.nombre}', '${u.codigo}', '${u.rol}')|"></i>
 
                             <form th:action="@{/panel-admin/usuarios/eliminar/{id}(id=${u.id})}" method="post"
                                 class="d-inline">
                                 <button type="submit" class="btn btn-link p-0 text-danger"
-                                    th:onclick="|return confirm('¿Está seguro de desactivar al usuario ${u.nombre}?');|">
+                                    th:attr="onclick=|return confirm('¿Está seguro de desactivar al usuario ${u.nombre}?');|">
                                     <i class="bi bi-person-dash"></i>
                                 </button>
                             </form>
