@@ -64,12 +64,18 @@ public class BibliotecarioController {
     @GetMapping("/prestamos")
     public String prestamos(Model model, Principal principal) {
         cargarUsuarioEnModelo(model, principal);
+        actualizarPrestamosVencidos();
+        model.addAttribute("prestamos", prestamoRepository.findAll());
         return "Bibliotecario/prestamos";
     }
 
     @GetMapping("/devoluciones")
     public String devoluciones(Model model, Principal principal) {
         cargarUsuarioEnModelo(model, principal);
+        List<Prestamo> devoluciones = prestamoRepository.findAll().stream()
+                .filter(p -> p.getEstado() == EstadoPrestamo.DEVUELTO)
+                .toList();
+        model.addAttribute("devoluciones", devoluciones);
         return "Bibliotecario/devoluciones";
     }
 
@@ -173,6 +179,11 @@ public class BibliotecarioController {
     @GetMapping("/multas")
     public String multas(Model model, Principal principal) {
         cargarUsuarioEnModelo(model, principal);
+        actualizarPrestamosVencidos();
+        List<Prestamo> multados = prestamoRepository.findAll().stream()
+                .filter(p -> p.getEstado() == EstadoPrestamo.RETRASADO)
+                .toList();
+        model.addAttribute("multas", multados);
         return "Bibliotecario/multas";
     }
 
@@ -247,7 +258,8 @@ public class BibliotecarioController {
     @ResponseBody
     public ResponseEntity<List<Reserva>> buscarSolicitudesAjax(
             @RequestParam(value = "query", required = false) String query,
-            @RequestParam(value = "fecha", required = false) String fechaStr) {
+            @RequestParam(value = "fecha", required = false) String fechaStr,
+            @RequestParam(value = "rol", required = false) String rolStr) {
         
         List<Reserva> reservas;
         if (query != null && !query.trim().isEmpty()) {
@@ -264,6 +276,17 @@ public class BibliotecarioController {
                         .toList();
             } catch (Exception e) {
                 // Ignorar error de parsing
+            }
+        }
+        
+        if (rolStr != null && !rolStr.trim().isEmpty()) {
+            try {
+                RolUsuario rol = RolUsuario.valueOf(rolStr.trim().toUpperCase());
+                reservas = reservas.stream()
+                        .filter(r -> r.getUsuario() != null && r.getUsuario().getRol() == rol)
+                        .toList();
+            } catch (Exception e) {
+                // Ignorar error del enum
             }
         }
         
@@ -307,10 +330,10 @@ public class BibliotecarioController {
         Prestamo prestamo = new Prestamo();
         prestamo.setUsuario(reserva.getUsuario());
         prestamo.setLibro(libro);
-        prestamo.setFechaPrestamo(LocalDate.now());
-        // Límite de devolución esperado en 7 días
-        prestamo.setFechaDevolucionEsperada(LocalDate.now().plusDays(7));
+        prestamo.setFechaPrestamo(reserva.getFechaReserva() != null ? reserva.getFechaReserva() : LocalDate.now());
+        prestamo.setFechaDevolucionEsperada(reserva.getFechaLimiteRecojo() != null ? reserva.getFechaLimiteRecojo() : LocalDate.now().plusDays(7));
         prestamo.setEstado(EstadoPrestamo.ACTIVO);
+        prestamo.setEntregado(false);
         prestamoRepository.save(prestamo);
         
         return ResponseEntity.ok("Solicitud aceptada y préstamo registrado con éxito.");
@@ -334,5 +357,88 @@ public class BibliotecarioController {
         reservaRepository.save(reserva);
         
         return ResponseEntity.ok("Solicitud rechazada con éxito.");
+    }
+
+    private void actualizarPrestamosVencidos() {
+        List<Prestamo> prestamos = prestamoRepository.findAll();
+        LocalDate hoy = LocalDate.now();
+        for (Prestamo p : prestamos) {
+            if (p.isEntregado() && p.getEstado() == EstadoPrestamo.ACTIVO) {
+                if (p.getFechaDevolucionEsperada() != null && hoy.isAfter(p.getFechaDevolucionEsperada())) {
+                    p.setEstado(EstadoPrestamo.RETRASADO);
+                    prestamoRepository.save(p);
+                }
+            }
+        }
+    }
+
+    @PostMapping("/prestamos/registrar")
+    @ResponseBody
+    public ResponseEntity<String> registrarEntrega(
+            @RequestParam("id") Long id,
+            @RequestParam("fechaPrestamo") String fechaPrestamoStr,
+            @RequestParam("fechaDevolucionEsperada") String fechaDevolucionEsperadaStr) {
+        
+        Optional<Prestamo> optPrestamo = prestamoRepository.findById(id);
+        if (optPrestamo.isEmpty()) {
+            return ResponseEntity.badRequest().body("El préstamo no existe.");
+        }
+        
+        Prestamo prestamo = optPrestamo.get();
+        if (prestamo.isEntregado()) {
+            return ResponseEntity.badRequest().body("Este préstamo ya está registrado como entregado.");
+        }
+        
+        try {
+            LocalDate fechaPrestamo = LocalDate.parse(fechaPrestamoStr);
+            LocalDate fechaDevolucionEsperada = LocalDate.parse(fechaDevolucionEsperadaStr);
+            
+            if (fechaDevolucionEsperada.isBefore(fechaPrestamo)) {
+                return ResponseEntity.badRequest().body("La fecha de devolución no puede ser anterior a la de préstamo.");
+            }
+            
+            prestamo.setFechaPrestamo(fechaPrestamo);
+            prestamo.setFechaDevolucionEsperada(fechaDevolucionEsperada);
+            prestamo.setEntregado(true);
+            
+            if (LocalDate.now().isAfter(fechaDevolucionEsperada)) {
+                prestamo.setEstado(EstadoPrestamo.RETRASADO);
+            }
+            
+            prestamoRepository.save(prestamo);
+            
+            return ResponseEntity.ok("Préstamo registrado como entregado con éxito.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Formato de fecha inválido.");
+        }
+    }
+
+    @PostMapping("/prestamos/devolver")
+    @ResponseBody
+    public ResponseEntity<String> devolverLibro(@RequestParam("id") Long id) {
+        Optional<Prestamo> optPrestamo = prestamoRepository.findById(id);
+        if (optPrestamo.isEmpty()) {
+            return ResponseEntity.badRequest().body("El préstamo no existe.");
+        }
+        
+        Prestamo prestamo = optPrestamo.get();
+        if (prestamo.getEstado() == EstadoPrestamo.DEVUELTO) {
+            return ResponseEntity.badRequest().body("Este préstamo ya está registrado como devuelto.");
+        }
+        
+        // Cambiar estado a DEVUELTO y setear fecha de devolución real
+        prestamo.setEstado(EstadoPrestamo.DEVUELTO);
+        prestamo.setFechaDevolucionReal(LocalDate.now());
+        prestamoRepository.save(prestamo);
+        
+        // Aumentar stock del libro
+        Libro libro = prestamo.getLibro();
+        if (libro != null) {
+            libro.setStock(libro.getStock() + 1);
+            libro.setDisponible(true);
+            libroRepository.save(libro);
+        }
+        
+        return ResponseEntity.ok("Libro registrado como devuelto con éxito.");
     }
 }
