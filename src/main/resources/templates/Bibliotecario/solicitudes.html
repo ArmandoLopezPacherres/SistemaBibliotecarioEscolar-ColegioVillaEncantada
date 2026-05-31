@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,7 +13,7 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
 
     <!--css-->
-    <link rel="stylesheet" href="../../static/Bibliotecario.css/solicitudes.css">
+    <link rel="stylesheet" th:href="@{/Bibliotecario/solicitudes.css}">
 </head>
 <body>
 
@@ -25,7 +25,7 @@
         <div>
 
             <div class="logo-section">
-                <img src="../../static/img/logo-CVE.png" alt="logo">
+                <img th:src="@{/img/logo-CVE.png}" alt="logo">
                 <h5>Bibliotecario</h5>
             </div>
 
@@ -34,56 +34,56 @@
             <ul class="menu">
 
                 <li>
-                    <a href="lectores.html">
+                    <a th:href="@{/panel-bibliotecario/lectores}">
                         <i class="fa-regular fa-address-book"></i>
                         Gestión de Lectores
                     </a>
                 </li>
 
                 <li>
-                    <a href="solicitudes.html">
+                    <a th:href="@{/panel-bibliotecario/solicitudes}">
                         <i class="fa-regular fa-rectangle-list"></i>
                         Solicitudes Pendientes
                     </a>
                 </li>
 
                 <li>
-                    <a href="inventario.html">
+                    <a th:href="@{/panel-bibliotecario/inventario}">
                         <i class="fa-regular fa-folder"></i>
                         Consulta de inventario
                     </a>
                 </li>
 
                 <li>
-                    <a href="prestamos.html">
+                    <a th:href="@{/panel-bibliotecario/prestamos}">
                         <i class="fa-regular fa-calendar-check"></i>
                         Gestión de préstamos
                     </a>
                 </li>
 
                 <li>
-                    <a href="devoluciones.html">
+                    <a th:href="@{/panel-bibliotecario/devoluciones}">
                         <i class="fa-regular fa-calendar"></i>
                         Gestión de devoluciones
                     </a>
                 </li>
 
                 <li>
-                    <a href="multas.html">
+                    <a th:href="@{/panel-bibliotecario/multas}">
                         <i class="fa-regular fa-pen-to-square"></i>
                         Lista blanca y multas
                     </a>
                 </li>
 
                 <li>
-                    <a href="notificaciones.html">
+                    <a th:href="@{/panel-bibliotecario/notificaciones}">
                         <i class="fa-regular fa-bell"></i>
                         Notificaciones
                     </a>
                 </li>
 
                 <li>
-                    <a href="perfil.html">
+                    <a th:href="@{/panel-bibliotecario/perfil}">
                         <i class="fa-regular fa-user"></i>
                         Perfil
                     </a>
@@ -94,14 +94,11 @@
         </div>
 
         <div class="logout">
-
-            <a href="#" class="text-white text-decoration-none">
-
+            <form th:action="@{/logout}" method="post" id="logoutForm" style="display: none;"></form>
+            <a href="javascript:document.getElementById('logoutForm').submit();" class="text-white text-decoration-none">
                 <i class="fa-solid fa-right-from-bracket"></i>
                 Cerrar sesión
-
             </a>
-
         </div>
 
     </aside>
@@ -124,7 +121,7 @@
                 <i class="fa-regular fa-user"></i>
 
                 ¡Bienvenido
-                <strong text="">
+                <strong th:text="${usuario.nombre}">
                     Juan
                 </strong>!
 
