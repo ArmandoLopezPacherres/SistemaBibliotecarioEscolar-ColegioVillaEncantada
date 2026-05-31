@@ -6,6 +6,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import sistema_biblioteca.demo.repository.UsuarioRepository;
 import sistema_biblioteca.demo.service.PrestamoService;
+import sistema_biblioteca.demo.model.Usuario;
 import java.security.Principal;
 
 @Controller
