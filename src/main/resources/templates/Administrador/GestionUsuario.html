@@ -10,12 +10,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Iconos -->
-    <link rel="stylesheet" 
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-<!-- Ruta Css -->
+    <!-- Ruta Css -->
     <link rel="stylesheet" th:href="@{/Administrador/GestionUsuario.css}">
-    
+
 </head>
 
 <body>
@@ -66,8 +65,7 @@
 
             <form th:action="@{/logout}" method="post">
 
-                <button type="submit"
-                    class="btn btn-outline-light w-100 rounded-pill fw-bold">
+                <button type="submit" class="btn btn-outline-light w-100 rounded-pill fw-bold">
 
                     <i class="bi bi-box-arrow-right"></i>
                     Cerrar Sesión
@@ -130,7 +128,7 @@
                     <h5 th:text="${totalBibliotecarios}">0</h5>
                 </div>
             </div>
- 
+
             <div class="stat-box">
                 <i class="bi bi-person green"></i>
 
@@ -155,8 +153,7 @@
         <!-- FILTERS -->
         <section class="filters">
 
-            <input type="text"
-                placeholder="Busca por nombre, email o código">
+            <input type="text" placeholder="Busca por nombre, email o código">
 
             <div class="filter-right">
 
@@ -203,14 +200,17 @@
                         <td th:text="${u.codigo}">Correo</td>
                         <td th:text="${u.rol}">Rol</td>
                         <td>-</td>
-                        <td class="status-active">Activo</td>
+                        <td th:text="${u.activo ? 'Activo' : 'Inactivo'}"
+                            th:class="${u.activo ? 'status-active' : 'status-inactive'}">Activo</td>
                         <td class="action-icons">
-                            <i class="bi bi-pencil-square" 
-                               th:onclick="|openEditModal('${u.id}', '${u.nombre}', '${u.codigo}', '${u.rol}')|"></i>
-                            
-                            <form th:action="@{/panel-admin/usuarios/eliminar/{id}(id=${u.id})}" method="post" class="d-inline">
-                                <button type="submit" class="btn btn-link p-0 text-danger" onclick="return confirm('¿Está seguro de eliminar este usuario?');">
-                                    <i class="bi bi-trash"></i>
+                            <i class="bi bi-pencil-square"
+                                th:onclick="|openEditModal('${u.id}', '${u.nombre}', '${u.codigo}', '${u.rol}')|"></i>
+
+                            <form th:action="@{/panel-admin/usuarios/eliminar/{id}(id=${u.id})}" method="post"
+                                class="d-inline">
+                                <button type="submit" class="btn btn-link p-0 text-danger"
+                                    th:onclick="|return confirm('¿Está seguro de desactivar al usuario ${u.nombre}?');|">
+                                    <i class="bi bi-person-dash"></i>
                                 </button>
                             </form>
                         </td>
@@ -303,24 +303,24 @@
 
     <script>
         // MODAL CREAR
-        function openCreateModal(){
-            document.getElementById("createModal").style.display="flex";
+        function openCreateModal() {
+            document.getElementById("createModal").style.display = "flex";
         }
-        function closeCreateModal(){
-            document.getElementById("createModal").style.display="none";
+        function closeCreateModal() {
+            document.getElementById("createModal").style.display = "none";
         }
 
         // MODAL EDITAR
-        function openEditModal(id, nombre, codigo, rol){
+        function openEditModal(id, nombre, codigo, rol) {
             document.getElementById("editId").value = id;
             document.getElementById("editNombre").value = nombre;
             document.getElementById("editCodigo").value = codigo;
             document.getElementById("editRol").value = rol;
             document.getElementById("editPassword").value = "";
-            document.getElementById("editModal").style.display="flex";
+            document.getElementById("editModal").style.display = "flex";
         }
-        function closeEditModal(){
-            document.getElementById("editModal").style.display="none";
+        function closeEditModal() {
+            document.getElementById("editModal").style.display = "none";
         }
     </script>
 

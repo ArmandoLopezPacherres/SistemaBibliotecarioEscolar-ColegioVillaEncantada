@@ -19,6 +19,9 @@ public class Usuario {
     @Column(nullable = false)
     private RolUsuario rol;
 
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
+    private boolean activo = true;
+
     public Usuario() {
     }
 
@@ -56,5 +59,13 @@ public class Usuario {
 
     public void setRol(RolUsuario rol) {
         this.rol = rol;
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
     }
 }
