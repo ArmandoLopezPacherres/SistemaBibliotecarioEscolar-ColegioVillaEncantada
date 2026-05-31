@@ -210,70 +210,18 @@
 
                 <tbody id="tablaPrestamos">
 
-                <tr>
-
-                    <td>Maria Fernanda Lopez</td>
-
-                    <td>Historias Ancestrales</td>
-
+                <tr th:each="prestamo : ${devoluciones}">
+                    <td th:text="${prestamo.usuario.nombre}">Maria Fernanda Lopez</td>
+                    <td th:text="${prestamo.libro.titulo}">Historias Ancestrales</td>
+                    <td th:attr="data-raw=${prestamo.fechaPrestamo}" th:text="${#temporals.format(prestamo.fechaPrestamo, 'dd/MM/yyyy')}">20/05/2026</td>
+                    <td th:attr="data-raw=${prestamo.fechaDevolucionReal}" th:text="${#temporals.format(prestamo.fechaDevolucionReal, 'dd/MM/yyyy')}">27/05/2026</td>
                     <td>
-
-                        <input type="date"
-                            class="fecha-input fecha-prestamo">
-
+                        <span class="badge-status estado-activo">DEVUELTO</span>
                     </td>
-
-                    <td>
-
-                        <input type="date"
-                            class="fecha-input fecha-devolucion">
-
-                    </td>
-
-                    <td>
-
-                        <button class="btn-registrar"
-                                onclick="registrarPrestamo(this)">
-
-                            REGISTRAR
-
-                        </button>
-
-                    </td>
-
                 </tr>
 
-                <tr>
-
-                    <td>Juan Pérez Ramirez</td>
-
-                    <td>Matemática Avanzada</td>
-
-                    <td>
-
-                        <input type="date"
-                            class="fecha-input fecha-prestamo">
-
-                    </td>
-
-                    <td>
-
-                        <input type="date"
-                            class="fecha-input fecha-devolucion">
-
-                    </td>
-
-                    <td>
-
-                        <button class="btn-registrar"
-                                onclick="registrarPrestamo(this)">
-
-                            REGISTRAR
-
-                        </button>
-
-                    </td>
-
+                <tr th:if="${#lists.isEmpty(devoluciones)}">
+                    <td colspan="5" class="text-center text-muted py-4">No hay registros de devoluciones.</td>
                 </tr>
 
                 </tbody>
@@ -285,3 +233,85 @@
     </main>
 
 </div>
+
+<!-- Bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    let devolucionesData = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Parse rows
+        const rows = document.querySelectorAll('#tablaPrestamos tr');
+        if (rows.length > 0 && !rows[0].querySelector('td[colspan]')) {
+            devolucionesData = Array.from(rows).map(row => {
+                const cells = row.querySelectorAll('td');
+                const usuarioNombre = cells[0].textContent.trim();
+                const libroTitulo = cells[1].textContent.trim();
+                
+                const fechaPrestamoStr = cells[2].textContent.trim();
+                const fechaDevolucionStr = cells[3].textContent.trim();
+                
+                const fechaPrestamoISO = cells[2].getAttribute('data-raw');
+                const fechaDevolucionISO = cells[3].getAttribute('data-raw');
+
+                return { usuarioNombre, libroTitulo, fechaPrestamoStr, fechaDevolucionStr, fechaPrestamoISO, fechaDevolucionISO };
+            });
+            renderDevoluciones();
+        }
+    });
+
+    function buscarPrestamo() {
+        renderDevoluciones();
+    }
+
+    // Escuchar cambios en los inputs de fecha
+    document.getElementById('filtroPrestamo').addEventListener('change', renderDevoluciones);
+    document.getElementById('filtroDevolucion').addEventListener('change', renderDevoluciones);
+
+    function renderDevoluciones() {
+        const query = document.getElementById('searchInput').value.trim().toLowerCase();
+        const datePrestamo = document.getElementById('filtroPrestamo').value;
+        const dateDevolucion = document.getElementById('filtroDevolucion').value;
+
+        let filtered = devolucionesData.filter(d => {
+            const matchesQuery = !query || 
+                d.usuarioNombre.toLowerCase().includes(query) || 
+                d.libroTitulo.toLowerCase().includes(query);
+            
+            const matchesPrestamo = !datePrestamo || d.fechaPrestamoISO === datePrestamo;
+            const matchesDevolucion = !dateDevolucion || d.fechaDevolucionISO === dateDevolucion;
+
+            return matchesQuery && matchesPrestamo && matchesDevolucion;
+        });
+
+        const tbody = document.getElementById('tablaPrestamos');
+        if (filtered.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">No se encontraron registros de devoluciones para estos filtros.</td>
+                </tr>
+            `;
+            return;
+        }
+
+        let html = "";
+        filtered.forEach(d => {
+            html += `
+                <tr>
+                    <td>${d.usuarioNombre}</td>
+                    <td>${d.libroTitulo}</td>
+                    <td>${d.fechaPrestamoStr}</td>
+                    <td>${d.fechaDevolucionStr}</td>
+                    <td>
+                        <span class="badge-status estado-activo">DEVUELTO</span>
+                    </td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+    }
+</script>
+
+</body>
+</html>
