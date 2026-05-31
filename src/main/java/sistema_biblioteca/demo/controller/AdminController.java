@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import sistema_biblioteca.demo.dto.UsuarioDTO;
 import sistema_biblioteca.demo.dto.TopUsuarioDTO;
@@ -27,6 +28,8 @@ import sistema_biblioteca.demo.service.PrestamoService;
 import sistema_biblioteca.demo.model.enums.EstadoPrestamo;
 import java.util.stream.Collectors;
 import java.security.Principal;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 public class AdminController {
@@ -194,24 +197,60 @@ public class AdminController {
     }
 
     @GetMapping("/panel-admin/catalogo")
-    public String gestionCatalogo(Model model, Principal principal) {
+    public String gestionCatalogo(
+            @RequestParam(required = false, defaultValue = "libros") String tab,
+            Model model, Principal principal) {
         cargarUsuarioEnModelo(model, principal);
-        model.addAttribute("listaLibros", libroService.listarLibros());
+        List<Libro> libros = libroService.listarLibros();
+        model.addAttribute("listaLibros", libros);
         model.addAttribute("listaAutores", autorRepository.findAll());
         model.addAttribute("listaCategorias", categoriaRepository.findAll());
         model.addAttribute("listaEditoriales", editorialRepository.findAll());
+
+        Map<Long, Long> librosPerAutor = libros.stream()
+            .filter(l -> l.getAutor() != null)
+            .collect(Collectors.groupingBy(l -> l.getAutor().getId(), Collectors.counting()));
+        Map<Long, Long> librosPerEditorial = libros.stream()
+            .filter(l -> l.getEditorial() != null)
+            .collect(Collectors.groupingBy(l -> l.getEditorial().getId(), Collectors.counting()));
+        Map<Long, Long> librosPerCategoria = libros.stream()
+            .filter(l -> l.getCategoria() != null)
+            .collect(Collectors.groupingBy(l -> l.getCategoria().getId(), Collectors.counting()));
+
+        model.addAttribute("librosPerAutor", librosPerAutor);
+        model.addAttribute("librosPerEditorial", librosPerEditorial);
+        model.addAttribute("librosPerCategoria", librosPerCategoria);
+        model.addAttribute("tabActiva", tab);
+
         return "Administrador/GestionCatalogo";
     }
 
     @PostMapping("/panel-admin/catalogo/libros/guardar")
-    public String guardarLibro(Libro libro, RedirectAttributes redirectAttributes) {
+    public String guardarLibro(
+            @RequestParam(required = false) Long id,
+            @RequestParam String isbn,
+            @RequestParam String titulo,
+            @RequestParam(required = false) Integer anioPublicacion,
+            @RequestParam int stock,
+            @RequestParam(name = "autor.id", required = false) Long autorId,
+            @RequestParam(name = "editorial.id", required = false) Long editorialId,
+            @RequestParam(name = "categoria.id", required = false) Long categoriaId,
+            RedirectAttributes redirectAttributes) {
         try {
+            Libro libro = (id != null) ? libroService.obtenerPorId(id) : new Libro();
+            libro.setIsbn(isbn);
+            libro.setTitulo(titulo);
+            libro.setAnioPublicacion(anioPublicacion);
+            libro.setStock(stock);
+            libro.setAutor(autorId != null ? autorRepository.findById(autorId).orElse(null) : null);
+            libro.setEditorial(editorialId != null ? editorialRepository.findById(editorialId).orElse(null) : null);
+            libro.setCategoria(categoriaId != null ? categoriaRepository.findById(categoriaId).orElse(null) : null);
             libroService.guardarLibro(libro);
             redirectAttributes.addFlashAttribute("mensajeExito", "Libro guardado exitosamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("mensajeError", "Error al guardar el libro.");
+            redirectAttributes.addFlashAttribute("mensajeError", "Error al guardar el libro: " + e.getMessage());
         }
-        return "redirect:/panel-admin/catalogo";
+        return "redirect:/panel-admin/catalogo?tab=libros";
     }
 
     @PostMapping("/panel-admin/catalogo/libros/eliminar/{id}")
@@ -222,18 +261,27 @@ public class AdminController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensajeError", "Error al eliminar el libro.");
         }
-        return "redirect:/panel-admin/catalogo";
+        return "redirect:/panel-admin/catalogo?tab=libros";
     }
 
     @PostMapping("/panel-admin/catalogo/autores/guardar")
-    public String guardarAutor(Autor autor, RedirectAttributes redirectAttributes) {
+    public String guardarAutor(
+            @RequestParam(required = false) Long id,
+            @RequestParam String nombreCompleto,
+            @RequestParam(required = false) String nacionalidad,
+            @RequestParam(required = false) String descripcion,
+            RedirectAttributes redirectAttributes) {
         try {
+            Autor autor = (id != null) ? autorRepository.findById(id).orElse(new Autor()) : new Autor();
+            autor.setNombreCompleto(nombreCompleto);
+            autor.setNacionalidad(nacionalidad);
+            autor.setDescripcion(descripcion);
             autorRepository.save(autor);
             redirectAttributes.addFlashAttribute("mensajeExito", "Autor guardado exitosamente.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensajeError", "Error al guardar el autor.");
         }
-        return "redirect:/panel-admin/catalogo";
+        return "redirect:/panel-admin/catalogo?tab=autores";
     }
 
     @PostMapping("/panel-admin/catalogo/autores/eliminar/{id}")
@@ -244,18 +292,27 @@ public class AdminController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensajeError", "Error al eliminar el autor.");
         }
-        return "redirect:/panel-admin/catalogo";
+        return "redirect:/panel-admin/catalogo?tab=autores";
     }
 
     @PostMapping("/panel-admin/catalogo/editoriales/guardar")
-    public String guardarEditorial(Editorial editorial, RedirectAttributes redirectAttributes) {
+    public String guardarEditorial(
+            @RequestParam(required = false) Long id,
+            @RequestParam String nombre,
+            @RequestParam(required = false) String pais,
+            @RequestParam(required = false) String correo,
+            RedirectAttributes redirectAttributes) {
         try {
+            Editorial editorial = (id != null) ? editorialRepository.findById(id).orElse(new Editorial()) : new Editorial();
+            editorial.setNombre(nombre);
+            editorial.setPais(pais);
+            editorial.setCorreo(correo);
             editorialRepository.save(editorial);
             redirectAttributes.addFlashAttribute("mensajeExito", "Editorial guardada exitosamente.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensajeError", "Error al guardar la editorial.");
         }
-        return "redirect:/panel-admin/catalogo";
+        return "redirect:/panel-admin/catalogo?tab=editoriales";
     }
 
     @PostMapping("/panel-admin/catalogo/editoriales/eliminar/{id}")
@@ -266,18 +323,25 @@ public class AdminController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensajeError", "Error al eliminar la editorial.");
         }
-        return "redirect:/panel-admin/catalogo";
+        return "redirect:/panel-admin/catalogo?tab=editoriales";
     }
 
     @PostMapping("/panel-admin/catalogo/categorias/guardar")
-    public String guardarCategoria(Categoria categoria, RedirectAttributes redirectAttributes) {
+    public String guardarCategoria(
+            @RequestParam(required = false) Long id,
+            @RequestParam String nombre,
+            @RequestParam(required = false) String descripcion,
+            RedirectAttributes redirectAttributes) {
         try {
+            Categoria categoria = (id != null) ? categoriaRepository.findById(id).orElse(new Categoria()) : new Categoria();
+            categoria.setNombre(nombre);
+            categoria.setDescripcion(descripcion);
             categoriaRepository.save(categoria);
             redirectAttributes.addFlashAttribute("mensajeExito", "Categoría guardada exitosamente.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensajeError", "Error al guardar la categoría.");
         }
-        return "redirect:/panel-admin/catalogo";
+        return "redirect:/panel-admin/catalogo?tab=categorias";
     }
 
     @PostMapping("/panel-admin/catalogo/categorias/eliminar/{id}")
@@ -288,7 +352,7 @@ public class AdminController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensajeError", "Error al eliminar la categoría.");
         }
-        return "redirect:/panel-admin/catalogo";
+        return "redirect:/panel-admin/catalogo?tab=categorias";
     }
 
     @GetMapping("/panel-admin/reportes")

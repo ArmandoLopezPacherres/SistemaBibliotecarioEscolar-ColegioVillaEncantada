@@ -15,6 +15,8 @@ public class Autor {
 
     private String nacionalidad;
 
+    private String descripcion;
+
     public Autor() {
     }
 
@@ -40,5 +42,13 @@ public class Autor {
 
     public void setNacionalidad(String nacionalidad) {
         this.nacionalidad = nacionalidad;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 }
