@@ -228,34 +228,14 @@
                     </thead>
 
                     <tbody>
-
-                        <tr>
-                            <td>1</td>
-                            <td>Carlos Ramírez</td>
-                            <td>Profesor</td>
-                            <td>28</td>
-                            <td>26</td>
-                            <td>92%</td>
+                        <tr th:each="tu : ${topUsuarios}">
+                            <td th:text="${tu.posicion}">1</td>
+                            <td th:text="${tu.nombre}">Carlos Ramírez</td>
+                            <td th:text="${tu.rol}">Profesor</td>
+                            <td th:text="${tu.totalPrestamos}">28</td>
+                            <td th:text="${tu.totalDevoluciones}">26</td>
+                            <td th:text="${tu.tasaDevolucion}">92%</td>
                         </tr>
-
-                        <tr>
-                            <td>2</td>
-                            <td>Ana Pérez</td>
-                            <td>Estudiante</td>
-                            <td>22</td>
-                            <td>22</td>
-                            <td>100%</td>
-                        </tr>
-
-                        <tr>
-                            <td>3</td>
-                            <td>Luis Torres</td>
-                            <td>Estudiante</td>
-                            <td>19</td>
-                            <td>18</td>
-                            <td>94%</td>
-                        </tr>
-
                     </tbody>
 
                 </table>

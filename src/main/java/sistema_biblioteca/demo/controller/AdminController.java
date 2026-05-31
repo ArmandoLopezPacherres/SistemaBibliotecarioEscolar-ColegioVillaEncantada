@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import sistema_biblioteca.demo.dto.UsuarioDTO;
+import sistema_biblioteca.demo.dto.TopUsuarioDTO;
 import sistema_biblioteca.demo.model.Usuario;
 import sistema_biblioteca.demo.model.enums.RolUsuario;
 import sistema_biblioteca.demo.model.Libro;
@@ -78,6 +79,37 @@ public class AdminController {
         
         model.addAttribute("prestamosActivos", prestamosActivos);
         model.addAttribute("usuariosMorosos", usuariosMorosos);
+        
+        // Calcular Top 5 usuarios
+        java.util.Map<Usuario, java.util.List<sistema_biblioteca.demo.model.Prestamo>> prestamosPorUsuario = todosPrestamos.stream()
+            .collect(Collectors.groupingBy(sistema_biblioteca.demo.model.Prestamo::getUsuario));
+            
+        java.util.List<TopUsuarioDTO> topUsuarios = prestamosPorUsuario.entrySet().stream()
+            .sorted((e1, e2) -> Integer.compare(e2.getValue().size(), e1.getValue().size()))
+            .limit(5)
+            .map(entry -> {
+                TopUsuarioDTO dto = new TopUsuarioDTO();
+                dto.setNombre(entry.getKey().getNombre());
+                dto.setRol(entry.getKey().getRol().name());
+                
+                long totalPrestados = entry.getValue().size();
+                long totalDevueltos = entry.getValue().stream().filter(p -> p.getEstado() == EstadoPrestamo.DEVUELTO).count();
+                
+                dto.setTotalPrestamos(totalPrestados);
+                dto.setTotalDevoluciones(totalDevueltos);
+                
+                long tasa = totalPrestados > 0 ? (totalDevueltos * 100 / totalPrestados) : 0;
+                dto.setTasaDevolucion(tasa + "%");
+                return dto;
+            })
+            .collect(Collectors.toList());
+            
+        // Asignar posición
+        for(int i = 0; i < topUsuarios.size(); i++){
+            topUsuarios.get(i).setPosicion(i + 1);
+        }
+        
+        model.addAttribute("topUsuarios", topUsuarios);
         
         return "Administrador/Admin-dashboard";
     }
