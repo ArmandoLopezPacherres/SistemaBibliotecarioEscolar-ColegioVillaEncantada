@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Catálogo</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Iconos -->
+    <link rel="stylesheet" 
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Ruta Css -->
+    <link rel="stylesheet" href="../../static/Administrador/GestionCatalogo.css">
+
+   
+</head>
+
+<body>
+
+    <!--SIDEBAR-->
+
+    <aside class="sidebar">
+
+        <div>
+
+            <div class="logo-section">
+                <img src="../../static/img/logo-CVE.png" alt="logo">
+                <h5>Administrador</h5>
+            </div>
+
+            <nav class="menu">
+
+                <a href="#">
+                    <i class="bi bi-graph-up"></i>
+                    Dashboard
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-people-fill"></i>
+                    Gestión de usuarios
+                </a>
+
+                <a href="#" class="activo">
+                    <i class="bi bi-journal"></i>
+                    Gestión de catálogo
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-bar-chart-line"></i>
+                    Reportes
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-person"></i>
+                    Perfil
+                </a>
+
+            </nav>
+
+        </div>
+        <div class="logout">
+
+            <form href="../../templates/index.html" method="post">
+
+                <button type="submit"
+                    class="btn btn-outline-light w-100 rounded-pill fw-bold">
+
+                    <i class="bi bi-box-arrow-right"></i>
+                    Cerrar Sesión
+
+                </button>
+
+            </form>
+
+        </div>
+       
+
+    </aside>
+
+
+    <!-- CONTENIDO-->
+
+    <main class="contenido">
+
+        <!-- TOP -->
+        <div class="top">
+
+            <div>
+                <h1>Gestión de Catálogo</h1>
+                <p>Administra libros, autores, editoriales y categorías</p>
+            </div>
+
+            <div>
+                ¡Bienvenido <strong>Karolay</strong>!
+            </div>
+
+        </div>
+
+
+        <!-- BUSQUEDA -->
+        <div class="busqueda">
+
+            <input type="text"
+                placeholder="Busca libro, autor, editorial o categoría">
+            
+            <div class="botones">
+                <button class="btn-azul">
+                    Buscar
+                </button> 
+                <button class="btn-azul"
+                    onclick="abrirModal()">
+                    Crear nuevo
+                </button>
+            </div>
+            
+        </div>
+
+
+        <!-- TABS -->
+        <div class="tabs">
+
+            <div class="tab activo"
+                onclick="mostrarTabla('libros', this)">
+
+                <i class="bi bi-book-half"></i>
+                Libros
+
+            </div>
+
+            <div class="tab"
+                onclick="mostrarTabla('autores', this)">
+
+                <i class="bi bi-person"></i>
+                Autores
+
+            </div>
+
+            <div class="tab"
+                onclick="mostrarTabla('editoriales', this)">
+
+                <i class="bi bi-building"></i>
+                Editorial
+
+            </div>
+
+            <div class="tab"
+                onclick="mostrarTabla('categorias', this)">
+
+                <i class="bi bi-folder"></i>
+                Categoría
+
+            </div>
+
+        </div>
+
+
+        <!-- TABLA LIBROS-->
+
+        <div id="tabla-libros" class="tabla-contenedor">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Autor</th>
+                        <th>Editorial</th>
+                        <th>Categoría</th>
+                        <th>Disponibles</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    <tr>
+                        <td>Cien Años de Soledad</td>
+                        <td>Gabriel García Márquez</td>
+                        <td>Sudamericana</td>
+                        <td>Literatura</td>
+                        <td>3</td>
+
+                        <td class="acciones">
+
+                            <i class="bi bi-pencil"
+                                onclick="abrirModal()"></i>
+
+                            <i class="bi bi-trash"></i>
+
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Don Quijote</td>
+                        <td>Miguel de Cervantes</td>
+                        <td>Alfaguara</td>
+                        <td>Clásicos</td>
+                        <td>10</td>
+
+                        <td class="acciones">
+
+                            <i class="bi bi-pencil"
+                                onclick="abrirModal()"></i>
+
+                            <i class="bi bi-trash"></i>
+
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!--  TABLA AUTORES-->
+
+        <div id="tabla-autores"
+            class="tabla-contenedor"
+            style="display:none;">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Perfil</th>
+                        <th>Nombre Completo</th>
+                        <th>Nacionalidad</th>
+                        <th>Descripción</th>
+                        <th>Cant. Libros</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td>
+                            <img class="foto-autor"
+                            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyW1LFVLrTeSynKd6fZW2JFbbIwM3-jBJilg&s">
+                        </td>
+
+                        <td>Gabriel García Márquez</td>
+                        <td>Colombia</td>
+
+                        <td>
+                            Escritor y periodista colombiano,
+                            ganador del Nobel.
+                        </td>
+
+                        <td>15</td>
+
+                        <td class="acciones">
+
+                            <i class="bi bi-pencil"
+                                onclick="abrirModal()"></i>
+
+                            <i class="bi bi-trash"></i>
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- TABLA EDITORIALES-->
+
+        <div id="tabla-editoriales"
+            class="tabla-contenedor"
+            style="display:none;">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Logo</th>
+                        <th>Editorial</th>
+                        <th>País</th>
+                        <th>Correo</th>
+                        <th>Cant. Libros</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    <tr>
+                        <td>
+                            <img class="foto-autor"
+                            src="https://images.milenio.com/QQ8QtdbJHGGdSfe1l36H0uBmTyA=/345x194/uploads/media/2014/03/19/la-venta-se-hizo-a.jpeg">
+                        </td>
+                        <td>Alfaguara</td>
+                        <td>España</td>
+                        <td>info@alfaguara.com</td>
+                        <td>38</td>
+
+                        <td class="acciones">
+
+                            <i class="bi bi-pencil"
+                                onclick="abrirModal()"></i>
+
+                            <i class="bi bi-trash"></i>
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- TABLA CATEGORIAS -->
+
+        <div id="tabla-categorias"
+            class="tabla-contenedor"
+            style="display:none;">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Categoría</th>
+                        <th>Descripción</th>
+                        <th>Cant. Libros</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    <tr>
+                        <td>Literatura</td>
+                        <td>
+                            Libros literarios clásicos y modernos
+                        </td>
+                        <td>120</td>
+                        <td class="acciones">
+                            <i class="bi bi-pencil"
+                                onclick="abrirModal()"></i>
+                            <i class="bi bi-trash"></i>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Ciencia</td>
+                        <td>
+                            Texto científicos y académicos
+                        </td>
+                        <td>245</td>
+                        <td class="acciones">
+                            <i class="bi bi-pencil"
+                                onclick="abrirModal()"></i>
+                            <i class="bi bi-trash"></i>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Matemáticas</td>
+                        <td>
+                            Libros de matemáticas y álgebra
+                        </td>
+                        <td>180</td>
+                        <td class="acciones">
+                            <i class="bi bi-pencil"
+                                onclick="abrirModal()"></i>
+                            <i class="bi bi-trash"></i>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Historia</td>
+                        <td>
+                            Textos históricos y biografías
+                        </td>
+                        <td>150</td>
+                        <td class="acciones">
+                            <i class="bi bi-pencil"
+                                onclick="abrirModal()"></i>
+                            <i class="bi bi-trash"></i>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Pedagogías</td>
+                        <td>
+                            Métodos y técnicas de educativas
+                        </td>
+                        <td>135</td>
+                        <td class="acciones">
+                            <i class="bi bi-pencil"
+                                onclick="abrirModal()"></i>
+                            <i class="bi bi-trash"></i>
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </main>
+
+
+    <!-- MODAL -->
+
+    <div class="fondo-modal" id="modal">
+
+        <div class="modal-personalizado">
+
+            <h2 id="titulo-modal">
+                Crear Libro
+                
+            </h2>
+
+            <div id="contenido-modal">
+
+                <!-- EL CONTENIDO CAMBIA SEGUN TAB -->
+
+            </div>
+
+            <div class="acciones-modal">
+
+                <button class="btn-cancelar"
+                    onclick="cerrarModal()">
+
+                    Cancelar
+
+                </button>
+
+                <button class="btn-guardar">
+                    Guardar
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- JAVASCRIPT -->
+
+    <script>
+
+        let seccionActual = "libros";
+
+        // CAMBIAR TABLAS
+
+        function mostrarTabla(seccion, elemento){
+
+            seccionActual = seccion;
+
+            document.getElementById("tabla-libros").style.display="none";
+            document.getElementById("tabla-autores").style.display="none";
+            document.getElementById("tabla-editoriales").style.display="none";
+            document.getElementById("tabla-categorias").style.display="none";
+
+            document.getElementById("tabla-" + seccion)
+            .style.display="block";
+
+            let tabs = document.querySelectorAll(".tab");
+
+            tabs.forEach(tab => {
+                tab.classList.remove("activo");
+            });
+
+            elemento.classList.add("activo");
+
+        }
+
+        // ABRIR MODAL
+
+        function abrirModal(){
+
+            document.getElementById("modal")
+            .style.display="flex";
+
+            let contenido = "";
+
+            // LIBROS
+
+            if(seccionActual === "libros"){
+
+                document.getElementById("titulo-modal")
+                .innerHTML = "Crear Libro";
+
+                contenido = `
+
+                    <label>Título</label>
+                    <input type="text">
+
+                    <label>Autor</label>
+                    <input type="text">
+
+                    <label>Editorial</label>
+                    <input type="text">
+
+                    <label>Categoría</label>
+                    <input type="text">
+
+                    <label>Cantidad disponible</label>
+                    <input type="number">
+
+                `;
+            }
+
+            // AUTORES
+
+            if(seccionActual === "autores"){
+
+                document.getElementById("titulo-modal")
+                .innerHTML = "Crear Autor";
+
+                contenido = `
+
+                    <label>Foto de perfil</label>
+                    <input type="file">
+
+                    <label>Nombre completo</label>
+                    <input type="text">
+
+                    <label>Nacionalidad</label>
+                    <input type="text">
+
+                    <label>Descripción</label>
+                    <textarea></textarea>
+
+                    <label>Cantidad de libros</label>
+                    <input type="number">
+
+                `;
+            }
+
+            // EDITORIALES
+
+            if(seccionActual === "editoriales"){
+
+                document.getElementById("titulo-modal")
+                .innerHTML = "Crear Editorial";
+
+                contenido = `
+
+                    <label>Nombre editorial</label>
+                    <input type="text">
+
+                    <label>País</label>
+                    <input type="text">
+
+                    <label>Correo</label>
+                    <input type="email">
+
+                    <label>Cantidad de libros</label>
+                    <input type="number">
+
+                `;
+            }
+
+            // CATEGORIAS
+
+            if(seccionActual === "categorias"){
+
+                document.getElementById("titulo-modal")
+                .innerHTML = "Crear Categoría";
+
+                contenido = `
+
+                    <label>Nombre categoría</label>
+                    <input type="text">
+
+                    <label>Descripción</label>
+                    <textarea></textarea>
+
+                    <label>Cantidad libros</label>
+                    <input type="number">
+
+                `;
+            }
+
+            document.getElementById("contenido-modal")
+            .innerHTML = contenido;
+
+        }
+
+        // CERRAR MODAL
+
+        function cerrarModal(){
+
+            document.getElementById("modal")
+            .style.display="none";
+
+        }
+
+    </script>
+
+</body>
+
+</html>

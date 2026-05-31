@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+
+<!--CSS-->
+    <link rel="stylesheet" href="../../static/Bibliotecario.css/perfil.css">
+
+
+
+</head>
+<body>
+
+<div class="main-container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <div>
+
+            <div class="logo-section">
+
+                <img src="../../static/img/logo-CVE.png" alt="logo">
+
+                <h5>Bibliotecario</h5>
+
+            </div>
+
+            <hr>
+
+            <ul class="menu">
+
+                <li>
+                    <a href="lectores.html">
+                        <i class="fa-regular fa-address-book"></i>
+                        Gestión de Lectores
+                    </a>
+                </li>
+
+                <li>
+                    <a href="solicitudes.html">
+                        <i class="fa-regular fa-rectangle-list"></i>
+                        Solicitudes Pendientes
+                    </a>
+                </li>
+
+                <li>
+                    <a href="inventario.html">
+                        <i class="fa-regular fa-folder"></i>
+                        Consulta de inventario
+                    </a>
+                </li>
+
+                <li>
+                    <a href="prestamos.html">
+                        <i class="fa-regular fa-calendar-check"></i>
+                        Gestión de préstamos
+                    </a>
+                </li>
+
+                <li>
+                    <a href="multas.html">
+                        <i class="fa-regular fa-pen-to-square"></i>
+                        Lista blanca y multas
+                    </a>
+                </li>
+
+                <li>
+                    <a href="notificaciones.html">
+                        <i class="fa-regular fa-bell"></i>
+                        Notificaciones
+                    </a>
+                </li>
+
+                <li>
+                    <a href="perfil.html">
+                        <i class="fa-regular fa-user"></i>
+                        Perfil
+                    </a>
+                </li>
+
+            </ul>
+
+        </div>
+
+        <div class="logout">
+
+            <a href="#" class="text-white text-decoration-none">
+
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Cerrar sesión
+
+            </a>
+
+        </div>
+
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="content">
+
+        <!-- HEADER -->
+        <div class="top-header">
+
+            <div class="title">
+
+                <h1>Perfil</h1>
+
+            </div>
+
+            <div class="user">
+
+                <i class="fa-regular fa-user"></i>
+
+                ¡Bienvenido
+                <strong id="headerNombre">
+                    Juan Pérez
+                </strong>!
+
+            </div>
+
+        </div>
+
+        <!-- PROFILE -->
+        <div class="profile-container">
+
+            <div class="profile-card">
+
+                <div class="profile-top">
+
+                    <div class="profile-icon">
+
+                        <i class="fa-solid fa-user"></i>
+
+                    </div>
+
+                    <div class="profile-name">
+
+                        <h2 id="perfilNombre">
+                            Juan Pérez
+                        </h2>
+
+                        <p id="perfilRol">
+                            Bibliotecario
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <div class="profile-info">
+
+                    <div class="info-box">
+
+                        <h6>Fecha de creación</h6>
+
+                        <p id="perfilFecha">
+                            15/05/2026
+                        </p>
+
+                    </div>
+
+                    <div class="info-box">
+
+                        <h6>Correo electrónico</h6>
+
+                        <p id="perfilCorreo">
+                            juanperez@gmail.com
+                        </p>
+
+                    </div>
+
+                    <div class="info-box">
+
+                        <h6>Contraseña</h6>
+
+                        <p id="perfilPassword">
+                            ************
+                        </p>
+
+                    </div>
+
+                    <div class="info-box">
+
+                        <h6>Código</h6>
+
+                        <p id="perfilCodigo">
+                            B432
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <button class="btn-edit"
+                        data-bs-toggle="modal"
+                        data-bs-target="#perfilModal">
+
+                    Editar
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+<!-- VENTANA MODAL PARA EDITAR PERFIL-->
+
+<div class="modal fade"
+    id="perfilModal"
+    tabindex="-1">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2 class="modal-title">
+
+                        Edita tu perfil
+
+                    </h2>
+
+                </div>
+
+                <img src="/img/logo.png"
+                    class="logo-modal"
+                    alt="logo">
+
+            </div>
+
+            <div class="modal-body">
+
+                <form id="formPerfil">
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+
+                            Nombre
+
+                        </label>
+
+                        <input type="text"
+                            class="form-control"
+                            id="inputNombre"
+                            value="Juan Pérez">
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+
+                            Rol
+
+                        </label>
+
+                        <input type="text"
+                            class="form-control"
+                            id="inputRol"
+                            value="Bibliotecario">
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+
+                            Fecha de creación
+
+                        </label>
+
+                        <input type="text"
+                            class="form-control"
+                            id="inputFecha"
+                            value="15/05/2026">
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+
+                            Gmail
+
+                        </label>
+
+                        <input type="email"
+                            class="form-control"
+                            id="inputCorreo"
+                            value="juanperez@gmail.com">
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+
+                            Contraseña
+
+                        </label>
+
+                        <input type="password"
+                            class="form-control"
+                            id="inputPassword"
+                            value="123456">
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+
+                            Código
+
+                        </label>
+
+                        <input type="text"
+                            class="form-control"
+                            id="inputCodigo"
+                            value="BIB-2026-001">
+
+                    </div>
+
+                </form>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn-modal"
+                        data-bs-dismiss="modal">
+
+                    Atrás
+
+                </button>
+
+                <button type="button"
+                        class="btn-modal"
+                        onclick="">
+
+                    Editar
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

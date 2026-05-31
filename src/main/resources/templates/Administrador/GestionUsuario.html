@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Iconos -->
+    <link rel="stylesheet" 
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<!-- Ruta Css -->
+    <link rel="stylesheet" href="../../static/Administrador/GestionUsuario.css">
+    
+</head>
+
+<body>
+
+    <!-- SIDEBAR-->
+
+    <aside class="sidebar">
+
+        <div>
+
+            <div class="logo-section">
+                <img src="../../static/img/logo-CVE.png" alt="logo">
+                <h5>Administrador</h5>
+            </div>
+
+            <nav class="menu">
+
+                <a href="#">
+                    <i class="bi bi-graph-up"></i>
+                    Dashboard
+                </a>
+
+                <a href="#" class="activo">
+                    <i class="bi bi-people-fill"></i>
+                    Gestión de usuarios
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-journal"></i>
+                    Gestión de catálogo
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-bar-chart-line"></i>
+                    Reportes
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-person"></i>
+                    Perfil
+                </a>
+
+            </nav>
+
+        </div>
+
+        <div class="logout">
+
+            <form th:action="@{/logout}" method="post">
+
+                <button type="submit"
+                    class="btn btn-outline-light w-100 rounded-pill fw-bold">
+
+                    <i class="bi bi-box-arrow-right"></i>
+                    Cerrar Sesión
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+
+    <main class="main-content">
+
+        <!-- TOP -->
+        <div class="topbar">
+
+            <div>
+                <h1>Gestión de Usuarios</h1>
+                <p>Administra todos los roles del sistema</p>
+            </div>
+
+            <div class="d-flex align-items-center gap-3">
+
+                <div class="welcome">
+                    <i class="fa-regular fa-user"></i>
+                    ¡Bienvenido <strong>Karolay!</strong>
+                </div>
+
+                <button class="btn-create" onclick="openCreateModal()">
+                    <i class="bi bi-plus"></i>
+                    Crear usuario
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- STATS -->
+        <section class="stats">
+
+            <div class="stat-box">
+                <i class="bi bi-person red"></i>
+
+                <div>
+                    <h5><small>Administradores</small></h5>
+                    <h5>1</h5>
+                </div>
+            </div>
+
+            <div class="stat-box">
+                <i class="bi bi-person purple"></i>
+
+                <div>
+                    <h5><small>Bibliotecarios</small></h5>
+                    <h5>1</h5>
+                </div>
+            </div>
+ 
+            <div class="stat-box">
+                <i class="bi bi-person green"></i>
+
+                <div>
+                    <h5><small>Profesores</small></h5>
+                    <h5>2</h5>
+                </div>
+            </div>
+
+            <div class="stat-box">
+                <i class="bi bi-person pink"></i>
+
+                <div>
+                    <h5><small>Estudiantes</small></h5>
+                    <h5>3</h5>
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- FILTERS -->
+        <section class="filters">
+
+            <input type="text"
+                placeholder="Busca por nombre, email o código">
+
+            <div class="filter-right">
+
+                <select>
+                    <option>Todos los roles</option>
+                    <option>Administrador</option>
+                    <option>Bibliotecario</option>
+                    <option>Profesor</option>
+                    <option>Estudiante</option>
+                </select>
+
+                <select>
+                    <option>Todos los estados</option>
+                    <option>Activo</option>
+                    <option>Inactivo</option>
+                </select>
+
+            </div>
+
+        </section>
+
+
+        <!-- TABLA -->
+        <section class="table-container">
+
+            <table class="table table-hover align-middle">
+
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Código</th>
+                        <th>Correo</th>
+                        <th>Rol</th>
+                        <th>Último acceso</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    <tr>
+                        <td>Karolay Huamani</td>
+                        <td>A001</td>
+                        <td>karolay@gmail.com</td>
+                        <td>Administrador</td>
+                        <td>2026-05-24</td>
+
+                        <td class="status-active">
+                            Activo
+                        </td>
+
+                        <td class="action-icons">
+
+                            <i class="bi bi-pencil-square"
+                                onclick="openEditModal()"></i>
+
+                            <i class="bi bi-trash"></i>
+
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>María Gonzáles</td>
+                        <td>B001</td>
+                        <td>maria@gmail.com</td>
+                        <td>Bibliotecario</td>
+                        <td>2026-05-24</td>
+
+                        <td class="status-active">
+                            Activo
+                        </td>
+
+                        <td class="action-icons">
+
+                            <i class="bi bi-pencil-square"
+                                onclick="openEditModal()"></i>
+
+                            <i class="bi bi-trash"></i>
+
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Carlos Ramírez</td>
+                        <td>P010</td>
+                        <td>carlos@gmail.com</td>
+                        <td>Profesor</td>
+                        <td>2026-05-24</td>
+
+                        <td class="status-inactive">
+                            Inactivo
+                        </td>
+
+                        <td class="action-icons">
+
+                            <i class="bi bi-pencil-square"
+                                onclick="openEditModal()"></i>
+
+                            <i class="bi bi-trash"></i>
+
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </section>
+
+    </main>
+
+
+
+    <!-- CREAR -->
+
+    <div class="modal-overlay" id="createModal">
+
+        <div class="modal-box">
+
+            <img src="../../static/img/logo-CVE.png" alt="logo">
+
+            <h2>Crear Usuario</h2>
+
+            <label>Rol del usuario</label>
+
+            <select>
+                <option>Estudiante</option>
+                <option>Profesor</option>
+                <option>Bibliotecario</option>
+                <option>Administrador</option>
+            </select>
+
+            <label>Correo Personal</label>
+            <input type="email" placeholder="Ingrese correo...">
+
+            <label>Nombre</label>
+            <input type="text" placeholder="Ingrese nombre...">
+
+            <label>Apellido</label>
+            <input type="text" placeholder="Ingrese apellido...">
+
+            <label>Contraseña</label>
+            <input type="password" placeholder="Ingrese contraseña...">
+
+            <div class="modal-actions">
+
+                <button class="btn-cancel"
+                    onclick="closeCreateModal()">
+
+                    Atrás
+
+                </button>
+
+                <button class="btn-save">
+                    Crear
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- EDITAR -->
+
+    <div class="modal-overlay" id="editModal">
+
+        <div class="modal-box">
+
+            <img src="../../static/img/logo-CVE.png" alt="logo">
+
+            <h2>Editar Usuario</h2>
+
+            <label>Rol del usuario</label>
+
+            <select>
+                <option>Estudiante</option>
+                <option>Profesor</option>
+                <option>Bibliotecario</option>
+                <option>Administrador</option>
+            </select>
+
+            <label>Estado</label>
+
+            <select>
+                <option>Activo</option>
+                <option>Inactivo</option>
+            </select>
+
+            <label>Correo Personal</label>
+            <input type="email" value="karolay@gmail.com" disabled>
+
+            <label>Nombre</label>
+            <input type="text" value="Karolay">
+
+            <label>Apellido</label>
+            <input type="text" value="Huamani Villavicencio">
+
+            <label>Contraseña</label>
+            <input type="password" value="12345678">
+
+            <div class="modal-actions">
+
+                <button class="btn-cancel"
+                    onclick="closeEditModal()">
+
+                    Cancelar
+
+                </button>
+
+                <button class="btn-save">
+                    Aceptar
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- JAVASCRIPT -->
+
+    <script>
+
+        // MODAL CREAR
+
+        function openCreateModal(){
+            document.getElementById("createModal").style.display="flex";
+        }
+
+        function closeCreateModal(){
+            document.getElementById("createModal").style.display="none";
+        }
+
+        // MODAL EDITAR
+
+        function openEditModal(){
+            document.getElementById("editModal").style.display="flex";
+        }
+
+        function closeEditModal(){
+            document.getElementById("editModal").style.display="none";
+        }
+
+    </script>
+
+</body>
+
+</html>

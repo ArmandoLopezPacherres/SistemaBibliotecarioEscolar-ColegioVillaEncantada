@@ -1,0 +1,242 @@
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+    background:#f5f6fa;
+}
+
+                /* SIDEBAR */
+
+        .sidebar{
+            width:270px;
+            background:#072b4a;
+            color:white;
+            display:flex;
+            flex-direction:column;
+            justify-content:space-between;
+            padding:25px 20px;
+            height:100vh;
+            position:fixed;
+            left:0;
+            top:0;
+
+        }
+
+        .logo-section{
+            text-align:center;
+        }
+
+        .logo-section img{
+            width:90px;
+            margin-bottom:10px;
+        }
+
+        .logo-section h5{
+            font-size:18px;
+            font-weight:600px;
+        }
+
+        .sidebar hr {
+            border-color: rgba(255,255,255,0.2);
+            margin: 25px 0;
+        }
+
+        .menu{
+            margin-top:40px;
+            display:flex;
+            flex-direction:column;
+            gap:15px;
+            padding:0;
+        }
+
+        .menu a,
+        .logout a{
+            color:white;
+            text-decoration:none;
+            padding:12px 14px;
+            border-radius:10px;
+            display:flex;
+            align-items:center;
+            gap:12px;
+            transition:0.3s;
+            font-weight:500;
+        }
+
+        .menu a:hover,
+        .menu .activo{
+            background-color: rgba(255,255,255,0.12);
+        }
+
+        .menu i{
+            width:20px;
+        }
+
+       
+
+        .logout form{
+            color: white;
+            text-decoration: none;
+
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            padding: 10px;
+
+        }
+/* CONTENIDO */
+
+.contenido{
+    margin-left:260px;
+    padding:30px;
+}
+
+.top{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:30px;
+        }
+
+        .top h1{
+            font-size:38px;
+            color:#0F2A44;
+            font-weight:bold;
+        }
+
+        .top p{
+            color:gray;
+            margin-top:5px;
+        }
+
+        .welcome{
+            color:#555;
+            font-size:16px;
+        }
+
+/* PERFIL */
+
+.perfil-contenedor{
+    background:white;
+    border-radius:15px;
+    padding:35px;
+    border:1px solid #ddd;
+}
+
+/* CONTENIDO PERFIL */
+
+.perfil-superior{
+    display:flex;
+    align-items:flex-start;
+    gap:40px;
+}
+
+/* FOTO */
+
+.foto-perfil img{
+    width:130px;
+    height:130px;
+    border-radius:50%;
+    object-fit:cover;
+    border:4px solid #0F2A44;
+}
+
+/* DATOS */
+
+.datos-perfil{
+    flex:1;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:25px;
+}
+
+.campo-perfil{
+    display:flex;
+    flex-direction:column;
+}
+
+.campo-perfil label{
+    margin-bottom:8px;
+    font-weight:bold;
+    color:#0F2A44;
+}
+
+.campo-perfil input{
+    padding:14px;
+    border:1px solid #f9f9f9;
+    border-radius:10px;
+    outline:none;
+}
+
+/* PASSWORD */
+
+.input-password{
+    position:relative;
+}
+
+.input-password i{
+    position:absolute;
+    right:15px;
+    top:16px;
+    color:#555;
+    cursor:pointer;
+    gap:8px;
+}
+
+/* CODIGO */
+
+.ancho-completo{
+    grid-column:1 / 3;
+}
+
+/* BOTON */
+
+.contenedor-boton{
+    margin-top:35px;
+    display:flex;
+    justify-content:flex-end;
+}
+
+.btn-editar{
+    background:#0F2A44;
+    color:white;
+    border:none;
+    padding:14px 25px;
+    border-radius:10px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.btn-editar:hover{
+    background:#1d3f63;
+}
+
+.btn-editar i{
+    margin-right:8px;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:768px){
+
+    .perfil-superior{
+        flex-direction:column;
+        align-items:center;
+    }
+
+    .datos-perfil{
+        width:100%;
+        grid-template-columns:1fr;
+    }
+
+    .ancho-completo{
+        grid-column:auto;
+    }
+
+}
