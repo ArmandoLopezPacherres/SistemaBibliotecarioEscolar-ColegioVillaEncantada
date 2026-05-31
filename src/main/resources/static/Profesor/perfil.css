@@ -1,0 +1,357 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Segoe UI", sans-serif;
+    background-color: #f5f5f5;
+}
+
+/* MAIN */
+
+.main-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* SIDEBAR */
+
+.sidebar {
+    width: 270px;
+    background-color: #072b4a;
+    color: white;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    padding: 25px 20px;
+}
+
+.logo-section {
+    text-align: center;
+}
+
+.logo-section img {
+    width: 90px;
+    margin-bottom: 10px;
+}
+
+.logo-section h5 {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.sidebar hr {
+    border-color: rgba(255,255,255,0.2);
+    margin: 25px 0;
+}
+
+/* MENU */
+
+.menu {
+    list-style: none;
+    padding: 0;
+}
+
+.menu li {
+    margin-bottom: 12px;
+}
+
+.menu a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    color: white;
+    text-decoration: none;
+
+    padding: 12px 14px;
+    border-radius: 10px;
+
+    transition: 0.3s;
+}
+
+.menu a:hover,
+.menu .active {
+    background-color: rgba(255,255,255,0.12);
+}
+
+.menu i {
+    width: 20px;
+}
+
+/* LOGOUT */
+
+.logout a {
+    color: white;
+    text-decoration: none;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 10px;
+}
+
+/* CONTENT */
+
+.content {
+    flex: 1;
+    background-color: white;
+
+    padding: 40px 45px;
+}
+
+/* HEADER */
+
+.top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+
+    margin-bottom: 50px;
+}
+
+.title h1 {
+    font-size: 40px;
+    font-weight: 700;
+    color: #0c2947;
+}
+
+.title p {
+    margin-top: 10px;
+    color: #7a7a7a;
+}
+
+.user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    color: #5a5a5a;
+}
+
+/* PROFILE */
+
+.profile-container {
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+}
+
+.profile-card {
+    width: 100%;
+    max-width: 950px;
+
+    background-color: white;
+
+    border: 1px solid #e5e5e5;
+    border-radius: 16px;
+
+    padding: 40px;
+
+    display: flex;
+    gap: 45px;
+
+    align-items: flex-start;
+}
+
+/* LEFT */
+
+.profile-left {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.profile-icon {
+    width: 150px;
+    height: 150px;
+
+    border-radius: 50%;
+
+    background-color: #072b4a;
+    color: white;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 65px;
+
+    flex-shrink: 0;
+}
+
+/* RIGHT */
+
+.profile-right {
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+}
+
+/* GRID */
+
+.profile-grid {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 25px 40px;
+}
+
+/* ITEMS */
+
+.profile-item span {
+    display: block;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    color: #777;
+
+    margin-bottom: 8px;
+}
+
+.profile-item p {
+    margin: 0;
+
+    font-size: 16px;
+    font-weight: 600;
+
+    color: #0c2947;
+}
+
+/* BUTTON */
+
+.profile-button-container {
+    width: 100%;
+
+    display: flex;
+    justify-content: flex-end;
+
+    margin-top: 35px;
+}
+
+.btn-edit {
+    background-color: #072b4a;
+    color: white;
+
+    border: none;
+    border-radius: 8px;
+
+    padding: 12px 28px;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    transition: 0.3s;
+}
+
+.btn-edit:hover {
+    background-color: #0d3a63;
+}
+
+/* MODAL */
+
+.profile-modal-dark {
+    background-color: #072b4a;
+    border-radius: 18px;
+}
+
+.modal-custom-label {
+    color: #dcdcdc;
+    font-size: 14px;
+}
+
+.modal-custom-input {
+    background-color: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.1);
+
+    color: white;
+
+    padding: 12px;
+}
+
+.modal-custom-input:focus {
+    background-color: rgba(255,255,255,0.18);
+
+    color: white;
+
+    border-color: #ffffff;
+
+    box-shadow: none;
+}
+
+.modal-custom-input:disabled {
+    background-color: rgba(255,255,255,0.08);
+    color: #d6d6d6;
+}
+
+/* MODAL BUTTONS */
+
+.modal-btn-cancel {
+    background-color: transparent;
+    border: 1px solid white;
+    color: white;
+}
+
+.modal-btn-cancel:hover {
+    background-color: rgba(255,255,255,0.1);
+    color: white;
+}
+
+.modal-btn-save {
+    background-color: white;
+    color: #072b4a;
+}
+
+.modal-btn-save:hover {
+    background-color: #e6e6e6;
+    color: #072b4a;
+}
+
+/* RESPONSIVE */
+
+@media(max-width: 900px) {
+
+    .profile-card {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media(max-width: 768px) {
+
+    .main-container {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+    }
+
+    .top-header {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .content {
+        padding: 25px;
+    }
+
+    .profile-card {
+        padding: 25px;
+    }
+
+}
