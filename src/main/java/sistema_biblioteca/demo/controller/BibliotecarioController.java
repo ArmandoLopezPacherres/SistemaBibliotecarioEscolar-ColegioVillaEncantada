@@ -10,10 +10,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import sistema_biblioteca.demo.model.Usuario;
 import sistema_biblioteca.demo.model.Prestamo;
+import sistema_biblioteca.demo.model.Libro;
 import sistema_biblioteca.demo.model.enums.RolUsuario;
 import sistema_biblioteca.demo.model.enums.EstadoPrestamo;
 import sistema_biblioteca.demo.repository.UsuarioRepository;
 import sistema_biblioteca.demo.repository.PrestamoRepository;
+import sistema_biblioteca.demo.repository.LibroRepository;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -28,6 +30,9 @@ public class BibliotecarioController {
 
     @Autowired
     private PrestamoRepository prestamoRepository;
+
+    @Autowired
+    private LibroRepository libroRepository;
 
     private void cargarUsuarioEnModelo(Model model, Principal principal) {
         if (principal != null) {
@@ -57,7 +62,20 @@ public class BibliotecarioController {
     @GetMapping("/inventario")
     public String inventario(Model model, Principal principal) {
         cargarUsuarioEnModelo(model, principal);
+        model.addAttribute("libros", libroRepository.findAll());
         return "Bibliotecario/inventario";
+    }
+
+    @GetMapping("/inventario/buscar")
+    @ResponseBody
+    public ResponseEntity<List<Libro>> buscarLibrosAjax(@RequestParam("query") String query) {
+        List<Libro> libros;
+        if (query == null || query.trim().isEmpty()) {
+            libros = libroRepository.findAll();
+        } else {
+            libros = libroRepository.findByTituloContainingIgnoreCaseOrAutorNombreCompletoContainingIgnoreCase(query.trim(), query.trim());
+        }
+        return ResponseEntity.ok(libros);
     }
 
     private String calcularEstadoLector(Usuario usuario) {
