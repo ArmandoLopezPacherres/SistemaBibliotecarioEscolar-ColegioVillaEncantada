@@ -147,7 +147,7 @@
             </div>
 
             <button class="btn-search"
-                    onclick="">
+                    onclick="buscarLibros()">
 
                 Buscar
 
@@ -182,58 +182,21 @@
 
                 <tbody id="tablaInventario">
 
-                <tr>
-
-                    <td>Historias Ancestrales</td>
-
-                    <td>Gabriel Huamán</td>
-
-                    <td>12</td>
-
+                <tr th:each="libro : ${libros}">
+                    <td th:text="${libro.titulo}">Historias Ancestrales</td>
+                    <td th:text="${libro.autor != null ? libro.autor.nombreCompleto : 'Sin autor'}">Gabriel Huamán</td>
+                    <td th:text="${libro.stock}">12</td>
                     <td>
-
-                        <span class="estado disponible">
+                        <span class="estado" 
+                              th:classappend="${libro.stock > 0 ? 'disponible' : 'no-disponible'}"
+                              th:text="${libro.stock > 0 ? 'Disponible' : 'No disponible'}">
                             Disponible
                         </span>
-
                     </td>
-
                 </tr>
 
-                <tr>
-
-                    <td>Matemática Avanzada</td>
-
-                    <td>Roberto Salazar</td>
-
-                    <td>0</td>
-
-                    <td>
-
-                        <span class="estado no-disponible">
-                            No disponible
-                        </span>
-
-                    </td>
-
-                </tr>
-
-                <tr>
-
-                    <td>Ciencias Naturales</td>
-
-                    <td>María Torres</td>
-
-                    <td>5</td>
-
-                    <td>
-
-                        <span class="estado disponible">
-                            Disponible
-                        </span>
-
-                    </td>
-
+                <tr th:if="${#lists.isEmpty(libros)}">
+                    <td colspan="4" class="text-center text-muted py-4">No hay libros registrados en el inventario.</td>
                 </tr>
 
                 </tbody>
@@ -245,5 +208,60 @@
     </main>
 
 </div>
+
+<script>
+    function buscarLibros() {
+        const query = document.getElementById('searchInput').value.trim();
+        
+        fetch(`/panel-bibliotecario/inventario/buscar?query=${query}`)
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Error al buscar');
+            })
+            .then(libros => {
+                if (libros.length === 0) {
+                    document.getElementById('tablaInventario').innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">No se encontraron libros para la búsqueda "${query}".</td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                let rowsHtml = "";
+                libros.forEach(libro => {
+                    const autorNombre = libro.autor ? libro.autor.nombreCompleto : 'Sin autor';
+                    const estadoClass = libro.stock > 0 ? 'disponible' : 'no-disponible';
+                    const estadoText = libro.stock > 0 ? 'Disponible' : 'No disponible';
+                    
+                    rowsHtml += `
+                        <tr>
+                            <td>${libro.titulo}</td>
+                            <td>${autorNombre}</td>
+                            <td>${libro.stock}</td>
+                            <td>
+                                <span class="estado ${estadoClass}">
+                                    ${estadoText}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('tablaInventario').innerHTML = rowsHtml;
+            })
+            .catch(err => {
+                document.getElementById('tablaInventario').innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">Ocurrió un error al realizar la búsqueda.</td>
+                    </tr>
+                `;
+            });
+    }
+
+    // Escuchar el evento de tipeo en el campo de búsqueda para búsqueda automática
+    document.getElementById('searchInput').addEventListener('input', buscarLibros);
+</script>
 </body>
 </html>
