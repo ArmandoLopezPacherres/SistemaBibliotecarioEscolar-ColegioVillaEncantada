@@ -129,16 +129,20 @@ public class BibliotecarioController {
             Principal principal) {
         cargarUsuarioEnModelo(model, principal);
 
-        List<Usuario> lectores = new ArrayList<>();
+        List<Usuario> matches;
         if (search != null && !search.trim().isEmpty()) {
-            List<Usuario> matches = usuarioRepository.findByCodigoContainingIgnoreCase(search.trim());
-            lectores = matches.stream()
-                    .filter(u -> u.getRol() == RolUsuario.ESTUDIANTE || u.getRol() == RolUsuario.PROFESOR)
-                    .toList();
-            for (Usuario u : lectores) {
-                u.setEstadoLector(calcularEstadoLector(u));
-            }
+            matches = usuarioRepository.findByCodigoContainingIgnoreCase(search.trim());
             model.addAttribute("searchValue", search);
+        } else {
+            matches = usuarioRepository.findAll();
+        }
+
+        List<Usuario> lectores = matches.stream()
+                .filter(u -> u.getRol() == RolUsuario.ESTUDIANTE || u.getRol() == RolUsuario.PROFESOR)
+                .toList();
+
+        for (Usuario u : lectores) {
+            u.setEstadoLector(calcularEstadoLector(u));
         }
 
         model.addAttribute("lectores", lectores);
@@ -147,14 +151,22 @@ public class BibliotecarioController {
 
     @GetMapping("/lectores/buscar")
     @ResponseBody
-    public ResponseEntity<List<Usuario>> buscarLectorAjax(@RequestParam("codigo") String codigo) {
-        List<Usuario> matches = usuarioRepository.findByCodigoContainingIgnoreCase(codigo);
+    public ResponseEntity<List<Usuario>> buscarLectorAjax(@RequestParam(value = "codigo", required = false) String codigo) {
+        List<Usuario> matches;
+        if (codigo == null || codigo.trim().isEmpty()) {
+            matches = usuarioRepository.findAll();
+        } else {
+            matches = usuarioRepository.findByCodigoContainingIgnoreCase(codigo.trim());
+        }
+        
         List<Usuario> lectores = matches.stream()
                 .filter(u -> u.getRol() == RolUsuario.ESTUDIANTE || u.getRol() == RolUsuario.PROFESOR)
                 .toList();
+        
         for (Usuario u : lectores) {
             u.setEstadoLector(calcularEstadoLector(u));
         }
+        
         return ResponseEntity.ok(lectores);
     }
 
