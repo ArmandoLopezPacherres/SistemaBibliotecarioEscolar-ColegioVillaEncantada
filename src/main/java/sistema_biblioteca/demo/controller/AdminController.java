@@ -65,6 +65,20 @@ public class AdminController {
     @GetMapping("/panel-admin")
     public String panelAdmin(Model model, Principal principal) {
         cargarUsuarioEnModelo(model, principal);
+        
+        long totalLibros = libroService.listarLibros().size();
+        model.addAttribute("totalLibros", totalLibros);
+        
+        long totalUsuarios = usuarioService.listarUsuarios().stream().filter(Usuario::isActivo).count();
+        model.addAttribute("totalUsuarios", totalUsuarios);
+        
+        var todosPrestamos = prestamoService.listarPrestamos();
+        long prestamosActivos = todosPrestamos.stream().filter(p -> p.getEstado() == EstadoPrestamo.ACTIVO).count();
+        long usuariosMorosos = todosPrestamos.stream().filter(p -> p.getEstado() == EstadoPrestamo.RETRASADO).map(p -> p.getUsuario().getId()).distinct().count();
+        
+        model.addAttribute("prestamosActivos", prestamosActivos);
+        model.addAttribute("usuariosMorosos", usuariosMorosos);
+        
         return "Administrador/Admin-dashboard";
     }
 
