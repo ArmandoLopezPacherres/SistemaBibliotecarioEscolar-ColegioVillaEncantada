@@ -10,8 +10,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Iconos -->
-    <link rel="stylesheet" 
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <!-- Ruta Css -->
     <link rel="stylesheet" th:href="@{/Administrador/Perfil.css}">
@@ -65,8 +64,7 @@
 
             <form th:action="@{/logout}" method="post">
 
-                <button type="submit"
-                    class="btn btn-outline-light w-100 rounded-pill fw-bold">
+                <button type="submit" class="btn btn-outline-light w-100 rounded-pill fw-bold">
 
                     <i class="bi bi-box-arrow-right"></i>
                     Cerrar Sesión
@@ -76,12 +74,12 @@
             </form>
 
         </div>
-       
+
     </aside>
 
-</div>
+    </div>
 
- <main class="contenido">
+    <main class="contenido">
 
         <!-- TOP -->
         <div class="top">
@@ -92,107 +90,80 @@
             </div>
 
             <div>
-                ¡Bienvenido <strong>Karolay</strong>!
+                ¡Bienvenido <strong th:text="${usuario.nombre}">Usuario</strong>!
             </div>
 
         </div>
 
 
-<div class="perfil-contenedor">
+        <div class="perfil-contenedor">
 
-    <!-- FOTO PERFIL -->
-    <div class="perfil-superior">
+            <!-- FOTO PERFIL -->
+            <div class="perfil-superior">
 
-    <!-- FOTO -->
-    <div class="foto-perfil">
+                <!-- FOTO -->
+                <div class="foto-perfil">
 
-        <img src="https://i.pravatar.cc/150?img=32" alt="perfil">
+                    <img src="https://i.pravatar.cc/150?img=32" alt="perfil">
 
-    </div>
-
-
-    <!-- DATOS -->
-    <div class="datos-perfil">
-
-        <!-- NOMBRE -->
-        <div class="campo-perfil">
-
-            <label>Nombre</label>
-
-            <input type="text"
-                value="Karolay Huamani villavicencio">
-
-        </div>
+                </div>
 
 
-        <!-- GMAIL -->
-        <div class="campo-perfil">
+                <!-- DATOS -->
+                <div class="datos-perfil">
+                    <form th:action="@{/panel-admin/perfil/actualizar}" method="post">
+                        <input type="hidden" name="id" th:value="${usuario.id}">
 
-            <label>Gmail</label>
+                        <!-- NOMBRE -->
+                        <div class="campo-perfil">
+                            <label>Nombre</label>
+                            <input type="text" name="nombre" th:value="${usuario.nombre}" required>
+                        </div>
 
-            <input type="email"
-                value="karolay@gmail.com">
+                        <!-- GMAIL / CODIGO -->
+                        <div class="campo-perfil">
+                            <label>Código o Correo</label>
+                            <input type="text" name="codigo" th:value="${usuario.codigo}" required readonly>
+                            <small class="text-muted">El código no se puede cambiar</small>
+                        </div>
 
-        </div>
+                        <!-- ROL -->
+                        <div class="campo-perfil">
+                            <label>Rol</label>
+                            <input type="text" th:value="${usuario.rol}" readonly>
+                        </div>
 
+                        <!-- PASSWORD -->
+                        <div class="campo-perfil">
+                            <label>Contraseña</label>
+                            <div class="input-password">
+                                <input type="password" name="password" id="password"
+                                    placeholder="Nueva contraseña (opcional)">
+                                <i class="bi bi-eye-fill" onclick="mostrarPassword()"></i>
+                            </div>
+                        </div>
 
-        <!-- FECHA -->
-        <div class="campo-perfil">
-
-            <label>Fecha de creación</label>
-
-            <input type="text"
-                value="01/04/2026">
-
-        </div>
-
-
-        <!-- PASSWORD -->
-        <div class="campo-perfil">
-
-            <label>Contraseña</label>
-
-            <div class="input-password">
-
-                <input type="password"
-                    id="password"
-                    value="01234">
-
-                <i class="bi bi-eye-fill"
-                    onclick="mostrarPassword()"></i>
-
+                        <div class="contenedor-boton mt-4">
+                            <button type="submit" class="btn-editar">
+                                <i class="bi bi-pencil-fill"></i> Actualizar Perfil
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-
         </div>
+        <script>
 
+            function mostrarPassword() {
 
-        <!-- CODIGO -->
-        <div class="campo-perfil ancho-completo">
-            <label>Código</label>
-            <input type="text"
-                value="A12345679">
-        </div>
-    </div>
-    </div>
-</div>
-    <!-- BOTON --> 
-    <div class="contenedor-boton"> 
-        <button class="btn-editar"> 
-            <i class="bi bi-pencil-fill"></i> Editar Perfil 
-        </button> 
-    </div>
-<script>
+                const input = document.getElementById("password");
 
-function mostrarPassword(){
+                if (input.type === "password") {
+                    input.type = "text";
+                } else {
+                    input.type = "password";
+                }
 
-    const input = document.getElementById("password");
+            }
 
-    if(input.type === "password"){
-        input.type = "text";
-    }else{
-        input.type = "password";
-    }
-
-}
-
-</script>
+        </script>

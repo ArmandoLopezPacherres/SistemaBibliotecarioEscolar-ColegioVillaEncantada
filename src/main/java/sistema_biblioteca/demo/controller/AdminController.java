@@ -243,4 +243,25 @@ public class AdminController {
         cargarUsuarioEnModelo(model, principal);
         return "Administrador/Perfil";
     }
+
+    @PostMapping("/panel-admin/perfil/actualizar")
+    public String actualizarPerfil(@ModelAttribute UsuarioDTO dto, RedirectAttributes redirectAttributes) {
+        try {
+            Usuario usuario = usuarioService.obtenerPorId(dto.getId());
+            if (usuario != null) {
+                usuario.setNombre(dto.getNombre());
+                // El código y rol no se cambian desde el perfil
+                
+                if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
+                    usuario.setPassword(passwordEncoder.encode(dto.getPassword()));
+                }
+                
+                usuarioService.guardarUsuario(usuario);
+                redirectAttributes.addFlashAttribute("mensajeExito", "Perfil actualizado exitosamente.");
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensajeError", "Error al actualizar el perfil.");
+        }
+        return "redirect:/panel-admin/perfil";
+    }
 }
