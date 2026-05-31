@@ -10,13 +10,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Iconos -->
-    <link rel="stylesheet" 
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <!-- Ruta Css -->
     <link rel="stylesheet" th:href="@{/Administrador/Reportes.css}">
 
-   
+
 </head>
 
 <body>
@@ -66,8 +65,7 @@
 
             <form th:action="@{/logout}" method="post">
 
-                <button type="submit"
-                    class="btn btn-outline-light w-100 rounded-pill fw-bold">
+                <button type="submit" class="btn btn-outline-light w-100 rounded-pill fw-bold">
 
                     <i class="bi bi-box-arrow-right"></i>
                     Cerrar Sesión
@@ -77,17 +75,17 @@
             </form>
 
         </div>
-       
+
     </aside>
 
-</div>
+    </div>
 
- <main class="contenido">
+    <main class="contenido">
 
         <!-- TOP -->
         <div class="top">
 
-            <div> 
+            <div>
                 <h1>Reportes</h1>
                 <p>Consulta, analiza y exporta la información del sistema</p>
             </div>
@@ -99,346 +97,291 @@
         </div>
 
 
-<div class="exportar-contenedor">
+        <div class="exportar-contenedor">
 
-    <!-- BOTONES EXPORTAR -->
-    <div class="exportar-top">
+            <!-- BOTONES EXPORTAR -->
+            <div class="exportar-top">
 
-        <span class="titulo-exportar">
-            Exportar por:
-        </span>
+                <span class="titulo-exportar">
+                    Exportar por:
+                </span>
 
-        <!-- PDF -->
-        <button class="btn-exportar">
+                <!-- PDF -->
+                <button class="btn-exportar">
 
-            <i class="bi bi-file-earmark-arrow-up-fill"></i>
-            PDF
+                    <i class="bi bi-file-earmark-arrow-up-fill"></i>
+                    PDF
 
-        </button>
+                </button>
 
-        <!-- EXCEL -->
-        <button class="btn-exportar">
+                <!-- EXCEL -->
+                <button class="btn-exportar">
 
-           <i class="bi bi-file-earmark-arrow-up-fill"></i>
-            Excel
+                    <i class="bi bi-file-earmark-arrow-up-fill"></i>
+                    Excel
 
-        </button>
+                </button>
 
-    </div>
+            </div>
 
 
-    <!-- FILTROS -->
-    <div class="filtros-reporte">
+            <!-- FILTROS -->
+            <div class="filtros-reporte">
 
-        <!-- FECHA INICIO -->
-        <div class="campo-filtro">
+                <!-- FECHA INICIO -->
+                <div class="campo-filtro">
 
-            <label>Fecha de inicio</label>
+                    <label>Fecha de inicio</label>
 
-            <div class="input-icono">
+                    <div class="input-icono">
 
-                <input type="date">
+                        <input type="date">
+
+                    </div>
+
+                </div>
+
+                <!-- FECHA FIN -->
+                <div class="campo-filtro">
+
+                    <label>Fecha de fin</label>
+
+                    <div class="input-icono">
+
+                        <input type="date">
+
+                    </div>
+
+                </div>
+
+
+                <!-- TIPO REPORTE -->
+                <div class="campo-filtro">
+
+                    <label>Tipo de reporte</label>
+
+                    <select>
+
+                        <option>Reporte general</option>
+                        <option>Reporte de préstamos</option>
+                        <option>Reporte de usuarios</option>
+                        <option>Reporte de morosidad</option>
+                        <option>Reporte de catálogo</option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- BOTON FILTRO -->
+                <div class="campo-filtro boton-filtro">
+
+                    <label style="opacity:0;">
+                        filtro
+                    </label>
+
+                    <button class="btn-filtrar">
+
+                        <i class="bi bi-funnel-fill"></i>
+                        Aplicar filtro
+
+                    </button>
+
+                </div>
 
             </div>
 
         </div>
 
-        <!-- FECHA FIN -->
-        <div class="campo-filtro">
+        </div>
 
-            <label>Fecha de fin</label>
+        <!-- TABS REPORTES-->
 
-            <div class="input-icono">
+        <div class="tabs">
 
-                <input type="date">
+            <div class="tab activo" onclick="mostrarTabla('prestamos', this)">
+
+                <i class="bi bi-book-half"></i>
+                Reporte de Préstamos
+
+            </div>
+
+            <div class="tab" onclick="mostrarTabla('usuarios', this)">
+
+                <i class="bi bi-people"></i>
+                Reporte de Usuarios
+
+            </div>
+
+            <div class="tab" onclick="mostrarTabla('morosidad', this)">
+
+                <i class="bi bi-exclamation-triangle"></i>
+                Reporte de Morosidad
+
+            </div>
+
+            <div class="tab" onclick="mostrarTabla('catalogo', this)">
+
+                <i class="bi bi-journal-bookmark-fill"></i>
+                Reporte de Catálogo
 
             </div>
 
         </div>
 
 
-        <!-- TIPO REPORTE -->
-        <div class="campo-filtro">
+        <!-- TABLA PRESTAMOS-->
 
-            <label>Tipo de reporte</label>
+        <div id="tabla-prestamos" class="tabla-contenedor">
 
-            <select>
+            <table>
 
-                <option>Reporte general</option>
-                <option>Reporte de préstamos</option>
-                <option>Reporte de usuarios</option>
-                <option>Reporte de morosidad</option>
-                <option>Reporte de catálogo</option>
+                <thead>
+                    <tr>
+                        <th>ID Libro</th>
+                        <th>Título</th>
+                        <th>Autor</th>
+                        <th>Editorial</th>
+                        <th>Categoría</th>
+                        <th>Año</th>
+                    </tr>
+                </thead>
 
-            </select>
+                <tbody>
+                    <tr th:each="p : ${listaPrestamos}">
+                        <td th:text="${p.libro.isbn}">LIB-001</td>
+                        <td th:text="${p.libro.titulo}">El principito</td>
+                        <td th:text="${p.libro.autor != null ? p.libro.autor.nombreCompleto : '-'}">Autor</td>
+                        <td th:text="${p.libro.editorial != null ? p.libro.editorial.nombre : '-'}">Editorial</td>
+                        <td th:text="${p.libro.categoria != null ? p.libro.categoria.nombre : '-'}">Categoría</td>
+                        <td th:text="${p.libro.anioPublicacion}">Año</td>
+                    </tr>
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!--  TABLA USUARIOS-->
+
+        <div id="tabla-usuarios" class="tabla-contenedor" style="display:none;">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Usuario</th>
+                        <th>Correo</th>
+                        <th>Rol</th>
+                        <th>Fecha de registro</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr th:each="u : ${listaUsuarios}">
+                        <td th:text="${u.codigo}">E050</td>
+                        <td th:text="${u.nombre}">Usuario</td>
+                        <td th:text="${u.codigo}">Correo</td>
+                        <td th:text="${u.rol}">Rol</td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+
+            </table>
 
         </div>
 
 
-        <!-- BOTON FILTRO -->
-        <div class="campo-filtro boton-filtro">
+        <!-- TABLA MOROSIDAD -->
 
-            <label style="opacity:0;">
-                filtro
-            </label>
+        <div id="tabla-morosidad" class="tabla-contenedor" style="display:none;">
 
-            <button class="btn-filtrar">
+            <table>
 
-                <i class="bi bi-funnel-fill"></i>
-                Aplicar filtro
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Usuario</th>
+                        <th>Libro</th>
+                        <th>Correo</th>
+                        <th>Rol</th>
+                        <th>Fecha de registro</th>
+                    </tr>
+                </thead>
 
-            </button>
+                <tbody>
+                    <tr th:each="m : ${listaMorosos}">
+                        <td th:text="${m.usuario.codigo}">ID</td>
+                        <td th:text="${m.usuario.nombre}">Usuario</td>
+                        <td th:text="${m.libro.titulo}">Libro</td>
+                        <td th:text="${m.usuario.codigo}">Correo</td>
+                        <td th:text="${m.usuario.rol}">Rol</td>
+                        <td th:text="${m.fechaDevolucionEsperada}">Fecha esperada</td>
+                    </tr>
+                </tbody>
+
+            </table>
 
         </div>
 
-    </div>
 
-</div>
+        <!-- TABLA CATALOGO -->
 
-</div>
-     
-<!-- TABS REPORTES-->
+        <div id="tabla-catalogo" class="tabla-contenedor" style="display:none;">
 
-<div class="tabs">
+            <table>
 
-    <div class="tab activo"
-        onclick="mostrarTabla('prestamos', this)">
+                <thead>
+                    <tr>
+                        <th>ID Libro</th>
+                        <th>Titulo</th>
+                        <th>Autor</th>
+                        <th>Editorial</th>
+                        <th>Categoria</th>
+                        <th>Año</th>
+                    </tr>
+                </thead>
 
-        <i class="bi bi-book-half"></i>
-        Reporte de Préstamos
+                <tbody>
+                    <tr th:each="l : ${listaCatalogo}">
+                        <td th:text="${l.isbn}">LIB-001</td>
+                        <td th:text="${l.titulo}">Titulo</td>
+                        <td th:text="${l.autor != null ? l.autor.nombreCompleto : '-'}">Autor</td>
+                        <td th:text="${l.editorial != null ? l.editorial.nombre : '-'}">Editorial</td>
+                        <td th:text="${l.categoria != null ? l.categoria.nombre : '-'}">Categoría</td>
+                        <td th:text="${l.anioPublicacion}">Año</td>
+                    </tr>
+                </tbody>
 
-    </div>
+            </table>
 
-    <div class="tab"
-        onclick="mostrarTabla('usuarios', this)">
+        </div>
 
-        <i class="bi bi-people"></i>
-        Reporte de Usuarios
+        <script>
 
-    </div>
+            function mostrarTabla(seccion, elemento) {
 
-    <div class="tab"
-        onclick="mostrarTabla('morosidad', this)">
+                // OCULTAR TODAS
+                document.getElementById("tabla-prestamos").style.display = "none";
+                document.getElementById("tabla-usuarios").style.display = "none";
+                document.getElementById("tabla-morosidad").style.display = "none";
+                document.getElementById("tabla-catalogo").style.display = "none";
 
-        <i class="bi bi-exclamation-triangle"></i>
-        Reporte de Morosidad
+                // MOSTRAR LA SELECCIONADA
+                document.getElementById("tabla-" + seccion).style.display = "block";
 
-    </div>
+                // QUITAR ACTIVO
+                let tabs = document.querySelectorAll(".tab");
 
-    <div class="tab"
-        onclick="mostrarTabla('catalogo', this)">
+                tabs.forEach(tab => {
+                    tab.classList.remove("activo");
+                });
 
-        <i class="bi bi-journal-bookmark-fill"></i>
-        Reporte de Catálogo
+                // ACTIVAR TAB
+                elemento.classList.add("activo");
 
-    </div>
+            }
 
-</div>
-
-
-<!-- TABLA PRESTAMOS-->
-
-<div id="tabla-prestamos" class="tabla-contenedor">
-
-    <table>
-
-        <thead>
-            <tr>
-                <th>ID Libro</th>
-                <th>Título</th>
-                <th>Autor</th>
-                <th>Editorial</th>
-                <th>Categoría</th>
-                <th>Año</th>
-            </tr>
-        </thead>
-
-        <tbody>
-
-            <tr>
-                <td>LIB-001</td>
-                <td>El principito</td>
-                <td>Antoine de Saint-Exupéry</td>
-                <td>Reynal & Hitchcock</td>
-                <td>Literatura Infantil</td>
-                <td>1943</td>
-            </tr>
-
-            <tr>
-                <td>LIB-002</td>
-                <td>Drácula</td>
-                <td>Bram Stoker</td>
-                <td>Archibals Constable & Co.</td>
-                <td>Novela Gótitca</td>
-                <td>1897</td>
-
-        </tbody>
-
-    </table>
-
-</div>
-
-
-<!--  TABLA USUARIOS-->
-
-<div id="tabla-usuarios"
-    class="tabla-contenedor"
-    style="display:none;">
-
-    <table>
-
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Usuario</th>
-                <th>Correo</th>
-                <th>Rol</th>
-                <th>Fecha de registro</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            <tr>
-                <td>E050</td>
-                <td>Maria Gonzales</td>
-                <td>mariagonzales@gmail.com</td>
-                <td>Estudiante</td>
-                <td>01/04/2026</td>
-
-            </tr>
-
-            <tr>
-                <td>E010</td>
-                <td>Ana López</td>
-                <td>analopez@gmail.com</td>
-                <td>Profesor</td>
-                <td>17/03/2026</td>
-
-            </tr>
-
-        </tbody>
-
-    </table>
-
-</div>
-
-
-<!-- TABLA MOROSIDAD -->
-
-<div id="tabla-morosidad"
-    class="tabla-contenedor"
-    style="display:none;">
-
-    <table>
-
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Usuario</th>
-                <th>Libro</th>
-                <th>Correo</th>
-                <th>Rol</th>
-                <th>Fecha de registro</th>
-            </tr>
-        </thead>
-
-        <tbody>
-
-            <tr>
-                <td>E050</td>
-                <td>Maria Gonzales</td>
-                <td>El principito</td>
-                <td>mariagonzales@gmail.com</td>
-                <td>Estudiante</td>
-                <td>10/05/2026</td>
-            </tr>
-
-            <tr>
-                <td>P010</td>
-                <td>Carlos Ramírez</td>
-                <td>Cien años de soledad</td>
-                <td>carlosramirez@gmail.com</td>
-                <td>Profesor</td>
-                <td>15/05/2026</td>
-            </tr>
-
-        </tbody>
-
-    </table>
-
-</div>
-
-
-<!-- TABLA CATALOGO -->
-
-<div id="tabla-catalogo"
-    class="tabla-contenedor"
-    style="display:none;">
-
-    <table>
-
-        <thead>
-            <tr>
-                <th>ID Libro</th>
-                <th>Titulo</th>
-                <th>Autor</th>
-                <th>Editorial</th>
-                <th>Categoria</th>
-                <th>Año</th>
-            </tr>
-        </thead>
-
-        <tbody>
-
-            <tr>
-                <td>LIB-001</td>
-                <td>El principito</td>
-                <td>Antoine de Saint-Exupéry</td>
-                <td>Reynal & Hitchcock</td>
-                <td>Literatura Infantil</td>
-                <td>1943</td>
-            </tr>
-
-            <tr>
-                <td>LIB-002</td>
-                <td>Drácula</td>
-                <td>Bram Stoker</td>
-                <td>Archibals Constable & Co.</td>
-                <td>Novela Gótica</td>
-                <td>1897</td>
-            </tr>
-
-        </tbody>
-
-    </table>
-
-</div>
-
-<script>
-
-    function mostrarTabla(seccion, elemento){
-
-        // OCULTAR TODAS
-        document.getElementById("tabla-prestamos").style.display = "none";
-        document.getElementById("tabla-usuarios").style.display = "none";
-        document.getElementById("tabla-morosidad").style.display = "none";
-        document.getElementById("tabla-catalogo").style.display = "none";
-
-        // MOSTRAR LA SELECCIONADA
-        document.getElementById("tabla-" + seccion).style.display = "block";
-
-        // QUITAR ACTIVO
-        let tabs = document.querySelectorAll(".tab");
-
-        tabs.forEach(tab => {
-            tab.classList.remove("activo");
-        });
-
-        // ACTIVAR TAB
-        elemento.classList.add("activo");
-
-    }
-
-</script>
-
- 
+        </script>

@@ -22,6 +22,9 @@ import sistema_biblioteca.demo.repository.CategoriaRepository;
 import sistema_biblioteca.demo.repository.EditorialRepository;
 import sistema_biblioteca.demo.service.UsuarioService;
 import sistema_biblioteca.demo.service.LibroService;
+import sistema_biblioteca.demo.service.PrestamoService;
+import sistema_biblioteca.demo.model.enums.EstadoPrestamo;
+import java.util.stream.Collectors;
 import java.security.Principal;
 
 @Controller
@@ -47,6 +50,9 @@ public class AdminController {
 
     @Autowired
     private EditorialRepository editorialRepository;
+
+    @Autowired
+    private PrestamoService prestamoService;
 
     private void cargarUsuarioEnModelo(Model model, Principal principal) {
         if (principal != null) {
@@ -216,6 +222,19 @@ public class AdminController {
     @GetMapping("/panel-admin/reportes")
     public String reportes(Model model, Principal principal) {
         cargarUsuarioEnModelo(model, principal);
+        
+        var prestamos = prestamoService.listarPrestamos();
+        model.addAttribute("listaPrestamos", prestamos);
+        
+        model.addAttribute("listaUsuarios", usuarioService.listarUsuarios());
+        
+        var morosos = prestamos.stream()
+            .filter(p -> p.getEstado() == EstadoPrestamo.RETRASADO)
+            .collect(Collectors.toList());
+        model.addAttribute("listaMorosos", morosos);
+        
+        model.addAttribute("listaCatalogo", libroService.listarLibros());
+        
         return "Administrador/Reportes";
     }
 
