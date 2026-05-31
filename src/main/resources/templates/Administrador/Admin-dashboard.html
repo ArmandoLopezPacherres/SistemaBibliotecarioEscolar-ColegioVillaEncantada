@@ -9,8 +9,7 @@
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Iconos -->
-    <link rel="stylesheet" 
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
 
     <!-- Ruta Css -->
@@ -38,7 +37,7 @@
                 </a>
 
                 <a th:href="@{/panel-admin/usuarios}">
-                   <i class="bi bi-people-fill"></i>
+                    <i class="bi bi-people-fill"></i>
                     Gestión de usuarios
                 </a>
 
@@ -65,18 +64,17 @@
 
             <form th:action="@{/logout}" method="post">
 
-                <button type="submit"
-                    class="btn btn-outline-light w-100 rounded-pill fw-bold">
+                <button type="submit" class="btn btn-outline-light w-100 rounded-pill fw-bold">
 
                     <i class="bi bi-box-arrow-right"></i>
                     Cerrar Sesión
 
 
-            </div>
+        </div>
 
-                </button>
+        </button>
 
-            </form>
+        </form>
 
         </div>
 
@@ -101,7 +99,7 @@
 
         </div>
 
- 
+
         <!-- CARDS -->
         <section class="cards">
 
@@ -112,7 +110,7 @@
 
                 <div>
                     <h5>Total de libros</h5>
-                    <h3>3,245</h3>
+                    <h3 th:text="${totalLibros}">3,245</h3>
                 </div>
             </div>
 
@@ -123,7 +121,7 @@
 
                 <div>
                     <h5>Total de usuarios</h5>
-                    <h3>132</h3>
+                    <h3 th:text="${totalUsuarios}">132</h3>
                 </div>
             </div>
 
@@ -134,7 +132,7 @@
 
                 <div>
                     <h5>Préstamos activos</h5>
-                    <h3>478</h3>
+                    <h3 th:text="${prestamosActivos}">478</h3>
                 </div>
             </div>
 
@@ -145,7 +143,7 @@
 
                 <div>
                     <h5>Usuarios morosos</h5>
-                    <h3>8</h3>
+                    <h3 th:text="${usuariosMorosos}">8</h3>
                 </div>
             </div>
 
@@ -154,16 +152,16 @@
 
         <!-- GRAFICOS -->
         <section class="charts">
-                <div class="chart-box">
-                   <!--menu desplegable--> 
+            <div class="chart-box">
+                <!--menu desplegable-->
                 <div class="chart-header">
                     <h4>Préstamos por Mes</h4>
 
                     <select id="meses">
-                         <option>Enero</option>
-                         <option>Febrero</option>
-                         <option>Marzo</option>
-                         <option>Abril</option>
+                        <option>Enero</option>
+                        <option>Febrero</option>
+                        <option>Marzo</option>
+                        <option>Abril</option>
                         <option>Mayo</option>
                         <option>Junio</option>
                         <option>Julio</option>
@@ -179,9 +177,9 @@
                     </select>
                 </div>
 
-            <div class="chart-placeholder">
-                 Aquí irá el gráfico de préstamos
-            </div>
+                <div class="chart-placeholder">
+                    Aquí irá el gráfico de préstamos
+                </div>
             </div>
 
             <div class="chart-box">
@@ -192,7 +190,7 @@
                 </div>
             </div>
 
-             <div class="chart-box">
+            <div class="chart-box">
                 <h4>Usuarios por rol</h4>
 
                 <div class="chart-placeholder">
@@ -200,7 +198,7 @@
                 </div>
             </div>
 
-             <div class="chart-box">
+            <div class="chart-box">
                 <h4>Resumen de morosidad</h4>
 
                 <div class="chart-placeholder">
@@ -266,7 +264,7 @@
 
         </section>
 
-   
+
     </main>
 
 </body>
