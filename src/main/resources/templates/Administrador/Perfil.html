@@ -95,6 +95,14 @@
 
         </div>
 
+        <!-- ALERTAS FLASH -->
+        <div th:if="${mensajeExito}" class="alert alert-success mt-3 mx-4" role="alert">
+            <i class="bi bi-check-circle-fill"></i> <span th:text="${mensajeExito}"></span>
+        </div>
+        <div th:if="${mensajeError}" class="alert alert-danger mt-3 mx-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> <span th:text="${mensajeError}"></span>
+        </div>
+
 
         <div class="perfil-contenedor">
 
