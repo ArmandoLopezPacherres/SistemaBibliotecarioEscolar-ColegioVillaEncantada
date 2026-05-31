@@ -118,7 +118,7 @@
 
                 <div>
                     <h5><small>Administradores</small></h5>
-                    <h5>1</h5>
+                    <h5 th:text="${totalAdmins}">0</h5>
                 </div>
             </div>
 
@@ -127,7 +127,7 @@
 
                 <div>
                     <h5><small>Bibliotecarios</small></h5>
-                    <h5>1</h5>
+                    <h5 th:text="${totalBibliotecarios}">0</h5>
                 </div>
             </div>
  
@@ -136,7 +136,7 @@
 
                 <div>
                     <h5><small>Profesores</small></h5>
-                    <h5>2</h5>
+                    <h5 th:text="${totalProfesores}">0</h5>
                 </div>
             </div>
 
@@ -145,7 +145,7 @@
 
                 <div>
                     <h5><small>Estudiantes</small></h5>
-                    <h5>3</h5>
+                    <h5 th:text="${totalEstudiantes}">0</h5>
                 </div>
             </div>
 
@@ -197,70 +197,24 @@
                 </thead>
 
                 <tbody>
-
-                    <tr>
-                        <td>Karolay Huamani</td>
-                        <td>A001</td>
-                        <td>karolay@gmail.com</td>
-                        <td>Administrador</td>
-                        <td>2026-05-24</td>
-
-                        <td class="status-active">
-                            Activo
-                        </td>
-
+                    <tr th:each="u : ${listaUsuarios}">
+                        <td th:text="${u.nombre}">Nombre</td>
+                        <td th:text="${u.codigo}">Código</td>
+                        <td th:text="${u.codigo}">Correo</td>
+                        <td th:text="${u.rol}">Rol</td>
+                        <td>-</td>
+                        <td class="status-active">Activo</td>
                         <td class="action-icons">
-
-                            <i class="bi bi-pencil-square"
-                                onclick="openEditModal()"></i>
-
-                            <i class="bi bi-trash"></i>
-
+                            <i class="bi bi-pencil-square" 
+                               th:onclick="|openEditModal('${u.id}', '${u.nombre}', '${u.codigo}', '${u.rol}')|"></i>
+                            
+                            <form th:action="@{/panel-admin/usuarios/eliminar/{id}(id=${u.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-link p-0 text-danger" onclick="return confirm('¿Está seguro de eliminar este usuario?');">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
                         </td>
                     </tr>
-
-                    <tr>
-                        <td>María Gonzáles</td>
-                        <td>B001</td>
-                        <td>maria@gmail.com</td>
-                        <td>Bibliotecario</td>
-                        <td>2026-05-24</td>
-
-                        <td class="status-active">
-                            Activo
-                        </td>
-
-                        <td class="action-icons">
-
-                            <i class="bi bi-pencil-square"
-                                onclick="openEditModal()"></i>
-
-                            <i class="bi bi-trash"></i>
-
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td>Carlos Ramírez</td>
-                        <td>P010</td>
-                        <td>carlos@gmail.com</td>
-                        <td>Profesor</td>
-                        <td>2026-05-24</td>
-
-                        <td class="status-inactive">
-                            Inactivo
-                        </td>
-
-                        <td class="action-icons">
-
-                            <i class="bi bi-pencil-square"
-                                onclick="openEditModal()"></i>
-
-                            <i class="bi bi-trash"></i>
-
-                        </td>
-                    </tr>
-
                 </tbody>
 
             </table>
@@ -274,51 +228,37 @@
     <!-- CREAR -->
 
     <div class="modal-overlay" id="createModal">
-
         <div class="modal-box">
+            <form th:action="@{/panel-admin/usuarios/guardar}" method="post" th:object="${nuevoUsuario}">
+                <img th:src="@{/img/logo-CVE.png}" alt="logo">
+                <h2>Crear Usuario</h2>
 
-            <img th:src="@{/img/logo-CVE.png}" alt="logo">
+                <label>Rol del usuario</label>
+                <select th:field="*{rol}" required>
+                    <option value="ESTUDIANTE">Estudiante</option>
+                    <option value="PROFESOR">Profesor</option>
+                    <option value="BIBLIOTECARIO">Bibliotecario</option>
+                    <option value="ADMINISTRADOR">Administrador</option>
+                </select>
 
-            <h2>Crear Usuario</h2>
+                <label>Código de Usuario (o Correo)</label>
+                <input type="text" th:field="*{codigo}" placeholder="Ingrese código o correo..." required>
 
-            <label>Rol del usuario</label>
+                <label>Nombre</label>
+                <input type="text" th:field="*{nombre}" placeholder="Ingrese nombre..." required>
 
-            <select>
-                <option>Estudiante</option>
-                <option>Profesor</option>
-                <option>Bibliotecario</option>
-                <option>Administrador</option>
-            </select>
+                <label>Apellido</label>
+                <input type="text" th:field="*{apellido}" placeholder="Ingrese apellido..." required>
 
-            <label>Correo Personal</label>
-            <input type="email" placeholder="Ingrese correo...">
+                <label>Contraseña</label>
+                <input type="password" th:field="*{password}" placeholder="Ingrese contraseña..." required>
 
-            <label>Nombre</label>
-            <input type="text" placeholder="Ingrese nombre...">
-
-            <label>Apellido</label>
-            <input type="text" placeholder="Ingrese apellido...">
-
-            <label>Contraseña</label>
-            <input type="password" placeholder="Ingrese contraseña...">
-
-            <div class="modal-actions">
-
-                <button class="btn-cancel"
-                    onclick="closeCreateModal()">
-
-                    Atrás
-
-                </button>
-
-                <button class="btn-save">
-                    Crear
-                </button>
-
-            </div>
-
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeCreateModal()">Atrás</button>
+                    <button type="submit" class="btn-save">Crear</button>
+                </div>
+            </form>
         </div>
-
     </div>
 
 
@@ -326,58 +266,35 @@
     <!-- EDITAR -->
 
     <div class="modal-overlay" id="editModal">
-
         <div class="modal-box">
+            <form th:action="@{/panel-admin/usuarios/guardar}" method="post" id="editForm">
+                <input type="hidden" name="id" id="editId">
+                <img th:src="@{/img/logo-CVE.png}" alt="logo">
+                <h2>Editar Usuario</h2>
 
-            <img th:src="@{/img/logo-CVE.png}" alt="logo">
+                <label>Rol del usuario</label>
+                <select name="rol" id="editRol" required>
+                    <option value="ESTUDIANTE">Estudiante</option>
+                    <option value="PROFESOR">Profesor</option>
+                    <option value="BIBLIOTECARIO">Bibliotecario</option>
+                    <option value="ADMINISTRADOR">Administrador</option>
+                </select>
 
-            <h2>Editar Usuario</h2>
+                <label>Código de Usuario (o Correo)</label>
+                <input type="text" name="codigo" id="editCodigo" required>
 
-            <label>Rol del usuario</label>
+                <label>Nombre Completo</label>
+                <input type="text" name="nombre" id="editNombre" required>
 
-            <select>
-                <option>Estudiante</option>
-                <option>Profesor</option>
-                <option>Bibliotecario</option>
-                <option>Administrador</option>
-            </select>
+                <label>Contraseña (Dejar vacío para no cambiar)</label>
+                <input type="password" name="password" id="editPassword">
 
-            <label>Estado</label>
-
-            <select>
-                <option>Activo</option>
-                <option>Inactivo</option>
-            </select>
-
-            <label>Correo Personal</label>
-            <input type="email" value="karolay@gmail.com" disabled>
-
-            <label>Nombre</label>
-            <input type="text" value="Karolay">
-
-            <label>Apellido</label>
-            <input type="text" value="Huamani Villavicencio">
-
-            <label>Contraseña</label>
-            <input type="password" value="12345678">
-
-            <div class="modal-actions">
-
-                <button class="btn-cancel"
-                    onclick="closeEditModal()">
-
-                    Cancelar
-
-                </button>
-
-                <button class="btn-save">
-                    Aceptar
-                </button>
-
-            </div>
-
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeEditModal()">Cancelar</button>
+                    <button type="submit" class="btn-save">Aceptar</button>
+                </div>
+            </form>
         </div>
-
     </div>
 
 
@@ -385,27 +302,26 @@
     <!-- JAVASCRIPT -->
 
     <script>
-
         // MODAL CREAR
-
         function openCreateModal(){
             document.getElementById("createModal").style.display="flex";
         }
-
         function closeCreateModal(){
             document.getElementById("createModal").style.display="none";
         }
 
         // MODAL EDITAR
-
-        function openEditModal(){
+        function openEditModal(id, nombre, codigo, rol){
+            document.getElementById("editId").value = id;
+            document.getElementById("editNombre").value = nombre;
+            document.getElementById("editCodigo").value = codigo;
+            document.getElementById("editRol").value = rol;
+            document.getElementById("editPassword").value = "";
             document.getElementById("editModal").style.display="flex";
         }
-
         function closeEditModal(){
             document.getElementById("editModal").style.display="none";
         }
-
     </script>
 
 </body>
