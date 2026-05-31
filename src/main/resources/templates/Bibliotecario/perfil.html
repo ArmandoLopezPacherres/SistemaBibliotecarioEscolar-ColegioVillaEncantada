@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil</title>
 
+    <!-- CSRF Token para peticiones AJAX POST -->
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -149,11 +153,11 @@
 
                     <div class="profile-name">
 
-                        <h2 id="perfilNombre" th:text="${usuario.nombre}">
+                        <h2 id="perfilNombre" th:text="${perfil.nombre}">
                             Juan Pérez
                         </h2>
 
-                        <p id="perfilRol" th:text="${usuario.rol}">
+                        <p id="perfilRol" th:text="${perfil.rol}">
                             Bibliotecario
                         </p>
 
@@ -167,7 +171,7 @@
 
                         <h6>Fecha de creación</h6>
 
-                        <p id="perfilFecha">
+                        <p id="perfilFecha" th:text="${perfil.fechaCreacion}">
                             15/05/2026
                         </p>
 
@@ -177,7 +181,7 @@
 
                         <h6>Correo electrónico</h6>
 
-                        <p id="perfilCorreo">
+                        <p id="perfilCorreo" th:text="${perfil.correo}">
                             juanperez@gmail.com
                         </p>
 
@@ -197,7 +201,7 @@
 
                         <h6>Código</h6>
 
-                        <p id="perfilCodigo" th:text="${usuario.codigo}">
+                        <p id="perfilCodigo" th:text="${perfil.codigo}">
                             B432
                         </p>
 
@@ -209,7 +213,7 @@
                         data-bs-toggle="modal"
                         data-bs-target="#perfilModal">
 
-                    Editar
+                    Actualizar contraseña
 
                 </button>
 
@@ -237,7 +241,7 @@
 
                     <h2 class="modal-title">
 
-                        Edita tu perfil
+                        Actualizar contraseña
 
                     </h2>
 
@@ -257,74 +261,15 @@
 
                         <label class="form-label">
 
-                            Nombre
-
-                        </label>
-
-                        <input type="text"
-                            class="form-control"
-                            id="inputNombre"
-                            value="Juan Pérez">
-
-                    </div>
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
-
-                            Rol
-
-                        </label>
-
-                        <input type="text"
-                            class="form-control"
-                            id="inputRol"
-                            value="Bibliotecario">
-
-                    </div>
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
-
-                            Fecha de creación
-
-                        </label>
-
-                        <input type="text"
-                            class="form-control"
-                            id="inputFecha"
-                            value="15/05/2026">
-
-                    </div>
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
-
-                            Gmail
-
-                        </label>
-
-                        <input type="email"
-                            class="form-control"
-                            id="inputCorreo"
-                            value="juanperez@gmail.com">
-
-                    </div>
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
-
-                            Contraseña
+                            Contraseña Actual
 
                         </label>
 
                         <input type="password"
                             class="form-control"
-                            id="inputPassword"
-                            value="123456">
+                            id="inputCurrentPassword"
+                            placeholder="Ingresa tu contraseña actual..."
+                            value="">
 
                     </div>
 
@@ -332,14 +277,31 @@
 
                         <label class="form-label">
 
-                            Código
+                            Nueva Contraseña
 
                         </label>
 
-                        <input type="text"
+                        <input type="password"
                             class="form-control"
-                            id="inputCodigo"
-                            value="BIB-2026-001">
+                            id="inputNewPassword"
+                            placeholder="Ingresa tu nueva contraseña..."
+                            value="">
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+
+                            Confirmar Nueva Contraseña
+
+                        </label>
+
+                        <input type="password"
+                            class="form-control"
+                            id="inputConfirmPassword"
+                            placeholder="Confirma tu nueva contraseña..."
+                            value="">
 
                     </div>
 
@@ -359,9 +321,9 @@
 
                 <button type="button"
                         class="btn-modal"
-                        onclick="">
+                        onclick="guardarPassword()">
 
-                    Editar
+                    Actualizar contraseña
 
                 </button>
 
@@ -373,7 +335,106 @@
 
 </div>
 
+<!-- Contenedor Toast para Notificaciones -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055">
+    <div id="statusToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true" style="transition: 0.3s;">
+        <div class="d-flex">
+            <div class="toast-body" id="toastMessage">
+                Mensaje de estado.
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
+<script>
+    let toastElement = null;
+    let toastInstance = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        toastElement = document.getElementById('statusToast');
+        if (toastElement) {
+            toastInstance = new bootstrap.Toast(toastElement, { delay: 4000 });
+        }
+    });
+
+    function showMessage(msg, isSuccess) {
+        const toastBody = document.getElementById('toastMessage');
+        toastBody.textContent = msg;
+        if (isSuccess) {
+            toastElement.classList.remove('bg-danger');
+            toastElement.classList.add('bg-success');
+        } else {
+            toastElement.classList.remove('bg-success');
+            toastElement.classList.add('bg-danger');
+        }
+        if (toastInstance) {
+            toastInstance.show();
+        } else {
+            alert(msg);
+        }
+    }
+
+    function guardarPassword() {
+        const currentPasswordInput = document.getElementById('inputCurrentPassword');
+        const newPasswordInput = document.getElementById('inputNewPassword');
+        const confirmPasswordInput = document.getElementById('inputConfirmPassword');
+
+        const currentPassword = currentPasswordInput.value.trim();
+        const newPassword = newPasswordInput.value.trim();
+        const confirmPassword = confirmPasswordInput.value.trim();
+
+        if (currentPassword.length === 0 || newPassword.length === 0 || confirmPassword.length === 0) {
+            showMessage("Todos los campos de contraseña son obligatorios.", false);
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            showMessage("La nueva contraseña y su confirmación no coinciden.", false);
+            return;
+        }
+
+        // Obtener tokens CSRF de los meta tags
+        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        const formData = new FormData();
+        formData.append("currentPassword", currentPassword);
+        formData.append("newPassword", newPassword);
+        formData.append("confirmPassword", confirmPassword);
+
+        fetch('/panel-bibliotecario/perfil/cambiar-password', {
+            method: 'POST',
+            headers: {
+                [csrfHeader]: csrfToken
+            },
+            body: formData
+        })
+        .then(async response => {
+            const text = await response.text();
+            if (response.ok) {
+                showMessage(text, true);
+                currentPasswordInput.value = "";
+                newPasswordInput.value = "";
+                confirmPasswordInput.value = "";
+                
+                // Ocultar modal de bootstrap
+                const modalEl = document.getElementById('perfilModal');
+                const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+            } else {
+                showMessage(text || "Ocurrió un error al cambiar la contraseña.", false);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showMessage("Error de red al cambiar la contraseña.", false);
+        });
+    }
+</script>
 </body>
 </html>
