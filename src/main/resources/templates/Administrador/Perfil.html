@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
@@ -14,7 +14,7 @@
     href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <!-- Ruta Css -->
-    <link rel="stylesheet" href="../../static/Administrador/Perfil.css">
+    <link rel="stylesheet" th:href="@{/Administrador/Perfil.css}">
 
 </head>
 
@@ -27,33 +27,33 @@
         <div>
 
             <div class="logo-section">
-                <img src="../../static/img/logo-CVE.png" alt="logo">
+                <img th:src="@{/img/logo-CVE.png}" alt="logo">
                 <h5>Administrador</h5>
             </div>
 
             <nav class="menu">
 
-                <a href="#">
+                <a th:href="@{/panel-admin}">
                     <i class="bi bi-graph-up"></i>
                     Dashboard
                 </a>
 
-                <a href="#">
+                <a th:href="@{/panel-admin/usuarios}">
                     <i class="bi bi-people-fill"></i>
                     Gestión de usuarios
                 </a>
 
-                <a href="#" >
+                <a th:href="@{/panel-admin/catalogo}">
                     <i class="bi bi-journal"></i>
                     Gestión de catálogo
                 </a>
 
-                <a href="#">
+                <a th:href="@{/panel-admin/reportes}">
                     <i class="bi bi-bar-chart-line"></i>
                     Reportes
                 </a>
 
-                <a href="#" class="activo">
+                <a th:href="@{/panel-admin/perfil}" class="activo">
                     <i class="bi bi-person"></i>
                     Perfil
                 </a>

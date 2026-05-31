@@ -14,7 +14,7 @@
 
 
     <!-- Ruta Css -->
-    <link rel="stylesheet" href="../../static/Administrador/Admin-dashboard.css">
+    <link rel="stylesheet" th:href="@{/Administrador/Admin-dashboard.css}">
 
 
 </head>
@@ -27,32 +27,32 @@
         <div>
 
             <div class="logo-section">
-                <img src="../../static/img/logo-CVE.png" alt="Logo">
+                <img th:src="@{/img/logo-CVE.png}" alt="Logo">
                 <h5>Administrador</h5>
             </div>
 
             <nav class="menu">
-                <a href="#" class="active">
+                <a th:href="@{/panel-admin}" class="active">
                     <i class="bi bi-graph-up"></i>
                     Dashboard
                 </a>
 
-                <a href="#">
+                <a th:href="@{/panel-admin/usuarios}">
                    <i class="bi bi-people-fill"></i>
                     Gestión de usuarios
                 </a>
 
-                <a href="#">
+                <a th:href="@{/panel-admin/catalogo}">
                     <i class="bi bi-journal"></i>
                     Gestión de catálogo
                 </a>
 
-                <a href="#">
+                <a th:href="@{/panel-admin/reportes}">
                     <i class="bi bi-bar-chart-line"></i>
                     Reportes
                 </a>
 
-                <a href="#">
+                <a th:href="@{/panel-admin/perfil}">
                     <i class="bi bi-person"></i>
                     Perfil
                 </a>
@@ -63,7 +63,7 @@
 
         <div class="logout">
 
-            <form href="../../templates/index.html" method="post">
+            <form th:action="@{/logout}" method="post">
 
                 <button type="submit"
                     class="btn btn-outline-light w-100 rounded-pill fw-bold">
