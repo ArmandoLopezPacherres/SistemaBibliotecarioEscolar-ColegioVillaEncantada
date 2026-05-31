@@ -17,9 +17,12 @@ import sistema_biblioteca.demo.model.enums.RolUsuario;
 import sistema_biblioteca.demo.model.enums.EstadoPrestamo;
 import sistema_biblioteca.demo.model.enums.EstadoReserva;
 import sistema_biblioteca.demo.repository.UsuarioRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import sistema_biblioteca.demo.repository.PrestamoRepository;
 import sistema_biblioteca.demo.repository.LibroRepository;
 import sistema_biblioteca.demo.repository.ReservaRepository;
+import sistema_biblioteca.demo.dto.PerfilDTO;
+import sistema_biblioteca.demo.dto.PasswordChangeDTO;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -41,6 +44,9 @@ public class BibliotecarioController {
 
     @Autowired
     private ReservaRepository reservaRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     private void cargarUsuarioEnModelo(Model model, Principal principal) {
         if (principal != null) {
@@ -167,7 +173,55 @@ public class BibliotecarioController {
     @GetMapping("/perfil")
     public String perfil(Model model, Principal principal) {
         cargarUsuarioEnModelo(model, principal);
+        if (principal != null) {
+            usuarioRepository.findByCodigo(principal.getName()).ifPresent(usuario -> {
+                String rolFormatted = usuario.getRol() == RolUsuario.BIBLIOTECARIO ? "BIBLIOTECARIO" : usuario.getRol().name();
+                String correoMock = usuario.getNombre().toLowerCase().replace(" ", "") + "@gmail.com";
+                PerfilDTO perfilDto = new PerfilDTO(
+                    usuario.getNombre(),
+                    rolFormatted,
+                    "15/05/2026",
+                    correoMock,
+                    usuario.getCodigo()
+                );
+                model.addAttribute("perfil", perfilDto);
+            });
+        }
         return "Bibliotecario/perfil";
+    }
+
+    @PostMapping("/perfil/cambiar-password")
+    @ResponseBody
+    public ResponseEntity<String> cambiarPassword(
+            PasswordChangeDTO dto,
+            Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).body("Usuario no autenticado.");
+        }
+        if (dto == null || 
+            dto.getCurrentPassword() == null || dto.getCurrentPassword().trim().isEmpty() ||
+            dto.getNewPassword() == null || dto.getNewPassword().trim().isEmpty() ||
+            dto.getConfirmPassword() == null || dto.getConfirmPassword().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Todos los campos de contraseña son obligatorios.");
+        }
+        if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
+            return ResponseEntity.badRequest().body("La nueva contraseña y su confirmación no coinciden.");
+        }
+        
+        Optional<Usuario> optUsuario = usuarioRepository.findByCodigo(principal.getName());
+        if (optUsuario.isEmpty()) {
+            return ResponseEntity.badRequest().body("El usuario no existe.");
+        }
+        
+        Usuario usuario = optUsuario.get();
+        if (!passwordEncoder.matches(dto.getCurrentPassword(), usuario.getPassword())) {
+            return ResponseEntity.badRequest().body("La contraseña actual es incorrecta.");
+        }
+        
+        usuario.setPassword(passwordEncoder.encode(dto.getNewPassword().trim()));
+        usuarioRepository.save(usuario);
+        
+        return ResponseEntity.ok("Contraseña actualizada con éxito.");
     }
 
     @GetMapping("/solicitudes")
