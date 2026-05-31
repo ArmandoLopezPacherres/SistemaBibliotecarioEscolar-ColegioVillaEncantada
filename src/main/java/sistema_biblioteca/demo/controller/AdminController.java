@@ -381,20 +381,42 @@ public class AdminController {
     }
 
     @PostMapping("/panel-admin/perfil/actualizar")
-    public String actualizarPerfil(@ModelAttribute UsuarioDTO dto, RedirectAttributes redirectAttributes) {
+    public String actualizarPerfil(
+            @RequestParam Long id,
+            @RequestParam String nombre,
+            @RequestParam(required = false) String passwordActual,
+            @RequestParam(required = false) String password,
+            @RequestParam(required = false) String confirmarPassword,
+            RedirectAttributes redirectAttributes) {
         try {
-            Usuario usuario = usuarioService.obtenerPorId(dto.getId());
-            if (usuario != null) {
-                usuario.setNombre(dto.getNombre());
-                // El código y rol no se cambian desde el perfil
-                
-                if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
-                    usuario.setPassword(passwordEncoder.encode(dto.getPassword()));
-                }
-                
-                usuarioService.guardarUsuario(usuario);
-                redirectAttributes.addFlashAttribute("mensajeExito", "Perfil actualizado exitosamente.");
+            Usuario usuario = usuarioService.obtenerPorId(id);
+            if (usuario == null) {
+                redirectAttributes.addFlashAttribute("mensajeError", "Usuario no encontrado.");
+                return "redirect:/panel-admin/perfil";
             }
+            usuario.setNombre(nombre);
+            boolean cambiarPassword = password != null && !password.isBlank();
+            if (cambiarPassword) {
+                if (passwordActual == null || passwordActual.isBlank()) {
+                    redirectAttributes.addFlashAttribute("mensajeError", "Debes ingresar tu contraseña actual.");
+                    return "redirect:/panel-admin/perfil";
+                }
+                if (!passwordEncoder.matches(passwordActual, usuario.getPassword())) {
+                    redirectAttributes.addFlashAttribute("mensajeError", "La contraseña actual es incorrecta.");
+                    return "redirect:/panel-admin/perfil";
+                }
+                if (!password.equals(confirmarPassword)) {
+                    redirectAttributes.addFlashAttribute("mensajeError", "Las contraseñas nuevas no coinciden.");
+                    return "redirect:/panel-admin/perfil";
+                }
+                if (password.length() < 6) {
+                    redirectAttributes.addFlashAttribute("mensajeError", "La nueva contraseña debe tener al menos 6 caracteres.");
+                    return "redirect:/panel-admin/perfil";
+                }
+                usuario.setPassword(passwordEncoder.encode(password));
+            }
+            usuarioService.guardarUsuario(usuario);
+            redirectAttributes.addFlashAttribute("mensajeExito", "Perfil actualizado exitosamente.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensajeError", "Error al actualizar el perfil.");
         }

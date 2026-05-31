@@ -4,174 +4,205 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil</title>
-
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Iconos -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-    <!-- Ruta Css -->
+    <title>Perfil – Sistema Biblioteca</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/Administrador/Perfil.css}">
-
 </head>
 
 <body>
 
-    <!-- SIDEBAR -->
-
     <aside class="sidebar">
-
         <div>
-
             <div class="logo-section">
                 <img th:src="@{/img/logo-CVE.png}" alt="logo">
                 <h5>Administrador</h5>
             </div>
-
             <nav class="menu">
-
                 <a th:href="@{/panel-admin}">
-                    <i class="bi bi-graph-up"></i>
-                    Dashboard
+                    <i class="bi bi-graph-up"></i> Dashboard
                 </a>
-
                 <a th:href="@{/panel-admin/usuarios}">
-                    <i class="bi bi-people-fill"></i>
-                    Gestión de usuarios
+                    <i class="bi bi-people-fill"></i> Gestión de usuarios
                 </a>
-
                 <a th:href="@{/panel-admin/catalogo}">
-                    <i class="bi bi-journal"></i>
-                    Gestión de catálogo
+                    <i class="bi bi-journal"></i> Gestión de catálogo
                 </a>
-
                 <a th:href="@{/panel-admin/reportes}">
-                    <i class="bi bi-bar-chart-line"></i>
-                    Reportes
+                    <i class="bi bi-bar-chart-line"></i> Reportes
                 </a>
-
                 <a th:href="@{/panel-admin/perfil}" class="activo">
-                    <i class="bi bi-person"></i>
-                    Perfil
+                    <i class="bi bi-person"></i> Perfil
                 </a>
-
             </nav>
-
         </div>
         <div class="logout">
-
             <form th:action="@{/logout}" method="post">
-
-                <button type="submit" class="btn btn-outline-light w-100 rounded-pill fw-bold">
-
-                    <i class="bi bi-box-arrow-right"></i>
-                    Cerrar Sesión
-
+                <button type="submit" class="btn-logout">
+                    <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
                 </button>
-
             </form>
-
         </div>
-
     </aside>
-
-    </div>
 
     <main class="contenido">
 
-        <!-- TOP -->
         <div class="top">
-
             <div>
                 <h1>Perfil</h1>
-                <p>Visualiza tus datos y modificalos</p>
+                <p>Visualiza y actualiza tu información personal</p>
             </div>
-
-            <div>
-                ¡Bienvenido <strong th:text="${usuario.nombre}">Usuario</strong>!
+            <div class="welcome">
+                <i class="bi bi-person-circle"></i>
+                ¡Bienvenido <strong th:text="${usuario != null ? usuario.nombre : 'Administrador'}">Administrador</strong>!
             </div>
-
         </div>
 
-        <!-- ALERTAS FLASH -->
-        <div th:if="${mensajeExito}" class="alert alert-success mt-3 mx-4" role="alert">
-            <i class="bi bi-check-circle-fill"></i> <span th:text="${mensajeExito}"></span>
-        </div>
-        <div th:if="${mensajeError}" class="alert alert-danger mt-3 mx-4" role="alert">
-            <i class="bi bi-exclamation-triangle-fill"></i> <span th:text="${mensajeError}"></span>
-        </div>
+        <div th:if="${mensajeExito}" id="toastData" data-tipo="exito" th:data-mensaje="${mensajeExito}" style="display:none;"></div>
+        <div th:if="${mensajeError}" id="toastData" data-tipo="error" th:data-mensaje="${mensajeError}" style="display:none;"></div>
 
+        <div class="perfil-card">
+            <form th:action="@{/panel-admin/perfil/actualizar}" method="post" onsubmit="return validarForm()">
+                <input type="hidden" name="id" th:value="${usuario.id}">
 
-        <div class="perfil-contenedor">
+                <div class="perfil-layout">
 
-            <!-- FOTO PERFIL -->
-            <div class="perfil-superior">
+                    <div class="columna-foto">
+                        <div class="avatar-inicial">
+                            <span th:text="${usuario != null and usuario.nombre != null and #strings.length(usuario.nombre) > 0 ? #strings.substring(usuario.nombre,0,1) : '?'}">A</span>
+                        </div>
+                        <span class="badge-rol" th:text="${usuario != null ? usuario.rol : 'ROL'}">ROL</span>
+                    </div>
 
-                <!-- FOTO -->
-                <div class="foto-perfil">
+                    <div class="columna-campos">
 
-                    <img src="https://i.pravatar.cc/150?img=32" alt="perfil">
-
-                </div>
-
-
-                <!-- DATOS -->
-                <div class="datos-perfil">
-                    <form th:action="@{/panel-admin/perfil/actualizar}" method="post">
-                        <input type="hidden" name="id" th:value="${usuario.id}">
-
-                        <!-- NOMBRE -->
-                        <div class="campo-perfil">
-                            <label>Nombre</label>
-                            <input type="text" name="nombre" th:value="${usuario.nombre}" required>
+                        <div class="seccion-titulo">
+                            <i class="bi bi-person-fill"></i> Información Personal
                         </div>
 
-                        <!-- GMAIL / CODIGO -->
-                        <div class="campo-perfil">
-                            <label>Código o Correo</label>
-                            <input type="text" name="codigo" th:value="${usuario.codigo}" required readonly>
-                            <small class="text-muted">El código no se puede cambiar</small>
-                        </div>
+                        <div class="campos-grid">
+                            <div class="campo-perfil">
+                                <label>Nombre completo</label>
+                                <input type="text" name="nombre" th:value="${usuario.nombre}" required>
+                            </div>
 
-                        <!-- ROL -->
-                        <div class="campo-perfil">
-                            <label>Rol</label>
-                            <input type="text" th:value="${usuario.rol}" readonly>
-                        </div>
+                            <div class="campo-perfil">
+                                <label>Código de usuario</label>
+                                <input type="text" th:value="${usuario.codigo}" readonly>
+                                <small><i class="bi bi-lock-fill"></i> No puede modificarse</small>
+                            </div>
 
-                        <!-- PASSWORD -->
-                        <div class="campo-perfil">
-                            <label>Contraseña</label>
-                            <div class="input-password">
-                                <input type="password" name="password" id="password"
-                                    placeholder="Nueva contraseña (opcional)">
-                                <i class="bi bi-eye-fill" onclick="mostrarPassword()"></i>
+                            <div class="campo-perfil">
+                                <label>Rol</label>
+                                <input type="text" th:value="${usuario.rol}" readonly>
                             </div>
                         </div>
 
-                        <div class="contenedor-boton mt-4">
-                            <button type="submit" class="btn-editar">
-                                <i class="bi bi-pencil-fill"></i> Actualizar Perfil
+                        <div class="separador"></div>
+
+                        <div class="seccion-titulo">
+                            <i class="bi bi-shield-lock-fill"></i> Cambiar Contraseña
+                            <span class="seccion-hint">Deja en blanco para no cambiar</span>
+                        </div>
+
+                        <div class="campos-grid">
+                            <div class="campo-perfil ancho-completo">
+                                <label>Contraseña actual</label>
+                                <div class="input-password">
+                                    <input type="password" name="passwordActual" id="passwordActual"
+                                           placeholder="Ingresa tu contraseña actual">
+                                    <i class="bi bi-eye-fill" onclick="togglePwd('passwordActual', this)"></i>
+                                </div>
+                            </div>
+
+                            <div class="campo-perfil">
+                                <label>Nueva contraseña</label>
+                                <div class="input-password">
+                                    <input type="password" name="password" id="nuevaPassword"
+                                           placeholder="Mínimo 6 caracteres">
+                                    <i class="bi bi-eye-fill" onclick="togglePwd('nuevaPassword', this)"></i>
+                                </div>
+                            </div>
+
+                            <div class="campo-perfil">
+                                <label>Confirmar nueva contraseña</label>
+                                <div class="input-password">
+                                    <input type="password" name="confirmarPassword" id="confirmarPassword"
+                                           placeholder="Repite la nueva contraseña">
+                                    <i class="bi bi-eye-fill" onclick="togglePwd('confirmarPassword', this)"></i>
+                                </div>
+                                <small id="errorConfirmar" class="texto-error" style="display:none;">
+                                    <i class="bi bi-exclamation-circle-fill"></i> Las contraseñas no coinciden
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="barra-guardar">
+                            <button type="submit" class="btn-guardar-perfil">
+                                <i class="bi bi-check-lg"></i> Guardar cambios
                             </button>
                         </div>
-                    </form>
+
+                    </div>
                 </div>
-            </div>
+            </form>
         </div>
-        <script>
 
-            function mostrarPassword() {
+    </main>
 
-                const input = document.getElementById("password");
+    <div id="toast" class="toast-notif" role="alert" aria-live="polite">
+        <span id="toastIcon"></span>
+        <span id="toastMsg"></span>
+    </div>
 
-                if (input.type === "password") {
-                    input.type = "text";
-                } else {
-                    input.type = "password";
-                }
-
+    <script>
+        function togglePwd(inputId, iconEl) {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                iconEl.className = "bi bi-eye-slash-fill";
+            } else {
+                input.type = "password";
+                iconEl.className = "bi bi-eye-fill";
             }
+        }
 
-        </script>
+        function validarForm() {
+            const nueva = document.getElementById("nuevaPassword").value;
+            const confirmar = document.getElementById("confirmarPassword").value;
+            const errorEl = document.getElementById("errorConfirmar");
+            if (nueva || confirmar) {
+                if (nueva !== confirmar) {
+                    errorEl.style.display = "flex";
+                    document.getElementById("confirmarPassword").focus();
+                    return false;
+                }
+            }
+            errorEl.style.display = "none";
+            return true;
+        }
+
+        document.getElementById("confirmarPassword").addEventListener("input", function () {
+            const nueva = document.getElementById("nuevaPassword").value;
+            const errorEl = document.getElementById("errorConfirmar");
+            errorEl.style.display = (this.value && this.value !== nueva) ? "flex" : "none";
+        });
+
+        function mostrarToast(mensaje, tipo) {
+            const toast = document.getElementById("toast");
+            const icon = document.getElementById("toastIcon");
+            const msg = document.getElementById("toastMsg");
+            icon.textContent = tipo === "exito" ? "✓" : "✕";
+            msg.textContent = mensaje;
+            toast.className = "toast-notif toast-" + tipo + " toast-show";
+            setTimeout(() => toast.classList.remove("toast-show"), 2000);
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const data = document.getElementById("toastData");
+            if (data) mostrarToast(data.dataset.mensaje, data.dataset.tipo);
+        });
+    </script>
+
+</body>
+
+</html>
