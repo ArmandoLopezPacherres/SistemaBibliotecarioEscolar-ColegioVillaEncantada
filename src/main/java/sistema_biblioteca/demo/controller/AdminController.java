@@ -12,8 +12,16 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import sistema_biblioteca.demo.dto.UsuarioDTO;
 import sistema_biblioteca.demo.model.Usuario;
 import sistema_biblioteca.demo.model.enums.RolUsuario;
+import sistema_biblioteca.demo.model.Libro;
+import sistema_biblioteca.demo.model.Autor;
+import sistema_biblioteca.demo.model.Categoria;
+import sistema_biblioteca.demo.model.Editorial;
 import sistema_biblioteca.demo.repository.UsuarioRepository;
+import sistema_biblioteca.demo.repository.AutorRepository;
+import sistema_biblioteca.demo.repository.CategoriaRepository;
+import sistema_biblioteca.demo.repository.EditorialRepository;
 import sistema_biblioteca.demo.service.UsuarioService;
+import sistema_biblioteca.demo.service.LibroService;
 import java.security.Principal;
 
 @Controller
@@ -27,6 +35,18 @@ public class AdminController {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private LibroService libroService;
+
+    @Autowired
+    private AutorRepository autorRepository;
+
+    @Autowired
+    private CategoriaRepository categoriaRepository;
+
+    @Autowired
+    private EditorialRepository editorialRepository;
 
     private void cargarUsuarioEnModelo(Model model, Principal principal) {
         if (principal != null) {
@@ -98,7 +118,99 @@ public class AdminController {
     @GetMapping("/panel-admin/catalogo")
     public String gestionCatalogo(Model model, Principal principal) {
         cargarUsuarioEnModelo(model, principal);
+        model.addAttribute("listaLibros", libroService.listarLibros());
+        model.addAttribute("listaAutores", autorRepository.findAll());
+        model.addAttribute("listaCategorias", categoriaRepository.findAll());
+        model.addAttribute("listaEditoriales", editorialRepository.findAll());
         return "Administrador/GestionCatalogo";
+    }
+
+    @PostMapping("/panel-admin/catalogo/libros/guardar")
+    public String guardarLibro(Libro libro, RedirectAttributes redirectAttributes) {
+        try {
+            libroService.guardarLibro(libro);
+            redirectAttributes.addFlashAttribute("mensajeExito", "Libro guardado exitosamente.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensajeError", "Error al guardar el libro.");
+        }
+        return "redirect:/panel-admin/catalogo";
+    }
+
+    @PostMapping("/panel-admin/catalogo/libros/eliminar/{id}")
+    public String eliminarLibro(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            libroService.eliminarLibro(id);
+            redirectAttributes.addFlashAttribute("mensajeExito", "Libro eliminado.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensajeError", "Error al eliminar el libro.");
+        }
+        return "redirect:/panel-admin/catalogo";
+    }
+
+    @PostMapping("/panel-admin/catalogo/autores/guardar")
+    public String guardarAutor(Autor autor, RedirectAttributes redirectAttributes) {
+        try {
+            autorRepository.save(autor);
+            redirectAttributes.addFlashAttribute("mensajeExito", "Autor guardado exitosamente.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensajeError", "Error al guardar el autor.");
+        }
+        return "redirect:/panel-admin/catalogo";
+    }
+
+    @PostMapping("/panel-admin/catalogo/autores/eliminar/{id}")
+    public String eliminarAutor(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            autorRepository.deleteById(id);
+            redirectAttributes.addFlashAttribute("mensajeExito", "Autor eliminado.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensajeError", "Error al eliminar el autor.");
+        }
+        return "redirect:/panel-admin/catalogo";
+    }
+
+    @PostMapping("/panel-admin/catalogo/editoriales/guardar")
+    public String guardarEditorial(Editorial editorial, RedirectAttributes redirectAttributes) {
+        try {
+            editorialRepository.save(editorial);
+            redirectAttributes.addFlashAttribute("mensajeExito", "Editorial guardada exitosamente.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensajeError", "Error al guardar la editorial.");
+        }
+        return "redirect:/panel-admin/catalogo";
+    }
+
+    @PostMapping("/panel-admin/catalogo/editoriales/eliminar/{id}")
+    public String eliminarEditorial(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            editorialRepository.deleteById(id);
+            redirectAttributes.addFlashAttribute("mensajeExito", "Editorial eliminada.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensajeError", "Error al eliminar la editorial.");
+        }
+        return "redirect:/panel-admin/catalogo";
+    }
+
+    @PostMapping("/panel-admin/catalogo/categorias/guardar")
+    public String guardarCategoria(Categoria categoria, RedirectAttributes redirectAttributes) {
+        try {
+            categoriaRepository.save(categoria);
+            redirectAttributes.addFlashAttribute("mensajeExito", "Categoría guardada exitosamente.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensajeError", "Error al guardar la categoría.");
+        }
+        return "redirect:/panel-admin/catalogo";
+    }
+
+    @PostMapping("/panel-admin/catalogo/categorias/eliminar/{id}")
+    public String eliminarCategoria(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            categoriaRepository.deleteById(id);
+            redirectAttributes.addFlashAttribute("mensajeExito", "Categoría eliminada.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensajeError", "Error al eliminar la categoría.");
+        }
+        return "redirect:/panel-admin/catalogo";
     }
 
     @GetMapping("/panel-admin/reportes")
