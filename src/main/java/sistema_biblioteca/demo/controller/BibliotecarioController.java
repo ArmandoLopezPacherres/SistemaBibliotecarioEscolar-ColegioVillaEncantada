@@ -441,4 +441,33 @@ public class BibliotecarioController {
         
         return ResponseEntity.ok("Libro registrado como devuelto con éxito.");
     }
+
+    @PostMapping("/multas/pagar")
+    @ResponseBody
+    public ResponseEntity<String> pagarMulta(@RequestParam("id") Long id) {
+        Optional<Prestamo> optPrestamo = prestamoRepository.findById(id);
+        if (optPrestamo.isEmpty()) {
+            return ResponseEntity.badRequest().body("El préstamo no existe.");
+        }
+        
+        Prestamo prestamo = optPrestamo.get();
+        if (prestamo.getEstado() != EstadoPrestamo.RETRASADO) {
+            return ResponseEntity.badRequest().body("Este préstamo no tiene una multa activa.");
+        }
+        
+        // Cambiar estado a DEVUELTO y registrar fecha real de devolución (hoy)
+        prestamo.setEstado(EstadoPrestamo.DEVUELTO);
+        prestamo.setFechaDevolucionReal(LocalDate.now());
+        prestamoRepository.save(prestamo);
+        
+        // Aumentar stock del libro
+        Libro libro = prestamo.getLibro();
+        if (libro != null) {
+            libro.setStock(libro.getStock() + 1);
+            libro.setDisponible(true);
+            libroRepository.save(libro);
+        }
+        
+        return ResponseEntity.ok("Multa de 30 soles pagada y libro registrado como devuelto con éxito.");
+    }
 }
