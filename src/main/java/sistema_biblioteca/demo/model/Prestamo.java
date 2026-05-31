@@ -38,7 +38,13 @@ public class Prestamo {
     @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
     private int renovaciones = 0;
 
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean entregado = false;
+
     public Prestamo() {}
+
+    public boolean isEntregado() { return entregado; }
+    public void setEntregado(boolean entregado) { this.entregado = entregado; }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
