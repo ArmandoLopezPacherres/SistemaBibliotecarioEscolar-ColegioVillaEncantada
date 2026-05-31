@@ -131,14 +131,30 @@
                     >
             </div>
 
-            <!-- Filtros de Rol -->
-            <div class="filter-buttons">
-                <button type="button" id="btnEstudiante" class="btn-filter" onclick="toggleRoleFilter('ESTUDIANTE')">
-                    <i class="fa-solid fa-graduation-cap"></i> Estudiante
+            <!-- Botón Filtro con Dropdown -->
+            <div class="dropdown">
+                <button class="btn-filter dropdown-toggle" type="button" id="btnFiltroDropdown" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                    <i class="fa-solid fa-filter"></i> Filtro
                 </button>
-                <button type="button" id="btnProfesor" class="btn-filter" onclick="toggleRoleFilter('PROFESOR')">
-                    <i class="fa-solid fa-chalkboard-user"></i> Profesor
-                </button>
+                <div class="dropdown-menu p-3 dropdown-menu-end shadow" aria-labelledby="btnFiltroDropdown" style="min-width: 250px; border-radius: 12px; border: 1px solid #dcdcdc; background: white; z-index: 1050;">
+                    <div class="mb-3">
+                        <label for="filterRol" class="form-label fw-bold text-dark mb-1" style="font-size: 14px;">Rol</label>
+                        <select id="filterRol" class="form-select form-select-sm" onchange="aplicarFiltros()">
+                            <option value="">Todos</option>
+                            <option value="ESTUDIANTE">Estudiante</option>
+                            <option value="PROFESOR">Profesor</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="filterEstado" class="form-label fw-bold text-dark mb-1" style="font-size: 14px;">Estado</label>
+                        <select id="filterEstado" class="form-select form-select-sm" onchange="aplicarFiltros()">
+                            <option value="">Todos</option>
+                            <option value="ACTIVO">Activo</option>
+                            <option value="INACTIVO">Inactivo</option>
+                            <option value="MULTADO">Multado</option>
+                        </select>
+                    </div>
+                </div>
             </div>
 
         </div>
@@ -206,7 +222,8 @@
 
 <script>
     let lectoresData = [];
-    let currentFilter = null;
+    let currentRolFilter = "";
+    let currentEstadoFilter = "";
     let originalTbodyHtml = "";
     let currentPage = 1;
     const pageSize = 10;
@@ -241,31 +258,19 @@
         }
     });
 
-    function toggleRoleFilter(role) {
-        if (currentFilter === role) {
-            currentFilter = null;
-        } else {
-            currentFilter = role;
-        }
-        currentPage = 1;
-        updateFilterButtons();
-        renderLectores();
-    }
-
-    function updateFilterButtons() {
-        const btnEst = document.getElementById('btnEstudiante');
-        const btnProf = document.getElementById('btnProfesor');
+    function aplicarFiltros() {
+        currentRolFilter = document.getElementById('filterRol').value;
+        currentEstadoFilter = document.getElementById('filterEstado').value;
         
-        if (currentFilter === 'ESTUDIANTE') {
-            btnEst.classList.add('active');
-            btnProf.classList.remove('active');
-        } else if (currentFilter === 'PROFESOR') {
-            btnProf.classList.add('active');
-            btnEst.classList.remove('active');
+        const btnFiltro = document.getElementById('btnFiltroDropdown');
+        if (currentRolFilter || currentEstadoFilter) {
+            btnFiltro.classList.add('active');
         } else {
-            btnEst.classList.remove('active');
-            btnProf.classList.remove('active');
+            btnFiltro.classList.remove('active');
         }
+        
+        currentPage = 1;
+        renderLectores();
     }
 
     function buscarLectorAutomatico() {
@@ -298,14 +303,17 @@
         const query = document.getElementById('searchInput').value.trim();
         
         let filtered = lectoresData;
-        if (currentFilter) {
-            filtered = lectoresData.filter(lector => lector.rol === currentFilter);
+        if (currentRolFilter) {
+            filtered = filtered.filter(lector => lector.rol === currentRolFilter);
+        }
+        if (currentEstadoFilter) {
+            filtered = filtered.filter(lector => lector.estadoLector === currentEstadoFilter);
         }
 
         if (filtered.length === 0) {
             const displayMsg = query.length > 0 
-                ? `No se encontraron lectores con ese rol para la búsqueda "${query}".`
-                : "No se encontraron lectores.";
+                ? `No se encontraron lectores con esos filtros para la búsqueda "${query}".`
+                : "No se encontraron lectores con esos filtros.";
             document.getElementById('tablaLectores').innerHTML = `
                 <tr>
                     <td colspan="4" class="text-center text-muted py-4">${displayMsg}</td>
