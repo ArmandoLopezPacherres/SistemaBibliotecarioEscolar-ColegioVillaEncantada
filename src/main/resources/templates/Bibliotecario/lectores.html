@@ -180,6 +180,21 @@
 
             </table>
 
+            <!-- Paginación -->
+            <div class="pagination-section" id="paginationControls" style="display: none !important;">
+                <div class="pagination-info" id="paginationInfo">
+                    Mostrando 1-10 de 10 lectores
+                </div>
+                <div class="pagination-nav">
+                    <button class="btn-page" id="btnPrevPage" onclick="changePage(-1)">
+                        <i class="fa-solid fa-chevron-left"></i> Anterior
+                    </button>
+                    <button class="btn-page" id="btnNextPage" onclick="changePage(1)">
+                        Siguiente <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
         </div>
 
     </main>
@@ -193,9 +208,37 @@
     let lectoresData = [];
     let currentFilter = null;
     let originalTbodyHtml = "";
+    let currentPage = 1;
+    const pageSize = 10;
 
     document.addEventListener('DOMContentLoaded', () => {
         originalTbodyHtml = document.getElementById('tablaLectores').innerHTML;
+        
+        // Cargar lectores desde la tabla inicial (Thymeleaf)
+        const rows = document.querySelectorAll('#tablaLectores tr');
+        if (rows.length > 0 && !rows[0].querySelector('td[colspan]')) {
+            lectoresData = Array.from(rows).map(row => {
+                const cells = row.querySelectorAll('td');
+                const codigo = cells[0].textContent.trim();
+                const nombre = cells[1].textContent.trim();
+                const rolDisplay = cells[2].textContent.trim();
+                const rol = rolDisplay === 'Estudiante' ? 'ESTUDIANTE' : 'PROFESOR';
+                
+                const badge = cells[3].querySelector('.badge-status');
+                let estadoLector = 'INACTIVO';
+                if (badge) {
+                    const txt = badge.textContent.trim().toUpperCase();
+                    if (txt.includes('ACTIVO')) {
+                        estadoLector = 'ACTIVO';
+                    } else if (txt.includes('MULTADO')) {
+                        estadoLector = 'MULTADO';
+                    }
+                }
+                
+                return { codigo, nombre, rol, estadoLector };
+            });
+            renderLectores();
+        }
     });
 
     function toggleRoleFilter(role) {
@@ -204,6 +247,7 @@
         } else {
             currentFilter = role;
         }
+        currentPage = 1;
         updateFilterButtons();
         renderLectores();
     }
@@ -226,11 +270,7 @@
 
     function buscarLectorAutomatico() {
         const query = document.getElementById('searchInput').value.trim();
-        if (query.length === 0) {
-            lectoresData = [];
-            document.getElementById('tablaLectores').innerHTML = originalTbodyHtml;
-            return;
-        }
+        currentPage = 1;
         
         fetch(`/panel-bibliotecario/lectores/buscar?codigo=${query}`)
             .then(response => {
@@ -244,45 +284,63 @@
                 renderLectores();
             })
             .catch(err => {
+                console.error(err);
                 document.getElementById('tablaLectores').innerHTML = `
                     <tr>
                         <td colspan="4" class="text-center text-muted py-4">Ocurrió un error al realizar la búsqueda.</td>
                     </tr>
                 `;
+                document.getElementById('paginationControls').style.setProperty('display', 'none', 'important');
             });
     }
 
     function renderLectores() {
         const query = document.getElementById('searchInput').value.trim();
-        if (query.length === 0) {
-            document.getElementById('tablaLectores').innerHTML = originalTbodyHtml;
-            return;
-        }
-
+        
         let filtered = lectoresData;
         if (currentFilter) {
             filtered = lectoresData.filter(lector => lector.rol === currentFilter);
         }
 
         if (filtered.length === 0) {
+            const displayMsg = query.length > 0 
+                ? `No se encontraron lectores con ese rol para la búsqueda "${query}".`
+                : "No se encontraron lectores.";
             document.getElementById('tablaLectores').innerHTML = `
                 <tr>
-                    <td colspan="4" class="text-center text-muted py-4">No se encontraron lectores con ese rol para la búsqueda "${query}".</td>
+                    <td colspan="4" class="text-center text-muted py-4">${displayMsg}</td>
                 </tr>
             `;
+            document.getElementById('paginationControls').style.setProperty('display', 'none', 'important');
             return;
         }
         
+        // Paginación
+        const totalItems = filtered.length;
+        const totalPages = Math.ceil(totalItems / pageSize);
+        
+        if (currentPage > totalPages) {
+            currentPage = totalPages;
+        }
+        if (currentPage < 1) {
+            currentPage = 1;
+        }
+        
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = Math.min(startIndex + pageSize, totalItems);
+        const paginatedData = filtered.slice(startIndex, endIndex);
+
         let rowsHtml = "";
-        filtered.forEach(lector => {
+        paginatedData.forEach(lector => {
             const rolDisplay = lector.rol === 'ESTUDIANTE' ? 'Estudiante' : 'Profesor';
             let statusClass = "estado-inactivo";
             let statusText = "Inactivo";
             
-            if (lector.estadoLector === 'ACTIVO') {
+            const est = lector.estadoLector ? lector.estadoLector.toUpperCase() : 'INACTIVO';
+            if (est === 'ACTIVO') {
                 statusClass = "estado-activo";
                 statusText = "Activo";
-            } else if (lector.estadoLector === 'MULTADO') {
+            } else if (est === 'MULTADO') {
                 statusClass = "estado-multado";
                 statusText = "Multado";
             }
@@ -297,6 +355,31 @@
             `;
         });
         document.getElementById('tablaLectores').innerHTML = rowsHtml;
+        
+        updatePaginationControls(startIndex + 1, endIndex, totalItems, currentPage, totalPages);
+    }
+
+    function updatePaginationControls(start, end, total, page, totalPages) {
+        const controls = document.getElementById('paginationControls');
+        const info = document.getElementById('paginationInfo');
+        const btnPrev = document.getElementById('btnPrevPage');
+        const btnNext = document.getElementById('btnNextPage');
+        
+        info.textContent = `Mostrando ${start}-${end} de ${total} lectores`;
+        
+        btnPrev.disabled = (page === 1);
+        btnNext.disabled = (page === totalPages);
+        
+        if (total <= pageSize) {
+            controls.style.setProperty('display', 'none', 'important');
+        } else {
+            controls.style.removeProperty('display');
+        }
+    }
+
+    function changePage(direction) {
+        currentPage += direction;
+        renderLectores();
     }
 
     // Escuchar el evento de tipeo en el campo de búsqueda
