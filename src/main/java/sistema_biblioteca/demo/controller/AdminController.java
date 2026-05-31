@@ -119,12 +119,16 @@ public class AdminController {
         cargarUsuarioEnModelo(model, principal);
         model.addAttribute("listaUsuarios", usuarioService.listarUsuarios());
         model.addAttribute("nuevoUsuario", new UsuarioDTO());
-        
-        model.addAttribute("totalAdmins", usuarioService.buscarPorRol(RolUsuario.ADMINISTRADOR).size());
-        model.addAttribute("totalBibliotecarios", usuarioService.buscarPorRol(RolUsuario.BIBLIOTECARIO).size());
-        model.addAttribute("totalProfesores", usuarioService.buscarPorRol(RolUsuario.PROFESOR).size());
-        model.addAttribute("totalEstudiantes", usuarioService.buscarPorRol(RolUsuario.ESTUDIANTE).size());
-        
+
+        model.addAttribute("totalAdmins",
+            usuarioService.buscarPorRol(RolUsuario.ADMINISTRADOR).stream().filter(Usuario::isActivo).count());
+        model.addAttribute("totalBibliotecarios",
+            usuarioService.buscarPorRol(RolUsuario.BIBLIOTECARIO).stream().filter(Usuario::isActivo).count());
+        model.addAttribute("totalProfesores",
+            usuarioService.buscarPorRol(RolUsuario.PROFESOR).stream().filter(Usuario::isActivo).count());
+        model.addAttribute("totalEstudiantes",
+            usuarioService.buscarPorRol(RolUsuario.ESTUDIANTE).stream().filter(Usuario::isActivo).count());
+
         return "Administrador/GestionUsuario";
     }
 
@@ -135,7 +139,14 @@ public class AdminController {
             if (dto.getId() != null) {
                 usuario = usuarioService.obtenerPorId(dto.getId());
             }
-            
+
+            Long idExcluir = dto.getId() != null ? dto.getId() : -1L;
+            if (usuarioService.existePorCodigo(dto.getCodigo(), idExcluir)) {
+                redirectAttributes.addFlashAttribute("mensajeError",
+                    "Ya existe un usuario con el código \"" + dto.getCodigo() + "\". Elige otro código.");
+                return "redirect:/panel-admin/usuarios";
+            }
+
             String nombreCompleto = dto.getNombre() != null ? dto.getNombre() : "";
             if (dto.getApellido() != null && !dto.getApellido().isEmpty()) {
                 nombreCompleto += " " + dto.getApellido();
@@ -157,12 +168,27 @@ public class AdminController {
     }
 
     @PostMapping("/panel-admin/usuarios/eliminar/{id}")
-    public String eliminarUsuario(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String inactivarUsuario(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             usuarioService.eliminarUsuario(id);
-            redirectAttributes.addFlashAttribute("mensajeExito", "Usuario eliminado exitosamente.");
+            redirectAttributes.addFlashAttribute("mensajeExito", "Usuario inactivado exitosamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("mensajeError", "Error al eliminar el usuario. Puede que tenga préstamos asociados.");
+            redirectAttributes.addFlashAttribute("mensajeError", "Error al inactivar el usuario.");
+        }
+        return "redirect:/panel-admin/usuarios";
+    }
+
+    @PostMapping("/panel-admin/usuarios/activar/{id}")
+    public String activarUsuario(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            Usuario usuario = usuarioService.obtenerPorId(id);
+            if (usuario != null) {
+                usuario.setActivo(true);
+                usuarioService.guardarUsuario(usuario);
+                redirectAttributes.addFlashAttribute("mensajeExito", "Usuario activado exitosamente.");
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensajeError", "Error al activar el usuario.");
         }
         return "redirect:/panel-admin/usuarios";
     }

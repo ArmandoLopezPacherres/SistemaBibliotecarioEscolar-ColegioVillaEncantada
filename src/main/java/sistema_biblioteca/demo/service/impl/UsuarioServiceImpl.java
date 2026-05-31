@@ -42,4 +42,11 @@ public class UsuarioServiceImpl implements UsuarioService {
             usuarioRepository.save(usuario);
         });
     }
+
+    @Override
+    public boolean existePorCodigo(String codigo, Long idExcluir) {
+        return usuarioRepository.findByCodigo(codigo)
+            .filter(u -> !u.getId().equals(idExcluir))
+            .isPresent();
+    }
 }
