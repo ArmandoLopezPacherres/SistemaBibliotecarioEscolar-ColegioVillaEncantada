@@ -8,8 +8,12 @@
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
+    <!-- CSRF Token para peticiones AJAX POST -->
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
     <!-- FontAwesome -->
-    <link class="stylesheet"
+    <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
         
     <link rel="stylesheet" th:href="@{/Bibliotecario/multas.css}">
@@ -134,7 +138,7 @@
 
         </div>
 
-        <!-- BUSCADOR -->
+        <!-- barra de busqueda y filtros -->
         <div class="search-section">
 
             <div class="search-box">
@@ -142,16 +146,19 @@
                 <input type="text"
                        id="searchInput"
                        placeholder="Busca lectores o libros..."
-                       onkeyup="buscarMulta()">
+                       oninput="buscarMultas()">
 
             </div>
 
-            <button class="btn-search"
-                    onclick="buscarMulta()">
-
-                Buscar
-
-            </button>
+            <!-- Filtros de Rol -->
+            <div class="filter-buttons">
+                <button type="button" id="btnAlumnos" class="btn-filter" onclick="toggleRoleFilter('ESTUDIANTE')">
+                    <i class="fa-solid fa-graduation-cap"></i> Alumnos
+                </button>
+                <button type="button" id="btnProfesor" class="btn-filter" onclick="toggleRoleFilter('PROFESOR')">
+                    <i class="fa-solid fa-chalkboard-user"></i> Profesor
+                </button>
+            </div>
 
         </div>
 
@@ -159,15 +166,6 @@
         <div class="subtitle-section">
 
             <h3>Multas Activas</h3>
-
-            <button class="btn-search"
-                    data-bs-toggle="modal"
-                    data-bs-target="#multaModal">
-
-                <i class="fa-solid fa-plus"></i>
-                Generar multa
-
-            </button>
 
         </div>
 
@@ -191,24 +189,30 @@
 
                 <tbody id="tablaMultas">
 
-                <tr>
+                <tr th:each="multa : ${multas}" th:id="'fila-multa-' + ${multa.id}" th:data-rol="${multa.usuario.rol.name()}">
 
-                    <td>Maria Fernanda Lopez</td>
+                    <td th:text="${multa.usuario.nombre}">Maria Fernanda Lopez</td>
 
-                    <td>Historias Ancestrales</td>
+                    <td th:text="${multa.libro.titulo}">Historias Ancestrales</td>
 
-                    <td>Retraso en devolución</td>
+                    <td th:text="${multa.observaciones != null && !multa.observaciones.isEmpty() ? multa.observaciones : 'Retraso en devolución'}">Retraso en devolución</td>
 
                     <td>
-
-                        <span class="estado-multa">
-
-                            Multado
-
-                        </span>
-
+                        <div class="d-flex align-items-center justify-content-center gap-2">
+                            <button class="btn-pagar"
+                                    th:data-id="${multa.id}"
+                                    th:data-usuario="${multa.usuario.nombre}"
+                                    th:data-libro="${multa.libro.titulo}"
+                                    onclick="abrirModalPago(this.getAttribute('data-id'), this.getAttribute('data-usuario'), this.getAttribute('data-libro'))">
+                                PAGAR
+                            </button>
+                        </div>
                     </td>
 
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(multas)}" id="fila-vacia">
+                    <td colspan="4" class="text-center text-muted py-4">No hay multas activas registradas.</td>
                 </tr>
 
                 </tbody>
@@ -221,119 +225,220 @@
 
 </div>
 
-<!-- MODAL GENERAR MULTA -->
-
-<div class="modal fade"
-     id="multaModal"
-     tabindex="-1">
-
+<!-- MODAL PAGAR MULTA -->
+<div class="modal fade" id="pagarModal" tabindex="-1" aria-labelledby="pagarModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-
-        <div class="modal-content">
-
-            <div class="modal-header">
-
-                <div>
-
-                    <h2 class="modal-title">
-
-                        Generar una multa
-
-                    </h2>
-
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden; background: white; color: #333;">
+            <div class="modal-header bg-light border-bottom-0 pt-4 px-4 pb-2">
+                <h5 class="modal-title fw-bold text-dark" id="pagarModalLabel" style="font-size: 22px;">
+                    Registrar Pago de Multa
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body px-4 py-3 text-start">
+                <div class="mb-3">
+                    <p class="mb-1 fw-bold text-secondary" style="font-size: 14px;">Usuario</p>
+                    <p class="mb-0 text-dark fw-semibold" id="pagoUsuario" style="font-size: 16px;">Nombre del Usuario</p>
                 </div>
-
-                <img th:src="@{/img/logo-CVE.png}"
-                    class="logo-modal"
-                    alt="logo">
-
+                <div class="mb-3">
+                    <p class="mb-1 fw-bold text-secondary" style="font-size: 14px;">Libro</p>
+                    <p class="mb-0 text-dark fw-semibold" id="pagoLibro" style="font-size: 16px;">Título del Libro</p>
+                </div>
+                <div class="mb-3">
+                    <label for="pagoMonto" class="form-label fw-bold text-secondary mb-1" style="font-size: 14px;">Monto de Multa (Soles)</label>
+                    <input type="number" class="form-control bg-light border" id="pagoMonto" value="30" readonly style="border-radius: 8px; font-weight: 600; color: #333; max-width: 150px;">
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="checkDevolucion" checked disabled style="cursor: not-allowed;">
+                    <label class="form-check-input-label fw-semibold text-muted" for="checkDevolucion" style="font-size: 14px; margin-left: 5px;">
+                        Confirmar recepción del libro y pago total
+                    </label>
+                </div>
             </div>
-
-            <div class="modal-body">
-
-                <form id="formMulta">
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
-
-                            Código
-
-                        </label>
-
-                        <input type="text"
-                            class="form-control"
-                            id="codigo"
-                            placeholder="Ingrese código...">
-
-                    </div>
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
-
-                            Nombre
-
-                        </label>
-
-                        <input type="text"
-                            class="form-control"
-                            id="nombre"
-                            placeholder="Ingrese nombre...">
-
-                    </div>
-
-                    <div class="mb-3">
-
-                        <label class="form-label"> Título del libro</label>
-
-                            <input type="text"
-                            class="form-control"
-                            id="libro"
-                            placeholder="Ingrese título del libro...">
-                        </div>
-
-                    <div class="mb-3">
-
-                        <label class="form-label"> Describe el motivo </label>
-
-                        <textarea class="form-control"
-                                  id="motivo"
-                                  placeholder="Describe el motivo..."></textarea>
-
-                    </div>
-
-                </form>
-
-            </div>
-
-            <div class="modal-footer">
-
-                <button type="button"
-                        class="btn-modal"
-                        data-bs-dismiss="modal">
-
-                    Atrás
-
+            <div class="modal-footer border-top-0 pb-4 px-4 pt-2">
+                <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal" style="border-radius: 20px; font-weight: 600;">
+                    Cancelar
                 </button>
-
-                <button type="button"
-                        class="btn-modal"
-                        onclick="generarMulta()">
-
-                    Generar
-
+                <button type="button" id="btnConfirmarPago" class="btn px-4 text-white" style="border-radius: 20px; font-weight: 600; background-color: #0c2745; transition: 0.3s;">
+                    Pagar y Devolver
                 </button>
-
             </div>
-
         </div>
-
     </div>
+</div>
 
+<!-- Contenedor Toast para Notificaciones -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055">
+    <div id="statusToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true" style="transition: 0.3s;">
+        <div class="d-flex">
+            <div class="toast-body" id="toastMessage">
+                Mensaje de estado.
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
 </div>
 
 <!-- Bootstrap -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let toastElement = null;
+    let toastInstance = null;
+    let pagarModalInstance = null;
+    let multaIdACargar = null;
+    let currentFilter = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        toastElement = document.getElementById('statusToast');
+        if (toastElement) {
+            toastInstance = new bootstrap.Toast(toastElement, { delay: 4000 });
+        }
+
+        const modalEl = document.getElementById('pagarModal');
+        if (modalEl) {
+            pagarModalInstance = new bootstrap.Modal(modalEl);
+        }
+    });
+
+    function showMessage(msg, isSuccess) {
+        const toastBody = document.getElementById('toastMessage');
+        toastBody.textContent = msg;
+        if (isSuccess) {
+            toastElement.classList.remove('bg-danger');
+            toastElement.classList.add('bg-success');
+        } else {
+            toastElement.classList.remove('bg-success');
+            toastElement.classList.add('bg-danger');
+        }
+        if (toastInstance) {
+            toastInstance.show();
+        } else {
+            alert(msg);
+        }
+    }
+
+    function toggleRoleFilter(role) {
+        if (currentFilter === role) {
+            currentFilter = null;
+        } else {
+            currentFilter = role;
+        }
+        updateFilterButtons();
+        buscarMultas();
+    }
+
+    function updateFilterButtons() {
+        const btnAlumnos = document.getElementById('btnAlumnos');
+        const btnProfesor = document.getElementById('btnProfesor');
+        
+        if (currentFilter === 'ESTUDIANTE') {
+            btnAlumnos.classList.add('active');
+            btnProfesor.classList.remove('active');
+        } else if (currentFilter === 'PROFESOR') {
+            btnProfesor.classList.add('active');
+            btnAlumnos.classList.remove('active');
+        } else {
+            btnAlumnos.classList.remove('active');
+            btnProfesor.classList.remove('active');
+        }
+    }
+
+    function buscarMultas() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        const rows = document.querySelectorAll('#tablaMultas tr[id^="fila-multa-"]');
+        
+        let visibles = 0;
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            const rol = row.getAttribute('data-rol');
+            
+            const matchesQuery = !query || text.includes(query);
+            const matchesRol = !currentFilter || rol === currentFilter;
+
+            if (matchesQuery && matchesRol) {
+                row.style.removeProperty('display');
+                visibles++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Manejar mensaje de tabla vacía
+        const tbody = document.getElementById('tablaMultas');
+        const emptyRow = document.getElementById('fila-vacia');
+        
+        if (visibles === 0) {
+            if (!emptyRow) {
+                const tr = document.createElement('tr');
+                tr.id = 'fila-vacia';
+                tr.innerHTML = `<td colspan="4" class="text-center text-muted py-4">No se encontraron multas activas con esos filtros.</td>`;
+                tbody.appendChild(tr);
+            } else {
+                emptyRow.style.removeProperty('display');
+            }
+        } else if (emptyRow) {
+            emptyRow.style.display = 'none';
+        }
+    }
+
+    function abrirModalPago(id, usuario, libro) {
+        multaIdACargar = id;
+        document.getElementById('pagoUsuario').textContent = usuario;
+        document.getElementById('pagoLibro').textContent = libro;
+        
+        const btnConfirmar = document.getElementById('btnConfirmarPago');
+        btnConfirmar.onclick = ejecutarPagoConfirmado;
+
+        if (pagarModalInstance) {
+            pagarModalInstance.show();
+        }
+    }
+
+    function ejecutarPagoConfirmado() {
+        if (!multaIdACargar) return;
+
+        if (pagarModalInstance) {
+            pagarModalInstance.hide();
+        }
+
+        const id = multaIdACargar;
+        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        const formData = new FormData();
+        formData.append("id", id);
+
+        fetch('/panel-bibliotecario/multas/pagar', {
+            method: 'POST',
+            headers: {
+                [csrfHeader]: csrfToken
+            },
+            body: formData
+        })
+        .then(async response => {
+            const text = await response.text();
+            if (response.ok) {
+                showMessage(text, true);
+                
+                // Remover fila de la tabla con animación
+                const fila = document.getElementById(`fila-multa-${id}`);
+                if (fila) {
+                    fila.style.transition = 'all 0.5s ease';
+                    fila.style.opacity = '0';
+                    setTimeout(() => {
+                        fila.remove();
+                        buscarMultas();
+                    }, 500);
+                }
+            } else {
+                showMessage(text || "Error al procesar el pago de la multa.", false);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showMessage("Error de red al procesar el pago.", false);
+        });
+    }
+</script>
 </body>
 </html>
