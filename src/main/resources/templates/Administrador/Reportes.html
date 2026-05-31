@@ -4,384 +4,468 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reportes</title>
-
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Iconos -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-    <!-- Ruta Css -->
+    <title>Reportes – Sistema Biblioteca</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/Administrador/Reportes.css}">
-
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
 </head>
 
 <body>
 
-    <!--  SIDEBAR-->
-
     <aside class="sidebar">
-
         <div>
-
             <div class="logo-section">
                 <img th:src="@{/img/logo-CVE.png}" alt="logo">
                 <h5>Administrador</h5>
             </div>
-
             <nav class="menu">
-
                 <a th:href="@{/panel-admin}">
-                    <i class="bi bi-graph-up"></i>
-                    Dashboard
+                    <i class="bi bi-graph-up"></i> Dashboard
                 </a>
-
                 <a th:href="@{/panel-admin/usuarios}">
-                    <i class="bi bi-people-fill"></i>
-                    Gestión de usuarios
+                    <i class="bi bi-people-fill"></i> Gestión de usuarios
                 </a>
-
                 <a th:href="@{/panel-admin/catalogo}">
-                    <i class="bi bi-journal"></i>
-                    Gestión de catálogo
+                    <i class="bi bi-journal"></i> Gestión de catálogo
                 </a>
-
                 <a th:href="@{/panel-admin/reportes}" class="activo">
-                    <i class="bi bi-bar-chart-line"></i>
-                    Reportes
+                    <i class="bi bi-bar-chart-line"></i> Reportes
                 </a>
-
                 <a th:href="@{/panel-admin/perfil}">
-                    <i class="bi bi-person"></i>
-                    Perfil
+                    <i class="bi bi-person"></i> Perfil
                 </a>
-
             </nav>
-
         </div>
         <div class="logout">
-
             <form th:action="@{/logout}" method="post">
-
-                <button type="submit" class="btn btn-outline-light w-100 rounded-pill fw-bold">
-
-                    <i class="bi bi-box-arrow-right"></i>
-                    Cerrar Sesión
-
+                <button type="submit" class="btn-logout">
+                    <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
                 </button>
-
             </form>
-
         </div>
-
     </aside>
-
-    </div>
 
     <main class="contenido">
 
-        <!-- TOP -->
         <div class="top">
-
             <div>
                 <h1>Reportes</h1>
-                <p>Consulta, analiza y exporta la información del sistema</p>
+                <p>Consulta y analiza la información del sistema</p>
             </div>
-
-            <div>
-                ¡Bienvenido <strong>Karolay</strong>!
+            <div class="welcome">
+                <i class="bi bi-person-circle"></i>
+                ¡Bienvenido <strong
+                    th:text="${usuario != null ? usuario.nombre : 'Administrador'}">Administrador</strong>!
             </div>
-
         </div>
 
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon azul"><i class="bi bi-book-half"></i></div>
+                <div class="stat-info">
+                    <p>Total préstamos</p>
+                    <strong th:text="${#lists.size(listaPrestamos)}">0</strong>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon verde"><i class="bi bi-people-fill"></i></div>
+                <div class="stat-info">
+                    <p>Total usuarios</p>
+                    <strong th:text="${#lists.size(listaUsuarios)}">0</strong>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon rojo"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                <div class="stat-info">
+                    <p>Préstamos vencidos</p>
+                    <strong th:text="${#lists.size(listaMorosos)}">0</strong>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon naranja"><i class="bi bi-journal-bookmark-fill"></i></div>
+                <div class="stat-info">
+                    <p>Total libros</p>
+                    <strong th:text="${#lists.size(listaCatalogo)}">0</strong>
+                </div>
+            </div>
+        </div>
 
         <div class="exportar-contenedor">
-
-            <!-- BOTONES EXPORTAR -->
             <div class="exportar-top">
-
-                <span class="titulo-exportar">
-                    Exportar por:
-                </span>
-
-                <!-- PDF -->
-                <button class="btn-exportar">
-
-                    <i class="bi bi-file-earmark-arrow-up-fill"></i>
-                    PDF
-
-                </button>
-
-                <!-- EXCEL -->
-                <button class="btn-exportar">
-
-                    <i class="bi bi-file-earmark-arrow-up-fill"></i>
-                    Excel
-
-                </button>
-
-            </div>
-
-
-            <!-- FILTROS -->
-            <div class="filtros-reporte">
-
-                <!-- FECHA INICIO -->
-                <div class="campo-filtro">
-
-                    <label>Fecha de inicio</label>
-
-                    <div class="input-icono">
-
-                        <input type="date">
-
+                <div class="filtros-reporte">
+                    <div class="campo-filtro">
+                        <label>Fecha de inicio</label>
+                        <input type="date" id="fechaInicio">
                     </div>
-
-                </div>
-
-                <!-- FECHA FIN -->
-                <div class="campo-filtro">
-
-                    <label>Fecha de fin</label>
-
-                    <div class="input-icono">
-
-                        <input type="date">
-
+                    <div class="campo-filtro">
+                        <label>Fecha de fin</label>
+                        <input type="date" id="fechaFin">
                     </div>
-
+                    <div class="campo-filtro">
+                        <label style="opacity:0;">Acción</label>
+                        <button class="btn-filtrar">
+                            <i class="bi bi-funnel-fill"></i> Aplicar filtro
+                        </button>
+                    </div>
                 </div>
-
-
-                <!-- TIPO REPORTE -->
-                <div class="campo-filtro">
-
-                    <label>Tipo de reporte</label>
-
-                    <select>
-
-                        <option>Reporte general</option>
-                        <option>Reporte de préstamos</option>
-                        <option>Reporte de usuarios</option>
-                        <option>Reporte de morosidad</option>
-                        <option>Reporte de catálogo</option>
-
-                    </select>
-
-                </div>
-
-
-                <!-- BOTON FILTRO -->
-                <div class="campo-filtro boton-filtro">
-
-                    <label style="opacity:0;">
-                        filtro
-                    </label>
-
-                    <button class="btn-filtrar">
-
-                        <i class="bi bi-funnel-fill"></i>
-                        Aplicar filtro
-
+                <div class="exportar-botones">
+                    <span class="titulo-exportar">Exportar:</span>
+                    <button class="btn-exportar" onclick="exportarPDF()">
+                        <i class="bi bi-file-earmark-pdf-fill"></i> PDF
                     </button>
-
+                    <button class="btn-exportar" onclick="exportarExcel()">
+                        <i class="bi bi-file-earmark-excel-fill"></i> Excel
+                    </button>
                 </div>
-
             </div>
-
         </div>
-
-        </div>
-
-        <!-- TABS REPORTES-->
 
         <div class="tabs">
-
-            <div class="tab activo" onclick="mostrarTabla('prestamos', this)">
-
-                <i class="bi bi-book-half"></i>
-                Reporte de Préstamos
-
+            <div id="tab-prestamos" class="tab activo" onclick="mostrarTabla('prestamos', this)">
+                <i class="bi bi-book-half"></i> Préstamos
             </div>
-
-            <div class="tab" onclick="mostrarTabla('usuarios', this)">
-
-                <i class="bi bi-people"></i>
-                Reporte de Usuarios
-
+            <div id="tab-usuarios" class="tab" onclick="mostrarTabla('usuarios', this)">
+                <i class="bi bi-people"></i> Usuarios
             </div>
-
-            <div class="tab" onclick="mostrarTabla('morosidad', this)">
-
-                <i class="bi bi-exclamation-triangle"></i>
-                Reporte de Morosidad
-
+            <div id="tab-morosidad" class="tab" onclick="mostrarTabla('morosidad', this)">
+                <i class="bi bi-exclamation-triangle"></i> Morosidad
             </div>
-
-            <div class="tab" onclick="mostrarTabla('catalogo', this)">
-
-                <i class="bi bi-journal-bookmark-fill"></i>
-                Reporte de Catálogo
-
+            <div id="tab-catalogo" class="tab" onclick="mostrarTabla('catalogo', this)">
+                <i class="bi bi-journal-bookmark-fill"></i> Catálogo
             </div>
-
         </div>
 
-
-        <!-- TABLA PRESTAMOS-->
-
         <div id="tabla-prestamos" class="tabla-contenedor">
-
             <table>
-
                 <thead>
                     <tr>
-                        <th>ID Libro</th>
+                        <th>Usuario</th>
+                        <th>Código</th>
+                        <th>Libro</th>
+                        <th>Fecha préstamo</th>
+                        <th>Fecha devolución</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(listaPrestamos)}">
+                        <td colspan="6" class="tabla-vacia">No hay préstamos registrados.</td>
+                    </tr>
+                    <tr th:each="p : ${listaPrestamos}">
+                        <td th:text="${p.usuario != null ? p.usuario.nombre : '-'}">Usuario</td>
+                        <td th:text="${p.usuario != null ? p.usuario.codigo : '-'}">Código</td>
+                        <td th:text="${p.libro != null ? p.libro.titulo : '-'}">Libro</td>
+                        <td th:text="${p.fechaPrestamo}">Fecha</td>
+                        <td th:text="${p.fechaDevolucionEsperada}">Devolución</td>
+                        <td>
+                            <span th:text="${p.estado}"
+                                th:classappend="${p.estado != null ? 'badge-estado badge-' + #strings.toLowerCase(p.estado.name()) : 'badge-estado'}">
+                                Estado
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="tabla-usuarios" class="tabla-contenedor" style="display:none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(listaUsuarios)}">
+                        <td colspan="4" class="tabla-vacia">No hay usuarios registrados.</td>
+                    </tr>
+                    <tr th:each="u : ${listaUsuarios}">
+                        <td th:text="${u.codigo}">Código</td>
+                        <td th:text="${u.nombre}">Nombre</td>
+                        <td th:text="${u.rol}">Rol</td>
+                        <td>
+                            <span th:text="${u.activo ? 'Activo' : 'Inactivo'}"
+                                th:class="${u.activo ? 'badge-estado badge-activo' : 'badge-estado badge-inactivo'}">
+                                Estado
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="tabla-morosidad" class="tabla-contenedor" style="display:none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Código</th>
+                        <th>Libro</th>
+                        <th>F. Devolución esperada</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(listaMorosos)}">
+                        <td colspan="5" class="tabla-vacia">Sin préstamos vencidos.</td>
+                    </tr>
+                    <tr th:each="m : ${listaMorosos}">
+                        <td th:text="${m.usuario != null ? m.usuario.nombre : '-'}">Usuario</td>
+                        <td th:text="${m.usuario != null ? m.usuario.codigo : '-'}">Código</td>
+                        <td th:text="${m.libro != null ? m.libro.titulo : '-'}">Libro</td>
+                        <td th:text="${m.fechaDevolucionEsperada}">Fecha</td>
+                        <td>
+                            <span class="badge-estado badge-retrasado" th:text="${m.estado}">RETRASADO</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="tabla-catalogo" class="tabla-contenedor" style="display:none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ISBN</th>
                         <th>Título</th>
                         <th>Autor</th>
                         <th>Editorial</th>
                         <th>Categoría</th>
-                        <th>Año</th>
+                        <th>Stock</th>
                     </tr>
                 </thead>
-
                 <tbody>
-                    <tr th:each="p : ${listaPrestamos}">
-                        <td th:text="${p.libro.isbn}">LIB-001</td>
-                        <td th:text="${p.libro.titulo}">El principito</td>
-                        <td th:text="${p.libro.autor != null ? p.libro.autor.nombreCompleto : '-'}">Autor</td>
-                        <td th:text="${p.libro.editorial != null ? p.libro.editorial.nombre : '-'}">Editorial</td>
-                        <td th:text="${p.libro.categoria != null ? p.libro.categoria.nombre : '-'}">Categoría</td>
-                        <td th:text="${p.libro.anioPublicacion}">Año</td>
+                    <tr th:if="${#lists.isEmpty(listaCatalogo)}">
+                        <td colspan="6" class="tabla-vacia">No hay libros en el catálogo.</td>
                     </tr>
-                </tbody>
-
-            </table>
-
-        </div>
-
-
-        <!--  TABLA USUARIOS-->
-
-        <div id="tabla-usuarios" class="tabla-contenedor" style="display:none;">
-
-            <table>
-
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Usuario</th>
-                        <th>Correo</th>
-                        <th>Rol</th>
-                        <th>Fecha de registro</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    <tr th:each="u : ${listaUsuarios}">
-                        <td th:text="${u.codigo}">E050</td>
-                        <td th:text="${u.nombre}">Usuario</td>
-                        <td th:text="${u.codigo}">Correo</td>
-                        <td th:text="${u.rol}">Rol</td>
-                        <td>-</td>
-                    </tr>
-                </tbody>
-
-            </table>
-
-        </div>
-
-
-        <!-- TABLA MOROSIDAD -->
-
-        <div id="tabla-morosidad" class="tabla-contenedor" style="display:none;">
-
-            <table>
-
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Usuario</th>
-                        <th>Libro</th>
-                        <th>Correo</th>
-                        <th>Rol</th>
-                        <th>Fecha de registro</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    <tr th:each="m : ${listaMorosos}">
-                        <td th:text="${m.usuario.codigo}">ID</td>
-                        <td th:text="${m.usuario.nombre}">Usuario</td>
-                        <td th:text="${m.libro.titulo}">Libro</td>
-                        <td th:text="${m.usuario.codigo}">Correo</td>
-                        <td th:text="${m.usuario.rol}">Rol</td>
-                        <td th:text="${m.fechaDevolucionEsperada}">Fecha esperada</td>
-                    </tr>
-                </tbody>
-
-            </table>
-
-        </div>
-
-
-        <!-- TABLA CATALOGO -->
-
-        <div id="tabla-catalogo" class="tabla-contenedor" style="display:none;">
-
-            <table>
-
-                <thead>
-                    <tr>
-                        <th>ID Libro</th>
-                        <th>Titulo</th>
-                        <th>Autor</th>
-                        <th>Editorial</th>
-                        <th>Categoria</th>
-                        <th>Año</th>
-                    </tr>
-                </thead>
-
-                <tbody>
                     <tr th:each="l : ${listaCatalogo}">
-                        <td th:text="${l.isbn}">LIB-001</td>
-                        <td th:text="${l.titulo}">Titulo</td>
+                        <td th:text="${l.isbn}">ISBN</td>
+                        <td th:text="${l.titulo}">Título</td>
                         <td th:text="${l.autor != null ? l.autor.nombreCompleto : '-'}">Autor</td>
                         <td th:text="${l.editorial != null ? l.editorial.nombre : '-'}">Editorial</td>
                         <td th:text="${l.categoria != null ? l.categoria.nombre : '-'}">Categoría</td>
-                        <td th:text="${l.anioPublicacion}">Año</td>
+                        <td th:text="${l.stock}">Stock</td>
                     </tr>
                 </tbody>
-
             </table>
-
         </div>
 
-        <script>
+    </main>
 
-            function mostrarTabla(seccion, elemento) {
+    <script>
+        const NOMBRES_TABLA = {
+            prestamos: "Reporte de Pr\u00e9stamos",
+            usuarios: "Reporte de Usuarios",
+            morosidad: "Reporte de Morosidad",
+            catalogo: "Reporte de Cat\u00e1logo"
+        };
 
-                // OCULTAR TODAS
-                document.getElementById("tabla-prestamos").style.display = "none";
-                document.getElementById("tabla-usuarios").style.display = "none";
-                document.getElementById("tabla-morosidad").style.display = "none";
-                document.getElementById("tabla-catalogo").style.display = "none";
-
-                // MOSTRAR LA SELECCIONADA
-                document.getElementById("tabla-" + seccion).style.display = "block";
-
-                // QUITAR ACTIVO
-                let tabs = document.querySelectorAll(".tab");
-
-                tabs.forEach(tab => {
-                    tab.classList.remove("activo");
-                });
-
-                // ACTIVAR TAB
-                elemento.classList.add("activo");
-
+        function getTablaActiva() {
+            for (const id of ["prestamos", "usuarios", "morosidad", "catalogo"]) {
+                const el = document.getElementById("tabla-" + id);
+                if (el && el.style.display !== "none") {
+                    return { id, table: el.querySelector("table") };
+                }
             }
+            return null;
+        }
 
-        </script>
+        function mostrarTabla(seccion, elemento) {
+            ["prestamos", "usuarios", "morosidad", "catalogo"].forEach(id => {
+                document.getElementById("tabla-" + id).style.display = "none";
+                document.getElementById("tab-" + id).classList.remove("activo");
+            });
+            document.getElementById("tabla-" + seccion).style.display = "block";
+            elemento.classList.add("activo");
+        }
+
+        /* ───── PDF ───── */
+        function exportarPDF() {
+            const activa = getTablaActiva();
+            if (!activa) return;
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+            const pW = doc.internal.pageSize.getWidth();
+            const pH = doc.internal.pageSize.getHeight();
+            const nombre = NOMBRES_TABLA[activa.id];
+            const fecha = new Date().toLocaleDateString("es-PE", { year: "numeric", month: "long", day: "numeric" });
+            const totalReg = activa.table.querySelectorAll("tbody tr:not([class='tabla-vacia'])").length;
+
+            /* Banda principal – 28mm */
+            doc.setFillColor(15, 42, 68);
+            doc.rect(0, 0, pW, 28, "F");
+
+            /* Titulo */
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(17);
+            doc.text(nombre, 16, 12);
+
+            /* Subtitulo */
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(9);
+            doc.setTextColor(180, 205, 230);
+            doc.text("Colegio Villa Encantada \u2013 Sistema Bibliotecario Escolar", 16, 22);
+
+            /* Fecha alineada derecha */
+            doc.text("Generado: " + fecha, pW - 16, 22, { align: "right" });
+
+            /* Caja de resumen – 6mm bajo la banda */
+            doc.setFillColor(240, 243, 248);
+            doc.roundedRect(16, 34, pW - 32, 12, 2, 2, "F");
+            doc.setDrawColor(210, 220, 235);
+            doc.roundedRect(16, 34, pW - 32, 12, 2, 2, "S");
+            doc.setTextColor(22, 50, 82);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(9);
+            doc.text("Total de registros: " + totalReg, 22, 41);
+
+            /* Tabla */
+            doc.autoTable({
+                head: [[...activa.table.querySelectorAll("thead th")].map(th => th.textContent.trim())],
+                body: [...activa.table.querySelectorAll("tbody tr")]
+                    .filter(tr => !tr.querySelector(".tabla-vacia"))
+                    .map(tr => [...tr.querySelectorAll("td")].map(td => td.textContent.trim())),
+                startY: 52,
+                margin: { left: 16, right: 16, bottom: 22 },
+                styles: { overflow: "linebreak", minCellWidth: 18, fontSize: 9 },
+                headStyles: {
+                    fillColor: [22, 50, 82],
+                    textColor: [255, 255, 255],
+                    fontStyle: "bold",
+                    fontSize: 9,
+                    cellPadding: { top: 8, right: 8, bottom: 8, left: 8 }
+                },
+                bodyStyles: {
+                    fontSize: 9,
+                    cellPadding: { top: 6, right: 8, bottom: 6, left: 8 },
+                    textColor: [45, 55, 72]
+                },
+                alternateRowStyles: { fillColor: [248, 249, 252] },
+                tableLineColor: [218, 226, 240],
+                tableLineWidth: 0.25,
+                didDrawPage: function (data) {
+                    /* Footer: banda de 14mm, texto centrado verticalmente */
+                    /* Centro banda = pH-7; baseline = centro + cap_9pt/2 ≈ pH-7+1.1 = pH-5.9 → pH-6 */
+                    doc.setFillColor(15, 42, 68);
+                    doc.rect(0, pH - 14, pW, 14, "F");
+                    doc.setFontSize(8);
+                    doc.setFont("helvetica", "normal");
+                    doc.setTextColor(150, 185, 215);
+                    doc.text("Sistema Bibliotecario Escolar \u2013 Colegio Villa Encantada", 16, pH - 6);
+                    doc.text("P\u00e1gina " + data.pageNumber, pW - 16, pH - 6, { align: "right" });
+                }
+            });
+
+            doc.save(nombre.replace(/ /g, "_") + "_" + new Date().toISOString().slice(0, 10) + ".pdf");
+        }
+
+        /* ───── EXCEL ───── */
+        async function exportarExcel() {
+            const activa = getTablaActiva();
+            if (!activa) return;
+            const nombre = NOMBRES_TABLA[activa.id];
+            const fecha = new Date().toLocaleDateString("es-PE", { year: "numeric", month: "long", day: "numeric" });
+
+            const headers = [...activa.table.querySelectorAll("thead th")].map(th => th.textContent.trim());
+            const filas = [...activa.table.querySelectorAll("tbody tr")]
+                .filter(tr => !tr.querySelector(".tabla-vacia"))
+                .map(tr => [...tr.querySelectorAll("td")].map(td => td.textContent.trim()));
+
+            const wb = new ExcelJS.Workbook();
+            wb.creator = "Sistema Biblioteca CVE";
+            wb.created = new Date();
+
+            const ws = wb.addWorksheet(nombre.slice(0, 31), {
+                pageSetup: { paperSize: 9, orientation: "landscape", fitToPage: true }
+            });
+
+            const nCols = headers.length;
+
+            /* ── Fila 1: Titulo institucional ── */
+            ws.mergeCells(1, 1, 1, nCols);
+            const cTitulo = ws.getCell("A1");
+            cTitulo.value = nombre.toUpperCase() + " \u2013 COLEGIO VILLA ENCANTADA";
+            cTitulo.font = { bold: true, size: 13, color: { argb: "FFFFFFFF" }, name: "Calibri" };
+            cTitulo.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0F2A44" } };
+            cTitulo.alignment = { horizontal: "center", vertical: "middle" };
+            ws.getRow(1).height = 32;
+
+            /* ── Fila 2: Subtitulo / fecha ── */
+            ws.mergeCells(2, 1, 2, nCols);
+            const cFecha = ws.getCell("A2");
+            cFecha.value = "Sistema Bibliotecario Escolar  |  Generado: " + fecha;
+            cFecha.font = { italic: true, size: 9, color: { argb: "FF163252" }, name: "Calibri" };
+            cFecha.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD6E4F7" } };
+            cFecha.alignment = { horizontal: "center", vertical: "middle" };
+            ws.getRow(2).height = 18;
+
+            /* ── Fila 3: separador ── */
+            ws.addRow([]);
+            ws.getRow(3).height = 6;
+
+            /* ── Fila 4: Headers ── */
+            const hRow = ws.addRow(headers);
+            hRow.height = 24;
+            hRow.eachCell(cell => {
+                cell.font = { bold: true, size: 10, color: { argb: "FFFFFFFF" }, name: "Calibri" };
+                cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF163252" } };
+                cell.alignment = { horizontal: "center", vertical: "middle" };
+                cell.border = {
+                    top: { style: "medium", color: { argb: "FF0F2A44" } },
+                    bottom: { style: "medium", color: { argb: "FF0F2A44" } },
+                    left: { style: "thin", color: { argb: "FF1D4D7A" } },
+                    right: { style: "thin", color: { argb: "FF1D4D7A" } }
+                };
+            });
+
+            /* ── Filas de datos ── */
+            filas.forEach((fila, idx) => {
+                const r = ws.addRow(fila);
+                r.height = 20;
+                const bgColor = idx % 2 === 0 ? "FFFFFFFF" : "FFF0F4FA";
+                r.eachCell({ includeEmpty: true }, cell => {
+                    cell.font = { size: 10, color: { argb: "FF2D3748" }, name: "Calibri" };
+                    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: bgColor } };
+                    cell.alignment = { vertical: "middle", wrapText: false };
+                    cell.border = {
+                        top: { style: "hair", color: { argb: "FFDDE3EA" } },
+                        bottom: { style: "hair", color: { argb: "FFDDE3EA" } },
+                        left: { style: "hair", color: { argb: "FFDDE3EA" } },
+                        right: { style: "hair", color: { argb: "FFDDE3EA" } }
+                    };
+                });
+            });
+
+            /* ── Fila total ── */
+            ws.addRow([]);
+            const rTotal = ws.addRow(["Total: " + filas.length + " registros"]);
+            ws.mergeCells(rTotal.number, 1, rTotal.number, nCols);
+            rTotal.getCell(1).font = { bold: true, italic: true, size: 9, color: { argb: "FF8A95A3" } };
+            rTotal.getCell(1).alignment = { horizontal: "right" };
+            rTotal.height = 16;
+
+            /* ── Anchos de columna ── */
+            headers.forEach((h, i) => {
+                const maxLen = Math.max(h.length, ...filas.map(f => (f[i] || "").length));
+                ws.getColumn(i + 1).width = Math.min(Math.max(maxLen + 4, 14), 40);
+            });
+
+            /* ── Guardar ── */
+            const buffer = await wb.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+            const url = URL.createObjectURL(blob);
+            const a = Object.assign(document.createElement("a"), { href: url, download: nombre.replace(/ /g, "_") + "_" + new Date().toISOString().slice(0, 10) + ".xlsx" });
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+
+</body>
+
+</html>

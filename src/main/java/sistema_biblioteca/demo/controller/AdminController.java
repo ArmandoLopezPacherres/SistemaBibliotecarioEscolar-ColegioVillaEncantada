@@ -405,8 +405,8 @@ public class AdminController {
                     redirectAttributes.addFlashAttribute("mensajeError", "La contraseña actual es incorrecta.");
                     return "redirect:/panel-admin/perfil";
                 }
-                if (!password.equals(confirmarPassword)) {
-                    redirectAttributes.addFlashAttribute("mensajeError", "Las contraseñas nuevas no coinciden.");
+                if (password == null || !password.equals(confirmarPassword)) {
+                    redirectAttributes.addFlashAttribute("mensajeError", "Las contraseñas nuevas no coinciden o están vacías.");
                     return "redirect:/panel-admin/perfil";
                 }
                 if (password.length() < 6) {
