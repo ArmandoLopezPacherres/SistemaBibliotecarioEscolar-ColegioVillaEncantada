@@ -57,4 +57,15 @@ public class Usuario {
     public void setRol(RolUsuario rol) {
         this.rol = rol;
     }
+
+    @Transient
+    private String estadoLector;
+
+    public String getEstadoLector() {
+        return estadoLector;
+    }
+
+    public void setEstadoLector(String estadoLector) {
+        this.estadoLector = estadoLector;
+    }
 }
