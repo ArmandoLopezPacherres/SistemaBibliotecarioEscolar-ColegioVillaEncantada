@@ -5,407 +5,396 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Usuarios</title>
-
-    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Iconos -->
-    <link rel="stylesheet" 
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-<!-- Ruta Css -->
-    <link rel="stylesheet" href="../../static/Administrador/GestionUsuario.css">
-    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/Administrador/GestionUsuario.css}">
 </head>
 
 <body>
 
-    <!-- SIDEBAR-->
-
     <aside class="sidebar">
-
         <div>
-
             <div class="logo-section">
-                <img src="../../static/img/logo-CVE.png" alt="logo">
+                <img th:src="@{/img/logo-CVE.png}" alt="logo">
                 <h5>Administrador</h5>
             </div>
-
             <nav class="menu">
-
-                <a href="#">
-                    <i class="bi bi-graph-up"></i>
-                    Dashboard
+                <a th:href="@{/panel-admin}">
+                    <i class="bi bi-graph-up"></i> Dashboard
                 </a>
-
-                <a href="#" class="activo">
-                    <i class="bi bi-people-fill"></i>
-                    Gestión de usuarios
+                <a th:href="@{/panel-admin/usuarios}" class="activo">
+                    <i class="bi bi-people-fill"></i> Gestión de usuarios
                 </a>
-
-                <a href="#">
-                    <i class="bi bi-journal"></i>
-                    Gestión de catálogo
+                <a th:href="@{/panel-admin/catalogo}">
+                    <i class="bi bi-journal"></i> Gestión de catálogo
                 </a>
-
-                <a href="#">
-                    <i class="bi bi-bar-chart-line"></i>
-                    Reportes
+                <a th:href="@{/panel-admin/reportes}">
+                    <i class="bi bi-bar-chart-line"></i> Reportes
                 </a>
-
-                <a href="#">
-                    <i class="bi bi-person"></i>
-                    Perfil
+                <a th:href="@{/panel-admin/perfil}">
+                    <i class="bi bi-person"></i> Perfil
                 </a>
-
             </nav>
-
         </div>
-
         <div class="logout">
-
             <form th:action="@{/logout}" method="post">
-
-                <button type="submit"
-                    class="btn btn-outline-light w-100 rounded-pill fw-bold">
-
+                <button type="submit" class="btn-logout">
                     <i class="bi bi-box-arrow-right"></i>
                     Cerrar Sesión
-
                 </button>
-
             </form>
-
         </div>
-
     </aside>
 
 
-    <!-- MAIN CONTENT -->
-
     <main class="main-content">
 
-        <!-- TOP -->
         <div class="topbar">
-
             <div>
                 <h1>Gestión de Usuarios</h1>
                 <p>Administra todos los roles del sistema</p>
             </div>
-
             <div class="d-flex align-items-center gap-3">
-
                 <div class="welcome">
-                    <i class="fa-regular fa-user"></i>
-                    ¡Bienvenido <strong>Karolay!</strong>
+                    <i class="bi bi-person-circle"></i>
+                    ¡Bienvenido <strong th:text="${usuario != null ? usuario.nombre : 'Administrador'}">Administrador</strong>!
                 </div>
-
                 <button class="btn-create" onclick="openCreateModal()">
                     <i class="bi bi-plus"></i>
                     Crear usuario
                 </button>
-
             </div>
-
         </div>
 
+        <div th:if="${mensajeExito}"
+             id="toastData"
+             data-tipo="exito"
+             th:data-mensaje="${mensajeExito}"
+             style="display:none;">
+        </div>
+        <div th:if="${mensajeError}"
+             id="toastData"
+             data-tipo="error"
+             th:data-mensaje="${mensajeError}"
+             style="display:none;">
+        </div>
 
-        <!-- STATS -->
         <section class="stats">
-
             <div class="stat-box">
                 <i class="bi bi-person red"></i>
-
                 <div>
                     <h5><small>Administradores</small></h5>
-                    <h5>1</h5>
+                    <h5 th:text="${totalAdmins}">0</h5>
                 </div>
             </div>
-
             <div class="stat-box">
                 <i class="bi bi-person purple"></i>
-
                 <div>
                     <h5><small>Bibliotecarios</small></h5>
-                    <h5>1</h5>
+                    <h5 th:text="${totalBibliotecarios}">0</h5>
                 </div>
             </div>
- 
             <div class="stat-box">
                 <i class="bi bi-person green"></i>
-
                 <div>
                     <h5><small>Profesores</small></h5>
-                    <h5>2</h5>
+                    <h5 th:text="${totalProfesores}">0</h5>
                 </div>
             </div>
-
             <div class="stat-box">
                 <i class="bi bi-person pink"></i>
-
                 <div>
                     <h5><small>Estudiantes</small></h5>
-                    <h5>3</h5>
+                    <h5 th:text="${totalEstudiantes}">0</h5>
                 </div>
             </div>
-
         </section>
 
-
-        <!-- FILTERS -->
         <section class="filters">
-
-            <input type="text"
-                placeholder="Busca por nombre, email o código">
-
+            <input id="filtroTexto" type="text" placeholder="Busca por nombre o código" oninput="filtrarTabla()">
             <div class="filter-right">
-
-                <select>
-                    <option>Todos los roles</option>
-                    <option>Administrador</option>
-                    <option>Bibliotecario</option>
-                    <option>Profesor</option>
-                    <option>Estudiante</option>
+                <select id="filtroRol" onchange="filtrarTabla()">
+                    <option value="">Todos los roles</option>
+                    <option value="ADMINISTRADOR">Administrador</option>
+                    <option value="BIBLIOTECARIO">Bibliotecario</option>
+                    <option value="PROFESOR">Profesor</option>
+                    <option value="ESTUDIANTE">Estudiante</option>
                 </select>
-
-                <select>
-                    <option>Todos los estados</option>
-                    <option>Activo</option>
-                    <option>Inactivo</option>
+                <select id="filtroEstado" onchange="filtrarTabla()">
+                    <option value="">Todos los estados</option>
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
                 </select>
-
             </div>
-
         </section>
 
-
-        <!-- TABLA -->
         <section class="table-container">
-
-            <table class="table table-hover align-middle">
-
+            <table class="table table-hover align-middle" id="tablaUsuarios">
                 <thead>
                     <tr>
                         <th>Nombre</th>
-                        <th>Código</th>
-                        <th>Correo</th>
-                        <th>Rol</th>
-                        <th>Último acceso</th>
+                        <th class="text-center">Código</th>
+                        <th class="text-center">Rol</th>
                         <th>Estado</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
-
                 <tbody>
-
-                    <tr>
-                        <td>Karolay Huamani</td>
-                        <td>A001</td>
-                        <td>karolay@gmail.com</td>
-                        <td>Administrador</td>
-                        <td>2026-05-24</td>
-
-                        <td class="status-active">
-                            Activo
+                    <tr th:each="u : ${listaUsuarios}"
+                        th:attr="data-nombre=${u.nombre}, data-codigo=${u.codigo}, data-rol=${u.rol}, data-estado=${u.activo ? 'Activo' : 'Inactivo'}">
+                        <td th:text="${u.nombre}">Nombre</td>
+                        <td class="text-center" th:text="${u.codigo}">Código</td>
+                        <td class="text-center">
+                            <span class="rol-badge" th:text="${u.rol}">Rol</span>
                         </td>
-
+                        <td>
+                            <span th:text="${u.activo ? 'Activo' : 'Inactivo'}"
+                                  th:class="${u.activo ? 'status-badge active' : 'status-badge inactive'}">Activo</span>
+                        </td>
                         <td class="action-icons">
-
                             <i class="bi bi-pencil-square"
-                                onclick="openEditModal()"></i>
-
-                            <i class="bi bi-trash"></i>
-
+                               th:attr="onclick=|openEditModal('${u.id}', '${u.nombre}', '${u.codigo}', '${u.rol}')|"  
+                               title="Editar usuario"
+                               th:if="${u.activo}"></i>
+                            <i class="bi bi-person-dash text-danger"
+                               th:attr="onclick=|openDeactivateModal('${u.id}', '${u.nombre}')|"
+                               title="Inactivar usuario"
+                               th:if="${u.activo}"></i>
+                            <i class="bi bi-person-check text-success"
+                               th:attr="onclick=|openActivateModal('${u.id}', '${u.nombre}')|"
+                               title="Activar usuario"
+                               th:if="${!u.activo}"></i>
                         </td>
                     </tr>
-
-                    <tr>
-                        <td>María Gonzáles</td>
-                        <td>B001</td>
-                        <td>maria@gmail.com</td>
-                        <td>Bibliotecario</td>
-                        <td>2026-05-24</td>
-
-                        <td class="status-active">
-                            Activo
-                        </td>
-
-                        <td class="action-icons">
-
-                            <i class="bi bi-pencil-square"
-                                onclick="openEditModal()"></i>
-
-                            <i class="bi bi-trash"></i>
-
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td>Carlos Ramírez</td>
-                        <td>P010</td>
-                        <td>carlos@gmail.com</td>
-                        <td>Profesor</td>
-                        <td>2026-05-24</td>
-
-                        <td class="status-inactive">
-                            Inactivo
-                        </td>
-
-                        <td class="action-icons">
-
-                            <i class="bi bi-pencil-square"
-                                onclick="openEditModal()"></i>
-
-                            <i class="bi bi-trash"></i>
-
-                        </td>
-                    </tr>
-
                 </tbody>
-
             </table>
-
+            <div id="sinResultados" class="sin-resultados" style="display:none;">
+                <i class="bi bi-search"></i>
+                <p>No se encontraron usuarios con ese criterio de búsqueda.</p>
+            </div>
         </section>
 
     </main>
 
 
-
-    <!-- CREAR -->
-
     <div class="modal-overlay" id="createModal">
-
         <div class="modal-box">
-
-            <img src="../../static/img/logo-CVE.png" alt="logo">
-
-            <h2>Crear Usuario</h2>
-
-            <label>Rol del usuario</label>
-
-            <select>
-                <option>Estudiante</option>
-                <option>Profesor</option>
-                <option>Bibliotecario</option>
-                <option>Administrador</option>
-            </select>
-
-            <label>Correo Personal</label>
-            <input type="email" placeholder="Ingrese correo...">
-
-            <label>Nombre</label>
-            <input type="text" placeholder="Ingrese nombre...">
-
-            <label>Apellido</label>
-            <input type="text" placeholder="Ingrese apellido...">
-
-            <label>Contraseña</label>
-            <input type="password" placeholder="Ingrese contraseña...">
-
-            <div class="modal-actions">
-
-                <button class="btn-cancel"
-                    onclick="closeCreateModal()">
-
-                    Atrás
-
-                </button>
-
-                <button class="btn-save">
-                    Crear
-                </button>
-
-            </div>
-
+            <form th:action="@{/panel-admin/usuarios/guardar}" method="post" th:object="${nuevoUsuario}">
+                <img th:src="@{/img/logo-CVE.png}" alt="logo">
+                <h2>Crear Usuario</h2>
+                <label>Rol del usuario</label>
+                <select th:field="*{rol}" required>
+                    <option value="ESTUDIANTE">Estudiante</option>
+                    <option value="PROFESOR">Profesor</option>
+                    <option value="BIBLIOTECARIO">Bibliotecario</option>
+                    <option value="ADMINISTRADOR">Administrador</option>
+                </select>
+                <label>Código de Usuario</label>
+                <div class="codigo-input-wrapper">
+                    <input type="text" th:field="*{codigo}" id="createCodigo" placeholder="Ingrese código..." required>
+                    <button type="button" class="btn-generar" onclick="generarCodigo()" title="Generar código automático">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                            <path d="M5 3a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5zm0 2h2v2H5V5zM5 13a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2H5zm0 2h2v2H5v-2zM15 3a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2zm0 2h2v2h-2V5zM13 15a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-2zm2 0v2h2v-2h-2zM11 7H9v2h2V7zm0 4H9v2h2v-2zm-2 4h2v2H9v-2zm4-4h-2v2h2v-2zm0 4h-2v2h2v-2zm2-4h2v2h-2v-2z"/>
+                        </svg>
+                    </button>
+                </div>
+                <label>Nombre</label>
+                <input type="text" th:field="*{nombre}" placeholder="Ingrese nombre..." required>
+                <label>Apellido</label>
+                <input type="text" th:field="*{apellido}" placeholder="Ingrese apellido..." required>
+                <label>Contraseña</label>
+                <input type="password" th:field="*{password}" placeholder="Ingrese contraseña..." required>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeCreateModal()">Atrás</button>
+                    <button type="submit" class="btn-save">Crear</button>
+                </div>
+            </form>
         </div>
-
     </div>
 
-
-
-    <!-- EDITAR -->
 
     <div class="modal-overlay" id="editModal">
-
         <div class="modal-box">
-
-            <img src="../../static/img/logo-CVE.png" alt="logo">
-
-            <h2>Editar Usuario</h2>
-
-            <label>Rol del usuario</label>
-
-            <select>
-                <option>Estudiante</option>
-                <option>Profesor</option>
-                <option>Bibliotecario</option>
-                <option>Administrador</option>
-            </select>
-
-            <label>Estado</label>
-
-            <select>
-                <option>Activo</option>
-                <option>Inactivo</option>
-            </select>
-
-            <label>Correo Personal</label>
-            <input type="email" value="karolay@gmail.com" disabled>
-
-            <label>Nombre</label>
-            <input type="text" value="Karolay">
-
-            <label>Apellido</label>
-            <input type="text" value="Huamani Villavicencio">
-
-            <label>Contraseña</label>
-            <input type="password" value="12345678">
-
-            <div class="modal-actions">
-
-                <button class="btn-cancel"
-                    onclick="closeEditModal()">
-
-                    Cancelar
-
-                </button>
-
-                <button class="btn-save">
-                    Aceptar
-                </button>
-
-            </div>
-
+            <form th:action="@{/panel-admin/usuarios/guardar}" method="post" id="editForm">
+                <input type="hidden" name="id" id="editId">
+                <img th:src="@{/img/logo-CVE.png}" alt="logo">
+                <h2>Editar Usuario</h2>
+                <label>Rol del usuario</label>
+                <select name="rol" id="editRol" required>
+                    <option value="ESTUDIANTE">Estudiante</option>
+                    <option value="PROFESOR">Profesor</option>
+                    <option value="BIBLIOTECARIO">Bibliotecario</option>
+                    <option value="ADMINISTRADOR">Administrador</option>
+                </select>
+                <label>Código de Usuario</label>
+                <input type="text" name="codigo" id="editCodigo" required>
+                <label>Nombre Completo</label>
+                <input type="text" name="nombre" id="editNombre" required>
+                <label>Restablecer contraseña <small style="opacity:0.6;font-weight:400">(Dejar vacío para no cambiar)</small></label>
+                <input type="password" name="password" id="editPassword">
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeEditModal()">Cancelar</button>
+                    <button type="submit" class="btn-save">Aceptar</button>
+                </div>
+            </form>
         </div>
-
     </div>
 
 
+    <div class="modal-overlay" id="deactivateModal">
+        <div class="modal-box modal-confirm">
+            <div class="confirm-icon">
+                <i class="bi bi-person-dash-fill"></i>
+            </div>
+            <h2>Inactivar Usuario</h2>
+            <p id="deactivateMsg">¿Estás seguro de que deseas inactivar a este usuario?</p>
+            <p class="confirm-warning">Esta acción impedirá que el usuario pueda iniciar sesión en el sistema.</p>
+            <form th:action="@{/panel-admin/usuarios/eliminar/__${0}__}" method="post" id="deactivateForm">
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeDeactivateModal()">Cancelar</button>
+                    <button type="submit" class="btn-danger-confirm">Inactivar</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-    <!-- JAVASCRIPT -->
+    <div class="modal-overlay" id="activateModal">
+        <div class="modal-box modal-confirm">
+            <div class="confirm-icon confirm-icon-success">
+                <i class="bi bi-person-check-fill"></i>
+            </div>
+            <h2>Activar Usuario</h2>
+            <p id="activateMsg">¿Estás seguro de que deseas activar a este usuario?</p>
+            <p class="confirm-warning">El usuario podrá iniciar sesión nuevamente en el sistema.</p>
+            <form th:action="@{/panel-admin/usuarios/activar/__${0}__}" method="post" id="activateForm">
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeActivateModal()">Cancelar</button>
+                    <button type="submit" class="btn-success-confirm">Activar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div id="toast" class="toast-notif" role="alert" aria-live="polite">
+        <span id="toastIcon"></span>
+        <span id="toastMsg"></span>
+    </div>
 
     <script>
+        function mostrarToast(mensaje, tipo) {
+            const toast = document.getElementById("toast");
+            const icon  = document.getElementById("toastIcon");
+            const msg   = document.getElementById("toastMsg");
 
-        // MODAL CREAR
+            icon.textContent = tipo === "exito" ? "✓" : "✕";
+            msg.textContent  = mensaje;
+            toast.className  = "toast-notif toast-" + tipo + " toast-show";
 
-        function openCreateModal(){
-            document.getElementById("createModal").style.display="flex";
+            setTimeout(() => {
+                toast.classList.remove("toast-show");
+            }, 2000);
         }
 
-        function closeCreateModal(){
-            document.getElementById("createModal").style.display="none";
+        document.addEventListener("DOMContentLoaded", () => {
+            const data = document.getElementById("toastData");
+            if (data) {
+                mostrarToast(data.dataset.mensaje, data.dataset.tipo);
+            }
+        });
+
+        const PREFIJOS = {
+            ADMINISTRADOR: "A",
+            BIBLIOTECARIO: "B",
+            PROFESOR:      "P",
+            ESTUDIANTE:    "E"
+        };
+
+        function generarCodigo() {
+            const rol    = document.querySelector("#createModal select[name='rol']").value;
+            const prefijo = PREFIJOS[rol] || "U";
+            const numero = String(Math.floor(Math.random() * 90000000) + 10000000);
+            document.getElementById("createCodigo").value = prefijo + numero;
         }
 
-        // MODAL EDITAR
-
-        function openEditModal(){
-            document.getElementById("editModal").style.display="flex";
+        function openCreateModal() {
+            document.getElementById("createModal").style.display = "flex";
+        }
+        function closeCreateModal() {
+            document.getElementById("createModal").style.display = "none";
         }
 
-        function closeEditModal(){
-            document.getElementById("editModal").style.display="none";
+        function openEditModal(id, nombre, codigo, rol) {
+            document.getElementById("editId").value = id;
+            document.getElementById("editNombre").value = nombre;
+            document.getElementById("editCodigo").value = codigo;
+            document.getElementById("editRol").value = rol;
+            document.getElementById("editPassword").value = "";
+            document.getElementById("editModal").style.display = "flex";
+        }
+        function closeEditModal() {
+            document.getElementById("editModal").style.display = "none";
         }
 
+        function openDeactivateModal(id, nombre) {
+            document.getElementById("deactivateMsg").textContent =
+                "¿Estás seguro de que deseas inactivar a " + nombre + "?";
+            document.getElementById("deactivateForm").action =
+                "/panel-admin/usuarios/eliminar/" + id;
+            document.getElementById("deactivateModal").style.display = "flex";
+        }
+        function closeDeactivateModal() {
+            document.getElementById("deactivateModal").style.display = "none";
+        }
+
+        function openActivateModal(id, nombre) {
+            document.getElementById("activateMsg").textContent =
+                "¿Estás seguro de que deseas activar a " + nombre + "?";
+            document.getElementById("activateForm").action =
+                "/panel-admin/usuarios/activar/" + id;
+            document.getElementById("activateModal").style.display = "flex";
+        }
+        function closeActivateModal() {
+            document.getElementById("activateModal").style.display = "none";
+        }
+
+        function filtrarTabla() {
+            const texto  = document.getElementById("filtroTexto").value.toLowerCase();
+            const rol    = document.getElementById("filtroRol").value.toUpperCase();
+            const estado = document.getElementById("filtroEstado").value;
+
+            const filas = document.querySelectorAll("#tablaUsuarios tbody tr");
+            let visibles = 0;
+
+            filas.forEach(fila => {
+                const nombre  = (fila.dataset.nombre  || "").toLowerCase();
+                const codigo  = (fila.dataset.codigo  || "").toLowerCase();
+                const filRol  = (fila.dataset.rol     || "").toUpperCase();
+                const filEst  = (fila.dataset.estado  || "");
+
+                const coincideTexto  = nombre.includes(texto) || codigo.includes(texto);
+                const coincideRol    = rol    === "" || filRol === rol;
+                const coincideEstado = estado === "" || filEst === estado;
+
+                if (coincideTexto && coincideRol && coincideEstado) {
+                    fila.style.display = "";
+                    visibles++;
+                } else {
+                    fila.style.display = "none";
+                }
+            });
+
+            document.getElementById("sinResultados").style.display =
+                visibles === 0 ? "flex" : "none";
+        }
+
+        document.querySelectorAll(".modal-overlay").forEach(overlay => {
+            overlay.addEventListener("click", function(e) {
+                if (e.target === this) {
+                    this.style.display = "none";
+                }
+            });
+        });
     </script>
 
 </body>

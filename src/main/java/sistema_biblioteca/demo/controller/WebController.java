@@ -56,31 +56,13 @@ public class WebController {
         if (rol.equals("ROLE_ADMINISTRADOR")) {
             return "redirect:/panel-admin";
         } else if (rol.equals("ROLE_BIBLIOTECARIO")) {
-            return "redirect:/panel-bibliotecario";
+            return "redirect:/panel-bibliotecario/lectores";
         } else if (rol.equals("ROLE_PROFESOR")) {
-            return "redirect:/panel-profesor";
+            return "redirect:/panel-profesor/buscar-libro";
         } else if (rol.equals("ROLE_ESTUDIANTE")) {
-            return "redirect:/panel-estudiante";
+            return "redirect:/estudiante/buscar-libro";
         }
         return "redirect:/";
-    }
-
-    @GetMapping("/panel-admin")
-    public String panelAdmin(Model model, Principal principal) {
-        cargarUsuarioEnModelo(model, principal);
-        return "panel-admin";
-    }
-
-    @GetMapping("/panel-bibliotecario")
-    public String panelBibliotecario(Model model, Principal principal) {
-        cargarUsuarioEnModelo(model, principal);
-        return "panel-bibliotecario";
-    }
-
-    @GetMapping("/panel-profesor")
-    public String panelProfesor(Model model, Principal principal) {
-        cargarUsuarioEnModelo(model, principal);
-        return "panel-profesor";
     }
 
     @GetMapping("/panel-estudiante")

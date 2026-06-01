@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
@@ -15,7 +15,7 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 
     <!-- CSS -->
-    <link rel="stylesheet" href="../../static/Profesor/historial.css">
+    <link rel="stylesheet" th:href="@{/Profesor/historial.css}">
 
 </head>
 
@@ -31,7 +31,7 @@
                 <!-- LOGO -->
                 <div class="logo-section">
 
-                    <img src="../../static/img/logo-CVE.png" alt="logo">
+                    <img th:src="@{/img/logo-CVE.png}" alt="logo">
 
                     <h5>Profesor</h5>
 
@@ -43,35 +43,35 @@
                 <ul class="menu">
 
                     <li>
-                        <a href="#">
+                        <a th:href="@{/panel-profesor/buscar-libro}">
                             <i class="fa-solid fa-book-open"></i>
                             Buscar libros
                         </a>
                     </li>
 
                     <li>
-                        <a href="#">
+                        <a th:href="@{/panel-profesor/mi-actividad}">
                             <i class="fa-solid fa-bolt"></i>
                             Mi actividad
                         </a>
                     </li>
 
                     <li>
-                        <a href="#" class="active">
+                        <a th:href="@{/panel-profesor/historial}" class="active">
                             <i class="fa-regular fa-clock"></i>
                             Historial
                         </a>
                     </li>
 
                     <li>
-                        <a href="#">
+                        <a th:href="@{/panel-profesor/notificaciones}">
                             <i class="fa-regular fa-bell"></i>
-                            Notificaciones +2
+                            Notificaciones
                         </a>
                     </li>
 
                     <li>
-                        <a href="#">
+                        <a th:href="@{/panel-profesor/perfil}">
                             <i class="fa-regular fa-user"></i>
                             Perfil
                         </a>
@@ -83,14 +83,10 @@
 
             <!-- LOGOUT -->
             <div class="logout">
-
-                <a href="#">
-
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                    Cerrar sesión
-
+                <form th:action="@{/logout}" method="post" id="logoutForm" style="display: none;"></form>
+                <a href="javascript:document.getElementById('logoutForm').submit();">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar sesión
                 </a>
-
             </div>
 
         </aside>
@@ -116,7 +112,7 @@
                     <i class="fa-regular fa-user"></i>
 
                     ¡Bienvenido
-                    <strong>Juan</strong>!
+                    <strong th:text="${usuario.nombre}">Usuario</strong>!
 
                 </div>
 
@@ -127,26 +123,15 @@
 
                 <div class="section-header">
 
-                    <h3>Entregas y Devoluciones</h3>
+                    <h3>Devoluciones</h3>
 
                     <div class="filters">
 
-                        <select class="filter-select">
-
-                            <option>Fecha Entrega</option>
-                            <option>21-05-26</option>
-                            <option>18-05-26</option>
-                            <option>28-04-26</option>
-
-                        </select>
-
-                        <select class="filter-select">
-
-                            <option>Fecha Devolución</option>
-                            <option>23-05-26</option>
-                            <option>20-05-26</option>
-                            <option>30-04-26</option>
-
+                        <select class="filter-select" id="filtro-orden" onchange="aplicarFiltros()">
+                            <option value="devolucion-desc">Fecha Devolución (Más recientes)</option>
+                            <option value="devolucion-asc">Fecha Devolución (Más antiguos)</option>
+                            <option value="entrega-desc">Fecha Entrega (Más recientes)</option>
+                            <option value="entrega-asc">Fecha Entrega (Más antiguos)</option>
                         </select>
 
                     </div>
@@ -163,6 +148,7 @@
                             <tr>
 
                                 <th>Título del Libro</th>
+                                <th>Categoría</th>
                                 <th>Fecha Entrega</th>
                                 <th>Fecha Devolución</th>
 
@@ -170,65 +156,8 @@
 
                         </thead>
 
-                        <tbody>
-
-                            <tr>
-
-                                <td>
-                                    <strong>Libro:</strong>
-                                    Historias Ancestrales
-                                </td>
-
-                                <td>
-                                    <strong>Fecha:</strong>
-                                    21-05-26
-                                </td>
-
-                                <td>
-                                    <strong>Fecha:</strong>
-                                    23-05-26
-                                </td>
-
-                            </tr>
-
-                            <tr>
-
-                                <td>
-                                    <strong>Libro:</strong>
-                                    El Reino Animal
-                                </td>
-
-                                <td>
-                                    <strong>Fecha:</strong>
-                                    18-05-26
-                                </td>
-
-                                <td>
-                                    <strong>Fecha:</strong>
-                                    20-05-26
-                                </td>
-
-                            </tr>
-
-                            <tr>
-
-                                <td>
-                                    <strong>Libro:</strong>
-                                    La cadena alimenticia de 2000
-                                </td>
-
-                                <td>
-                                    <strong>Fecha:</strong>
-                                    28-04-26
-                                </td>
-
-                                <td>
-                                    <strong>Fecha:</strong>
-                                    30-04-26
-                                </td>
-
-                            </tr>
-
+                        <tbody id="tbody-historial">
+                            <!-- JS inyectará los datos aquí -->
                         </tbody>
 
                     </table>
@@ -241,6 +170,88 @@
 
     </div>
 
+    <!-- Script Principal -->
+    <script>
+        let allHistorial = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchHistorial();
+        });
+
+        function fetchHistorial() {
+            fetch('/api/profesor/historial/prestamos')
+                .then(res => res.json())
+                .then(data => {
+                    allHistorial = data;
+                    aplicarFiltros();
+                })
+                .catch(err => console.error("Error cargando historial", err));
+        }
+
+        function formatDate(isoString) {
+            if (!isoString) return '-';
+            const [year, month, day] = isoString.split('-');
+            return `${day}-${month}-${year.substring(2)}`;
+        }
+
+        function aplicarFiltros() {
+            const orden = document.getElementById('filtro-orden').value;
+            let filtrados = [...allHistorial];
+            
+            filtrados.sort((a, b) => {
+                const fDevA = new Date(a.fechaDevolucionReal || a.fechaDevolucionEsperada);
+                const fDevB = new Date(b.fechaDevolucionReal || b.fechaDevolucionEsperada);
+                const fEntA = new Date(a.fechaPrestamo);
+                const fEntB = new Date(b.fechaPrestamo);
+
+                switch(orden) {
+                    case 'devolucion-desc': return fDevB - fDevA;
+                    case 'devolucion-asc': return fDevA - fDevB;
+                    case 'entrega-desc': return fEntB - fEntA;
+                    case 'entrega-asc': return fEntA - fEntB;
+                    default: return fDevB - fDevA;
+                }
+            });
+            
+            renderHistorial(filtrados);
+        }
+
+        function renderHistorial(historial) {
+            const tbody = document.getElementById('tbody-historial');
+            tbody.innerHTML = '';
+
+            if (historial.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Aún no tienes libros en tu historial.</td></tr>';
+                return;
+            }
+
+            historial.forEach(p => {
+                const tr = document.createElement('tr');
+                // Utilizamos fechaDevolucionReal si existe, sino fechaDevolucionEsperada
+                const fechaDev = p.fechaDevolucionReal ? p.fechaDevolucionReal : p.fechaDevolucionEsperada;
+                
+                tr.innerHTML = `
+                    <td>
+                        <strong>Libro:</strong>
+                        ${p.libro.titulo}
+                    </td>
+                    <td>
+                        <strong>Categoría:</strong>
+                        ${p.libro.categoria ? p.libro.categoria.nombre : 'General'}
+                    </td>
+                    <td>
+                        <strong>Fecha:</strong>
+                        ${formatDate(p.fechaPrestamo)}
+                    </td>
+                    <td>
+                        <strong>Fecha:</strong>
+                        ${formatDate(fechaDev)}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    </script>
 </body>
 
 </html>

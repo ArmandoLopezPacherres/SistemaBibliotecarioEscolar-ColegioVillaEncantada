@@ -18,8 +18,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/about", "/news", "/schedules", "/styles.css", "/img/**").permitAll()
                         .requestMatchers("/panel-admin/**").hasRole("ADMINISTRADOR")
+                        .requestMatchers("/api/admin/**").hasRole("ADMINISTRADOR")
                         .requestMatchers("/panel-bibliotecario/**").hasRole("BIBLIOTECARIO")
                         .requestMatchers("/panel-profesor/**").hasRole("PROFESOR")
+                        .requestMatchers("/api/profesor/**").hasRole("PROFESOR")
                         .requestMatchers("/panel-estudiante/**").hasRole("ESTUDIANTE")
                         .anyRequest().authenticated())
                 .formLogin(form -> form

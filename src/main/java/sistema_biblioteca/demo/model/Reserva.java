@@ -33,6 +33,9 @@ public class Reserva {
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean notificado = false;
 
+    @Column(nullable = false, columnDefinition = "INT DEFAULT 1")
+    private int cantidad = 1;
+
     public Reserva() {
     }
 
@@ -86,4 +89,7 @@ public class Reserva {
 
     public boolean isNotificado() { return notificado; }
     public void setNotificado(boolean notificado) { this.notificado = notificado; }
+
+    public int getCantidad() { return cantidad; }
+    public void setCantidad(int cantidad) { this.cantidad = cantidad; }
 }

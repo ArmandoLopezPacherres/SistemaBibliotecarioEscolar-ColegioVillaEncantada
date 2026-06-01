@@ -15,4 +15,6 @@ public interface UsuarioService {
     Usuario obtenerPorId(Long id);
 
     void eliminarUsuario(Long id);
+
+    boolean existePorCodigo(String codigo, Long idExcluir);
 }

@@ -1,242 +1,374 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial, Helvetica, sans-serif;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', Arial, sans-serif;
 }
 
-body{
-    background:#f5f6fa;
+body {
+    background: #ffffff;
 }
 
-                /* SIDEBAR */
-
-        .sidebar{
-            width:270px;
-            background:#072b4a;
-            color:white;
-            display:flex;
-            flex-direction:column;
-            justify-content:space-between;
-            padding:25px 20px;
-            height:100vh;
-            position:fixed;
-            left:0;
-            top:0;
-
-        }
-
-        .logo-section{
-            text-align:center;
-        }
-
-        .logo-section img{
-            width:90px;
-            margin-bottom:10px;
-        }
-
-        .logo-section h5{
-            font-size:18px;
-            font-weight:600px;
-        }
-
-        .sidebar hr {
-            border-color: rgba(255,255,255,0.2);
-            margin: 25px 0;
-        }
-
-        .menu{
-            margin-top:40px;
-            display:flex;
-            flex-direction:column;
-            gap:15px;
-            padding:0;
-        }
-
-        .menu a,
-        .logout a{
-            color:white;
-            text-decoration:none;
-            padding:12px 14px;
-            border-radius:10px;
-            display:flex;
-            align-items:center;
-            gap:12px;
-            transition:0.3s;
-            font-weight:500;
-        }
-
-        .menu a:hover,
-        .menu .activo{
-            background-color: rgba(255,255,255,0.12);
-        }
-
-        .menu i{
-            width:20px;
-        }
-
-       
-
-        .logout form{
-            color: white;
-            text-decoration: none;
-
-            display: flex;
-            align-items: center;
-            gap: 10px;
-
-            padding: 10px;
-
-        }
-/* CONTENIDO */
-
-.contenido{
-    margin-left:260px;
-    padding:30px;
+.sidebar {
+    width: 270px;
+    background: #072b4a;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 25px 20px;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    line-height: normal;
 }
 
-.top{
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            margin-bottom:30px;
-        }
-
-        .top h1{
-            font-size:38px;
-            color:#0F2A44;
-            font-weight:bold;
-        }
-
-        .top p{
-            color:gray;
-            margin-top:5px;
-        }
-
-        .welcome{
-            color:#555;
-            font-size:16px;
-        }
-
-/* PERFIL */
-
-.perfil-contenedor{
-    background:white;
-    border-radius:15px;
-    padding:35px;
-    border:1px solid #ddd;
+.logo-section {
+    text-align: center;
 }
 
-/* CONTENIDO PERFIL */
-
-.perfil-superior{
-    display:flex;
-    align-items:flex-start;
-    gap:40px;
+.logo-section img {
+    width: 90px;
+    display: block;
+    margin: 0 auto 10px auto;
 }
 
-/* FOTO */
-
-.foto-perfil img{
-    width:130px;
-    height:130px;
-    border-radius:50%;
-    object-fit:cover;
-    border:4px solid #0F2A44;
+.logo-section h5 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
 }
 
-/* DATOS */
-
-.datos-perfil{
-    flex:1;
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:25px;
+.menu {
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 0;
 }
 
-.campo-perfil{
-    display:flex;
-    flex-direction:column;
+.menu a {
+    color: white;
+    text-decoration: none;
+    padding: 12px 14px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: 0.3s;
+    font-weight: 500;
 }
 
-.campo-perfil label{
-    margin-bottom:8px;
-    font-weight:bold;
-    color:#0F2A44;
+.menu a:hover,
+.menu .activo {
+    background-color: rgba(255, 255, 255, 0.12);
 }
 
-.campo-perfil input{
-    padding:14px;
-    border:1px solid #f9f9f9;
-    border-radius:10px;
-    outline:none;
+.menu i {
+    width: 20px;
 }
 
-/* PASSWORD */
-
-.input-password{
-    position:relative;
+.btn-logout {
+    width: 100%;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: white;
+    padding: 11px 16px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.2s;
 }
 
-.input-password i{
-    position:absolute;
-    right:15px;
-    top:16px;
-    color:#555;
-    cursor:pointer;
-    gap:8px;
+.btn-logout:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
 
-/* CODIGO */
-
-.ancho-completo{
-    grid-column:1 / 3;
+.contenido {
+    margin-left: 270px;
+    padding: 40px 50px;
 }
 
-/* BOTON */
-
-.contenedor-boton{
-    margin-top:35px;
-    display:flex;
-    justify-content:flex-end;
+.top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
 }
 
-.btn-editar{
-    background:#0F2A44;
-    color:white;
-    border:none;
-    padding:14px 25px;
-    border-radius:10px;
-    font-weight:bold;
-    cursor:pointer;
-    transition:0.3s;
+.top h1 {
+    font-size: 36px;
+    color: #163252;
+    font-weight: 700;
 }
 
-.btn-editar:hover{
-    background:#1d3f63;
+.top p {
+    color: #6c757d;
+    margin-top: 4px;
+    font-size: 14px;
 }
 
-.btn-editar i{
-    margin-right:8px;
+.welcome {
+    color: #555;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
-/* RESPONSIVE */
+.perfil-card {
+    background: white;
+    border-radius: 14px;
+    padding: 40px;
+    border: 1px solid #e4e9f0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
 
-@media(max-width:768px){
+.perfil-layout {
+    display: flex;
+    gap: 48px;
+    align-items: flex-start;
+}
 
-    .perfil-superior{
-        flex-direction:column;
-        align-items:center;
+.columna-foto {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+    padding-top: 8px;
+}
+
+.avatar-inicial {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0F2A44, #1d4d7a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(15, 42, 68, 0.22);
+    border: 4px solid #0F2A44;
+}
+
+.avatar-inicial span {
+    color: white;
+    font-size: 48px;
+    font-weight: 700;
+    text-transform: uppercase;
+    line-height: 1;
+    user-select: none;
+}
+
+.badge-rol {
+    background: #e8f0fe;
+    color: #163252;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 20px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+.columna-campos {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.seccion-titulo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #163252;
+}
+
+.seccion-titulo i {
+    font-size: 16px;
+}
+
+.seccion-hint {
+    font-size: 12px;
+    font-weight: 400;
+    color: #9aa3ae;
+    margin-left: 4px;
+}
+
+.separador {
+    height: 1px;
+    background: #eef0f4;
+}
+
+.campos-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.campo-perfil {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.campo-perfil label {
+    font-weight: 600;
+    font-size: 12.5px;
+    color: #163252;
+    letter-spacing: 0.2px;
+}
+
+.campo-perfil input {
+    padding: 11px 14px;
+    border: 1.5px solid #dde3ea;
+    border-radius: 9px;
+    outline: none;
+    font-size: 14px;
+    color: #1a1a2e;
+    background: white;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.campo-perfil input:focus {
+    border-color: #0F2A44;
+    box-shadow: 0 0 0 3px rgba(15, 42, 68, 0.08);
+}
+
+.campo-perfil input[readonly] {
+    background: #f5f7fa;
+    color: #8a95a3;
+    cursor: not-allowed;
+    border-color: #eef0f4;
+}
+
+.campo-perfil small {
+    font-size: 11.5px;
+    color: #9aa3ae;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.texto-error {
+    font-size: 11.5px;
+    color: #c0392b;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.ancho-completo {
+    grid-column: 1 / 3;
+}
+
+.input-password {
+    position: relative;
+}
+
+.input-password input {
+    width: 100%;
+    padding-right: 44px;
+}
+
+.input-password i {
+    position: absolute;
+    right: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8a95a3;
+    cursor: pointer;
+    font-size: 16px;
+    transition: color 0.2s;
+}
+
+.input-password i:hover {
+    color: #0F2A44;
+}
+
+.barra-guardar {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 4px;
+}
+
+.btn-guardar-perfil {
+    background: #0F2A44;
+    color: white;
+    border: none;
+    padding: 13px 28px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.btn-guardar-perfil:hover {
+    background: #163d68;
+    transform: translateY(-1px);
+}
+
+.toast-notif {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    padding: 14px 22px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    z-index: 9999;
+    min-width: 240px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
+}
+
+.toast-notif.toast-show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toast-exito {
+    background: #1a7a4a;
+    color: white;
+}
+
+.toast-error {
+    background: #c0392b;
+    color: white;
+}
+
+@media (max-width: 1000px) {
+    .perfil-layout {
+        flex-direction: column;
+        align-items: center;
     }
 
-    .datos-perfil{
-        width:100%;
-        grid-template-columns:1fr;
+    .campos-grid {
+        grid-template-columns: 1fr;
     }
 
-    .ancho-completo{
-        grid-column:auto;
+    .ancho-completo {
+        grid-column: auto;
     }
-
 }
