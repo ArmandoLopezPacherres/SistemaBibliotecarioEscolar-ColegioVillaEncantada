@@ -71,11 +71,6 @@ public class WebController {
         return "panel-admin";
     }
 
-    @GetMapping("/panel-bibliotecario")
-    public String panelBibliotecario(Model model, Principal principal) {
-        cargarUsuarioEnModelo(model, principal);
-        return "panel-bibliotecario";
-    }
 
     @GetMapping("/panel-profesor")
     public String panelProfesor(Model model, Principal principal) {

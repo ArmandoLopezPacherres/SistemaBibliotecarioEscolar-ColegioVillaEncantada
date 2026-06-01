@@ -1,9 +1,13 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Préstamos</title>
+
+    <!-- CSRF Token para peticiones AJAX POST -->
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -12,9 +16,8 @@
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
 
-
     <!--css-->
-    <link rel="stylesheet" href="../../static/Bibliotecario.css/prestamos.css">
+    <link rel="stylesheet" th:href="@{/Bibliotecario/prestamos.css}">
 
     </head>
 <body>
@@ -28,7 +31,7 @@
 
             <div class="logo-section">
 
-                <img src="../../static/img/logo-CVE.png" alt="logo">
+                <img th:src="@{/img/logo-CVE.png}" alt="logo">
 
                 <h5>Bibliotecario</h5>
 
@@ -39,49 +42,56 @@
             <ul class="menu">
 
                 <li>
-                    <a href="lectores.html">
+                    <a th:href="@{/panel-bibliotecario/lectores}">
                         <i class="fa-regular fa-address-book"></i>
                         Gestión de Lectores
                     </a>
                 </li>
 
                 <li>
-                    <a href="solicitudes.html">
+                    <a th:href="@{/panel-bibliotecario/solicitudes}">
                         <i class="fa-regular fa-rectangle-list"></i>
                         Solicitudes Pendientes
                     </a>
                 </li>
 
                 <li>
-                    <a href="inventario.html">
+                    <a th:href="@{/panel-bibliotecario/inventario}">
                         <i class="fa-regular fa-folder"></i>
                         Consulta de inventario
                     </a>
                 </li>
 
                 <li>
-                    <a href="prestamos.html">
+                    <a th:href="@{/panel-bibliotecario/prestamos}" class="active">
                         <i class="fa-regular fa-calendar-check"></i>
                         Gestión de préstamos
                     </a>
                 </li>
 
                 <li>
-                    <a href="multas.html">
+                    <a th:href="@{/panel-bibliotecario/devoluciones}">
+                        <i class="fa-regular fa-calendar"></i>
+                        Gestión de devoluciones
+                    </a>
+                </li>
+
+                <li>
+                    <a th:href="@{/panel-bibliotecario/multas}">
                         <i class="fa-regular fa-pen-to-square"></i>
                         Lista blanca y multas
                     </a>
                 </li>
 
                 <li>
-                    <a href="notificaciones.html">
+                    <a th:href="@{/panel-bibliotecario/notificaciones}">
                         <i class="fa-regular fa-bell"></i>
                         Notificaciones
                     </a>
                 </li>
 
                 <li>
-                    <a href="perfil.html">
+                    <a th:href="@{/panel-bibliotecario/perfil}">
                         <i class="fa-regular fa-user"></i>
                         Perfil
                     </a>
@@ -91,14 +101,11 @@
         </div>
 
         <div class="logout">
-
-            <a href="#" class="text-white text-decoration-none">
-
+            <form th:action="@{/logout}" method="post" id="logoutForm" style="display: none;"></form>
+            <a href="javascript:document.getElementById('logoutForm').submit();" class="text-white text-decoration-none">
                 <i class="fa-solid fa-right-from-bracket"></i>
                 Cerrar sesión
-
             </a>
-
         </div>
 
     </aside>
@@ -122,7 +129,7 @@
                 <i class="fa-regular fa-user"></i>
 
                 ¡Bienvenido
-                <strong th:text="${#authentication.name}">
+                <strong th:text="${usuario.nombre}">
                     Juan
                 </strong>!
 
@@ -130,24 +137,28 @@
 
         </div>
 
-        <!-- BUSCADOR -->
+        <!-- FILTROS -->
         <div class="search-section">
 
-            <div class="search-box">
-
-                <input type="text"
-                    id="searchInput"
-                    placeholder="Busca un lector..."
-                    onkeyup="buscarPrestamo()">
-
+            <!-- Filtro REGISTRAR / REGISTRADO -->
+            <div class="filter-buttons">
+                <button type="button" id="btnFiltrarRegistrar" class="btn-filter active" onclick="setFilter('REGISTRAR')">
+                    REGISTRAR
+                </button>
+                <button type="button" id="btnFiltrarRegistrado" class="btn-filter" onclick="setFilter('REGISTRADO')">
+                    REGISTRADO
+                </button>
             </div>
 
-            <button class="btn-search"
-                    onclick="buscarPrestamo()">
-
-                Buscar
-
-            </button>
+            <!-- Filtro por ROL -->
+            <div class="role-filter-buttons">
+                <button type="button" id="btnRolAlumno" class="btn-role-filter" onclick="toggleRoleFilter('ESTUDIANTE')">
+                    <i class="fa-solid fa-graduation-cap"></i> Alumno
+                </button>
+                <button type="button" id="btnRolProfesor" class="btn-role-filter" onclick="toggleRoleFilter('PROFESOR')">
+                    <i class="fa-solid fa-chalkboard-user"></i> Profesor
+                </button>
+            </div>
 
         </div>
 
@@ -165,7 +176,8 @@
                     </label>
 
                     <input type="date"
-                        id="filtroPrestamo">
+                        id="filtroPrestamo"
+                        onchange="aplicarFiltrosDeFecha()">
 
                 </div>
 
@@ -176,7 +188,8 @@
                     </label>
 
                     <input type="date"
-                        id="filtroDevolucion">
+                        id="filtroDevolucion"
+                        onchange="aplicarFiltrosDeFecha()">
 
                 </div>
 
@@ -190,93 +203,338 @@
             <table class="table align-middle mb-0">
 
                 <thead>
-
                 <tr>
-
+                    <th>Código</th>
                     <th>Usuario</th>
                     <th>Libro</th>
+                    <th class="text-center">Cantidad</th>
                     <th>Fecha de préstamo</th>
                     <th>Fecha de devolución</th>
                     <th>Acciones</th>
-
                 </tr>
-
                 </thead>
 
                 <tbody id="tablaPrestamos">
 
-                <tr>
+                <tr th:each="prestamo : ${prestamos}"
+                    th:data-id="${prestamo.id}"
+                    th:data-entregado="${prestamo.entregado}"
+                    th:data-codigo="${prestamo.usuario.codigo}"
+                    th:data-rol="${prestamo.usuario.rol.name()}">
 
-                    <td>Maria Fernanda Lopez</td>
+                    <td th:text="${prestamo.usuario.codigo}">E2026001</td>
+                    <td th:text="${prestamo.usuario.nombre}">Maria Fernanda Lopez</td>
+                    <td th:text="${prestamo.libro.titulo}">Historias Ancestrales</td>
+                    <td class="text-center" th:text="${prestamo.cantidad}">1</td>
 
-                    <td>Historias Ancestrales</td>
+                    <td class="col-fecha-prestamo"
+                        th:attr="data-raw=${prestamo.fechaPrestamo}"
+                        th:text="${#temporals.format(prestamo.fechaPrestamo, 'dd/MM/yyyy')}">
+                        20/05/2026
+                    </td>
 
-                    <td>
-
-                        <input type="date"
-                            class="fecha-input fecha-prestamo">
-
+                    <td class="col-fecha-devolucion"
+                        th:attr="data-raw=${prestamo.fechaDevolucionEsperada}"
+                        th:text="${#temporals.format(prestamo.fechaDevolucionEsperada, 'dd/MM/yyyy')}">
+                        27/05/2026
                     </td>
 
                     <td>
-
-                        <input type="date"
-                            class="fecha-input fecha-devolucion">
-
-                    </td>
-
-                    <td>
-
-                        <button class="btn-registrar"
-                                onclick="registrarPrestamo(this)">
-
+                        <!-- No entregado → botón REGISTRAR -->
+                        <button th:if="${!prestamo.entregado}"
+                                class="btn-registrar"
+                                onclick="registrarPrestamoClick(this)">
                             REGISTRAR
-
                         </button>
-
+                        <!-- Entregado pero pendiente de devolver → botón DEVOLVER -->
+                        <button th:if="${prestamo.entregado and prestamo.estado.name() != 'DEVUELTO'}"
+                                class="btn-devuelto"
+                                th:onclick="'devolverLibroClick(' + ${prestamo.id} + ', this)'">
+                            DEVOLVER
+                        </button>
+                        <!-- Ya devuelto → badge informativo sin acción -->
+                        <span th:if="${prestamo.entregado and prestamo.estado.name() == 'DEVUELTO'}"
+                              class="badge-devuelto-info">
+                            ✓ DEVUELTO
+                        </span>
                     </td>
 
                 </tr>
 
-                <tr>
-
-                    <td>Juan Pérez Ramirez</td>
-
-                    <td>Matemática Avanzada</td>
-
-                    <td>
-
-                        <input type="date"
-                            class="fecha-input fecha-prestamo">
-
-                    </td>
-
-                    <td>
-
-                        <input type="date"
-                            class="fecha-input fecha-devolucion">
-
-                    </td>
-
-                    <td>
-
-                        <button class="btn-registrar"
-                                onclick="registrarPrestamo(this)">
-
-                            REGISTRAR
-
-                        </button>
-
-                    </td>
-
+                <tr th:if="${#lists.isEmpty(prestamos)}">
+                    <td colspan="7" class="text-center text-muted py-4">No hay préstamos registrados en este momento.</td>
                 </tr>
 
                 </tbody>
 
             </table>
 
+            <!-- Barra de paginación -->
+            <div class="pagination-bar" id="paginacionBar">
+                <span class="pagination-info" id="paginacionInfo">Mostrando 0 de 0</span>
+                <div class="pagination-controls">
+                    <button class="btn-page" id="btnAnterior" onclick="cambiarPagina(-1)" disabled>
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <span class="page-label" id="paginacionLabel">Pág. 1 / 1</span>
+                    <button class="btn-page" id="btnSiguiente" onclick="cambiarPagina(1)">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
         </div>
 
     </main>
 
 </div>
+
+<!-- Contenedor Toast para Notificaciones -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055">
+    <div id="statusToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true" style="transition: 0.3s;">
+        <div class="d-flex">
+            <div class="toast-body" id="toastMessage">
+                Mensaje de estado.
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación Personalizado para Devoluciones -->
+<div class="modal fade" id="devolucionConfirmacionModal" tabindex="-1" aria-labelledby="devolucionConfirmacionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header bg-light border-bottom-0 pt-4 px-4 pb-2">
+                <h5 class="modal-title fw-bold text-dark" id="devolucionConfirmacionModalLabel">
+                    Confirmar Devolución
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body px-4 py-3 text-start">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="d-flex align-items-center justify-content-center rounded-circle" style="width: 50px; height: 50px; min-width: 50px; background-color: rgba(12, 39, 69, 0.1);">
+                        <i class="fa-solid fa-rotate-left fa-xl" style="color: #0c2745 !important;"></i>
+                    </div>
+                    <div>
+                        <p class="mb-0 text-muted" id="devolucionConfirmacionMessage" style="font-size: 16px;">
+                            ¿Estás seguro de que deseas registrar la devolución de este libro?
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 pb-4 px-4 pt-2">
+                <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal" style="border-radius: 20px; font-weight: 600;">
+                    Cancelar
+                </button>
+                <button type="button" id="btnConfirmarDevolucion" class="btn px-4 text-white" style="border-radius: 20px; font-weight: 600; background-color: #0c2745; transition: 0.3s;">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const FILAS_POR_PAGINA = 8;
+    let prestamosData = [];
+    let currentFilter = 'REGISTRAR';
+    let currentRoleFilter = null; // null = todos, 'ESTUDIANTE', 'PROFESOR'
+    let paginaActual = 1;
+    let filtradasActuales = [];
+
+    let toastElement = null;
+    let toastInstance = null;
+    let devolucionConfirmModalInstance = null;
+    let devolucionIdACargar = null;
+    let devolucionButtonACargar = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        toastElement = document.getElementById('statusToast');
+        if (toastElement) toastInstance = new bootstrap.Toast(toastElement, { delay: 4000 });
+
+        const modalEl = document.getElementById('devolucionConfirmacionModal');
+        if (modalEl) devolucionConfirmModalInstance = new bootstrap.Modal(modalEl);
+
+        // Extraer datos del DOM generado por Thymeleaf
+        const rows = document.querySelectorAll('#tablaPrestamos tr[data-id]');
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            prestamosData.push({
+                id:                   row.getAttribute('data-id'),
+                entregado:            row.getAttribute('data-entregado') === 'true',
+                estado:               row.getAttribute('data-entregado') === 'true' ? 'ACTIVO' : 'PENDIENTE',
+                usuarioCodigo:        row.getAttribute('data-codigo') || cells[0]?.textContent.trim() || '',
+                usuarioNombre:        cells[1]?.textContent.trim() || '',
+                libroTitulo:          cells[2]?.textContent.trim() || '',
+                cantidad:             cells[3]?.textContent.trim() || '1',
+                fechaPrestamo:        cells[4]?.getAttribute('data-raw') || '',
+                fechaDevolucion:      cells[5]?.getAttribute('data-raw') || '',
+                rol:                  row.getAttribute('data-rol') || ''
+            });
+        });
+        renderPagina();
+    });
+
+    // ==================== FILTROS ====================
+    function setFilter(type) {
+        currentFilter = type;
+        document.getElementById('btnFiltrarRegistrar').classList.toggle('active', type === 'REGISTRAR');
+        document.getElementById('btnFiltrarRegistrado').classList.toggle('active', type === 'REGISTRADO');
+        paginaActual = 1;
+        renderPagina();
+    }
+
+    function toggleRoleFilter(rol) {
+        currentRoleFilter = currentRoleFilter === rol ? null : rol;
+        document.getElementById('btnRolAlumno').classList.toggle('active', currentRoleFilter === 'ESTUDIANTE');
+        document.getElementById('btnRolProfesor').classList.toggle('active', currentRoleFilter === 'PROFESOR');
+        paginaActual = 1;
+        renderPagina();
+    }
+
+    // ==================== RENDER ====================
+    function getFiltradas() {
+        const datePrestamo   = document.getElementById('filtroPrestamo').value;
+        const dateDevolucion = document.getElementById('filtroDevolucion').value;
+        return prestamosData.filter(p => {
+            const matchEstado = (currentFilter === 'REGISTRADO') ? p.entregado : !p.entregado;
+            const matchRol    = !currentRoleFilter || p.rol === currentRoleFilter;
+            const matchFP     = !datePrestamo   || p.fechaPrestamo  === datePrestamo;
+            const matchFD     = !dateDevolucion || p.fechaDevolucion === dateDevolucion;
+            return matchEstado && matchRol && matchFP && matchFD;
+        });
+    }
+
+    function renderPagina() {
+        filtradasActuales = getFiltradas();
+        const total       = filtradasActuales.length;
+        const totalPags   = Math.max(1, Math.ceil(total / FILAS_POR_PAGINA));
+        paginaActual      = Math.min(paginaActual, totalPags);
+        const inicio      = (paginaActual - 1) * FILAS_POR_PAGINA;
+        const fin         = Math.min(inicio + FILAS_POR_PAGINA, total);
+        const vista       = filtradasActuales.slice(inicio, fin);
+
+        const tbody = document.getElementById('tablaPrestamos');
+
+        if (total === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">No hay registros para este filtro.</td></tr>`;
+        } else {
+            tbody.innerHTML = vista.map(p => {
+                let accion = '';
+                if (!p.entregado) {
+                    accion = `<button class="btn-registrar" onclick="registrarPrestamoClick(this)">REGISTRAR</button>`;
+                } else if (p.estado === 'DEVUELTO') {
+                    accion = `<span class="badge-devuelto-info">✓ DEVUELTO</span>`;
+                } else {
+                    accion = `<button class="btn-devuelto" onclick="devolverLibroClick(${p.id}, this)">DEVOLVER</button>`;
+                }
+                const fp = fmt(p.fechaPrestamo);
+                const fd = fmt(p.fechaDevolucion);
+                return `<tr data-id="${p.id}" data-entregado="${p.entregado}">
+                    <td>${p.usuarioCodigo}</td>
+                    <td>${p.usuarioNombre}</td>
+                    <td>${p.libroTitulo}</td>
+                    <td class="text-center">${p.cantidad}</td>
+                    <td class="col-fecha-prestamo" data-raw="${p.fechaPrestamo}">${fp}</td>
+                    <td class="col-fecha-devolucion" data-raw="${p.fechaDevolucion}">${fd}</td>
+                    <td>${accion}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        // Paginación
+        document.getElementById('paginacionInfo').textContent  = total === 0 ? 'Sin resultados' : `Mostrando ${inicio+1}–${fin} de ${total}`;
+        document.getElementById('paginacionLabel').textContent = `Pág. ${paginaActual} / ${totalPags}`;
+        document.getElementById('btnAnterior').disabled  = paginaActual <= 1;
+        document.getElementById('btnSiguiente').disabled = paginaActual >= totalPags;
+    }
+
+    function cambiarPagina(delta) { paginaActual += delta; renderPagina(); }
+
+    function fmt(f) {
+        if (!f) return '';
+        if (f.includes('-')) { const [y,m,d] = f.split('-'); return `${d}/${m}/${y}`; }
+        return f;
+    }
+
+    function aplicarFiltrosDeFecha() { paginaActual = 1; renderPagina(); }
+
+    // ==================== MENSAJES ====================
+    function showMessage(msg, isSuccess) {
+        const toastBody = document.getElementById('toastMessage');
+        toastBody.textContent = msg;
+        toastElement.classList.toggle('bg-success', isSuccess);
+        toastElement.classList.toggle('bg-danger', !isSuccess);
+        if (toastInstance) toastInstance.show(); else alert(msg);
+    }
+
+    // ==================== REGISTRAR ====================
+    function registrarPrestamoClick(button) {
+        const row = button.closest('tr');
+        const id  = row.getAttribute('data-id');
+        const fp  = row.querySelector('.col-fecha-prestamo').getAttribute('data-raw');
+        const fd  = row.querySelector('.col-fecha-devolucion').getAttribute('data-raw');
+        if (!fp || !fd) { showMessage('Las fechas no pueden estar vacías.', false); return; }
+
+        const csrfToken  = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+        const formData   = new FormData();
+        formData.append('id', id);
+        formData.append('fechaPrestamo', fp);
+        formData.append('fechaDevolucionEsperada', fd);
+
+        fetch('/panel-bibliotecario/prestamos/registrar', {
+            method: 'POST', headers: { [csrfHeader]: csrfToken }, body: formData
+        })
+        .then(async r => {
+            const text = await r.text();
+            if (r.ok) {
+                showMessage(text, true);
+                const obj = prestamosData.find(p => p.id === id);
+                if (obj) { obj.entregado = true; obj.fechaPrestamo = fp; obj.fechaDevolucion = fd; }
+                renderPagina();
+            } else { showMessage(text || 'Error al registrar el préstamo.', false); }
+        })
+        .catch(() => showMessage('Error de red al registrar el préstamo.', false));
+    }
+
+    // ==================== DEVOLVER ====================
+    function devolverLibroClick(id, button) {
+        devolucionIdACargar = id;
+        devolucionButtonACargar = button;
+        document.getElementById('btnConfirmarDevolucion').onclick = ejecutarDevolucionConfirmada;
+        if (devolucionConfirmModalInstance) devolucionConfirmModalInstance.show();
+    }
+
+    function ejecutarDevolucionConfirmada() {
+        if (!devolucionIdACargar || !devolucionButtonACargar) return;
+        if (devolucionConfirmModalInstance) devolucionConfirmModalInstance.hide();
+        const id     = devolucionIdACargar;
+        const button = devolucionButtonACargar;
+        const csrfToken  = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        fetch(`/panel-bibliotecario/prestamos/devolver?id=${id}`, {
+            method: 'POST', headers: { [csrfHeader]: csrfToken }
+        })
+        .then(async r => {
+            const text = await r.text();
+            if (r.ok) {
+                showMessage(text, true);
+                prestamosData = prestamosData.filter(p => p.id != id);
+                const row = button.closest('tr');
+                if (row) {
+                    row.style.transition = 'opacity 0.4s';
+                    row.style.opacity = '0';
+                    setTimeout(() => renderPagina(), 420);
+                } else { renderPagina(); }
+            } else { showMessage(text || 'Error al registrar la devolución.', false); }
+        })
+        .catch(() => showMessage('Error de red al registrar la devolución.', false));
+    }
+</script>
+</body>
+</html>

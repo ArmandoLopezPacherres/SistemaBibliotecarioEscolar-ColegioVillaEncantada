@@ -67,7 +67,8 @@
             font-size:14px;
         }
 
-        .menu a:hover{
+        .menu a:hover,
+        .menu a.active{
             background:#16395f;
         }
 
@@ -298,4 +299,54 @@
                 gap:15px;
             }
 
+        }
+
+        /* FILTROS DE ROL */
+        .filter-buttons {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn-filter {
+            background: transparent;
+            color: #0c2745;
+            border: 2px solid #0c2745;
+            padding: 10px 22px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+        }
+
+        .btn-filter:hover {
+            background: rgba(12, 39, 69, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .btn-filter.active {
+            background: #0c2745;
+            color: white;
+            box-shadow: 0 4px 10px rgba(12, 39, 69, 0.2);
+        }
+
+        /* BOTON PAGAR */
+        .btn-pagar {
+            background: #0c2745;
+            color: white;
+            border: none;
+            padding: 12px 22px;
+            border-radius: 6px;
+            font-weight: 700;
+            text-transform: uppercase;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .btn-pagar:hover {
+            background: #16395f;
         }
