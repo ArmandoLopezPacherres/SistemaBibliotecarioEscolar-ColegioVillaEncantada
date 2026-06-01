@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
@@ -15,7 +15,7 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 
     <!-- CSS -->
-    <link rel="stylesheet" href="../../static/Estudiante/notificaciones.css">
+    <link rel="stylesheet" th:href="@{/Estudiante/notificaciones.css}">
 
 </head>
 
@@ -31,7 +31,7 @@
                 <!-- LOGO -->
                 <div class="logo-section">
 
-                    <img src="../../static/img/logo-CVE.png" alt="logo">
+                    <img th:src="@{/img/logo-CVE.png}" alt="Logo">
 
                     <h5>Estudiante</h5>
 
@@ -43,38 +43,33 @@
                 <ul class="menu">
 
                     <li>
-                        <a href="#">
+                        <a th:href="@{/estudiante/buscar-libro}">
                             <i class="fa-solid fa-book-open"></i>
-                            Buscar libros
-                        </a>
+                            Buscar libros</a>
                     </li>
 
                     <li>
-                        <a href="#">
+                        <a th:href="@{/estudiante/mi-actividad}">
                             <i class="fa-solid fa-bolt"></i>
-                            Mi actividad
-                        </a>
+                            Mi actividad</a>
                     </li>
 
                     <li>
-                        <a href="#">
+                        <a th:href="@{/estudiante/historial}">
                             <i class="fa-regular fa-clock"></i>
-                            Historial
-                        </a>
+                            Historial</a>
                     </li>
 
                     <li>
-                        <a href="#" class="active">
+                        <a th:href="@{/estudiante/notificaciones}" class="active">
                             <i class="fa-regular fa-bell"></i>
-                            Notificaciones
-                        </a>
+                            Notificaciones</a>
                     </li>
 
                     <li>
-                        <a href="#">
+                        <a th:href="@{/estudiante/perfil}">
                             <i class="fa-regular fa-user"></i>
-                            Perfil
-                        </a>
+                            Perfil</a>
                     </li>
 
                 </ul>
@@ -83,14 +78,12 @@
 
             <!-- LOGOUT -->
             <div class="logout">
-
-                <a href="#">
-
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                    Cerrar sesión
-
-                </a>
-
+                <form th:action="@{/logout}" method="post" style="margin: 0;">
+                    <a href="#" onclick="this.closest('form').submit(); return false;">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        Cerrar sesión
+                    </a>
+                </form>
             </div>
 
         </aside>
@@ -116,7 +109,7 @@
                     <i class="fa-regular fa-user"></i>
 
                     ¡Bienvenido
-                    <strong>Alexander</strong>!
+                    <strong th:text="${usuario.nombre}">Alexander</strong>!
 
                 </div>
 
@@ -124,84 +117,43 @@
 
             <!-- FILTER -->
             <div class="filter-container">
-
-                <select class="filter-select">
-
-                    <option>Fecha</option>
-                    <option>20-05-26</option>
-                    <option>21-05-26</option>
-
+                <select class="filter-select" id="filtroEstado" onchange="filtrarNotificaciones()">
+                    <option value="">Estado (Todos)</option>
+                    <option value="RECOGIDA">Aprobado</option>
+                    <option value="CANCELADA">Desaprobado</option>
                 </select>
-
             </div>
 
             <!-- NOTIFICATIONS -->
-            <div class="notifications-container">
+            <div class="notifications-container" id="notificacionesContainer">
 
-                <!-- ITEM 1 -->
-                <div class="notification-item">
-
+                <div th:each="notif : ${notificaciones}" class="notification-item" th:data-estado="${notif.estado}">
                     <div class="notification-left">
-
-                        <img src="../../static/img/logo-CVE.png"
-                            alt="logo">
-
+                        <img th:src="@{/img/logo-CVE.png}" alt="Logo">
                         <div class="notification-info">
-
                             <h5>Sistema Bibliotecario</h5>
-
-                            <p>
-                                Tu Solicitud del libro
-                                "Paco Yunque" fue aprobada,
-                                acércate pronto a recogerlo.
+                            <!-- Aprobada -->
+                            <p th:if="${notif.estado.name() == 'RECOGIDA' or notif.estado.name() == 'COMPLETADA'}">
+                                Tu Solicitud del libro "<span th:text="${notif.libro.titulo}">Libro</span>" fue <strong style="color: #28a745;">aprobada</strong>, acércate pronto a recogerlo.
                             </p>
-
-                            <small>
+                            <small th:if="${notif.estado.name() == 'RECOGIDA' or notif.estado.name() == 'COMPLETADA'}">
                                 (Plazo Max. 5 Días)
                             </small>
 
+                            <!-- Rechazada -->
+                            <p th:if="${notif.estado.name() == 'CANCELADA'}">
+                                Tu Solicitud del libro "<span th:text="${notif.libro.titulo}">Libro</span>" fue <strong style="color: #dc3545;">desaprobada</strong>, por razones de infracción de políticas escolares.
+                            </p>
                         </div>
-
                     </div>
-
                     <div class="notification-date">
-
                         <strong>Fecha:</strong>
-                        20-05-26
-
+                        <span th:text="${notif.fechaReserva != null ? #temporals.format(notif.fechaReserva, 'dd-MM-yy') : 'N/A'}"></span>
                     </div>
-
                 </div>
 
-                <!-- ITEM 2 -->
-                <div class="notification-item">
-
-                    <div class="notification-left">
-
-                        <img src="../../static/img/logo-CVE.png"
-                            alt="logo">
-
-                        <div class="notification-info">
-
-                            <h5>Sistema Bibliotecario</h5>
-
-                            <p>
-                                Tu Solicitud del libro
-                                "Psicología Moderna" fue desaprobada,
-                                por razones de infracción de políticas escolares.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                    <div class="notification-date">
-
-                        <strong>Fecha:</strong>
-                        21-05-26
-
-                    </div>
-
+                <div th:if="${#lists.isEmpty(notificaciones)}" class="text-center text-muted" style="padding: 20px;">
+                    No tienes notificaciones.
                 </div>
 
             </div>
@@ -210,6 +162,21 @@
 
     </div>
 
+    <script>
+        function filtrarNotificaciones() {
+            const filtro = document.getElementById('filtroEstado').value;
+            const items = document.querySelectorAll('.notification-item');
+            
+            items.forEach(item => {
+                const estado = item.getAttribute('data-estado');
+                if (filtro === "" || estado === filtro || (filtro === "RECOGIDA" && estado === "COMPLETADA")) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+    </script>
 </body>
 
 </html>

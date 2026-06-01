@@ -13,7 +13,8 @@ import sistema_biblioteca.demo.repository.ReservaRepository;
 import sistema_biblioteca.demo.model.Reserva;
 import sistema_biblioteca.demo.model.enums.EstadoReserva;
 import java.util.List;
-import java.util.Comparator;@Controller
+
+@Controller
 @RequestMapping("/panel-profesor")
 public class ProfesorController {
 
@@ -65,8 +66,15 @@ public class ProfesorController {
             usuarioRepository.findByCodigo(principal.getName()).ifPresent(usuario -> {
                 List<Reserva> notificacionesReservas = reservaRepository.findByUsuarioId(usuario.getId())
                         .stream()
-                        .filter(r -> r.getEstado() == EstadoReserva.RECOGIDA || r.getEstado() == EstadoReserva.CANCELADA)
-                        .sorted(Comparator.comparing(Reserva::getFechaReserva).reversed())
+                        .filter(r -> r.getEstado() == EstadoReserva.RECOGIDA || r.getEstado() == EstadoReserva.COMPLETADA || r.getEstado() == EstadoReserva.CANCELADA)
+                        .sorted((r1, r2) -> {
+                            java.time.LocalDate d1 = r1.getFechaReserva() != null ? r1.getFechaReserva() : java.time.LocalDate.MIN;
+                            java.time.LocalDate d2 = r2.getFechaReserva() != null ? r2.getFechaReserva() : java.time.LocalDate.MIN;
+                            if (d1.equals(d2)) {
+                                return r2.getId().compareTo(r1.getId());
+                            }
+                            return d2.compareTo(d1);
+                        })
                         .toList();
                 model.addAttribute("notificacionesReservas", notificacionesReservas);
             });

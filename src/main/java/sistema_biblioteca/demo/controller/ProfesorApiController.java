@@ -196,7 +196,7 @@ public class ProfesorApiController {
         // Retornamos todos los préstamos que el usuario ya devolvió (entregado == true)
         List<Prestamo> historial = prestamoRepository.findByUsuarioId(usuario.getId())
                 .stream()
-                .filter(Prestamo::isEntregado)
+                .filter(p -> p.isEntregado() && p.getEstado() == EstadoPrestamo.DEVUELTO)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(historial);
