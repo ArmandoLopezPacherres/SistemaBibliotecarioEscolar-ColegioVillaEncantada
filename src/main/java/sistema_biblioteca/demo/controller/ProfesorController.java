@@ -9,8 +9,11 @@ import sistema_biblioteca.demo.repository.UsuarioRepository;
 import java.security.Principal;
 
 import sistema_biblioteca.demo.repository.CategoriaRepository;
-
-@Controller
+import sistema_biblioteca.demo.repository.ReservaRepository;
+import sistema_biblioteca.demo.model.Reserva;
+import sistema_biblioteca.demo.model.enums.EstadoReserva;
+import java.util.List;
+import java.util.Comparator;@Controller
 @RequestMapping("/panel-profesor")
 public class ProfesorController {
 
@@ -19,6 +22,9 @@ public class ProfesorController {
 
     @Autowired
     private CategoriaRepository categoriaRepository;
+
+    @Autowired
+    private ReservaRepository reservaRepository;
 
     private void cargarUsuarioEnModelo(Model model, Principal principal) {
         if (principal != null) {
@@ -55,6 +61,16 @@ public class ProfesorController {
     @GetMapping("/notificaciones")
     public String notificaciones(Model model, Principal principal) {
         cargarUsuarioEnModelo(model, principal);
+        if (principal != null) {
+            usuarioRepository.findByCodigo(principal.getName()).ifPresent(usuario -> {
+                List<Reserva> notificacionesReservas = reservaRepository.findByUsuarioId(usuario.getId())
+                        .stream()
+                        .filter(r -> r.getEstado() == EstadoReserva.RECOGIDA || r.getEstado() == EstadoReserva.CANCELADA)
+                        .sorted(Comparator.comparing(Reserva::getFechaReserva).reversed())
+                        .toList();
+                model.addAttribute("notificacionesReservas", notificacionesReservas);
+            });
+        }
         return "Profesor/notificaciones";
     }
 

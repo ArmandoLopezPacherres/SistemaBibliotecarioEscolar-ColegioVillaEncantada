@@ -81,16 +81,11 @@
 
             </div>
 
-            <!-- LOGOUT -->
             <div class="logout">
-
-                <a th:href="@{/logout}">
-
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                    Cerrar sesión
-
+                <form th:action="@{/logout}" method="post" id="logoutForm" style="display: none;"></form>
+                <a href="javascript:document.getElementById('logoutForm').submit();">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar sesión
                 </a>
-
             </div>
 
         </aside>
@@ -125,12 +120,10 @@
             <!-- FILTER -->
             <div class="filter-container">
 
-                <select class="filter-select">
-
-                    <option>Fecha</option>
-                    <option>20-05-26</option>
-                    <option>21-05-26</option>
-
+                <select class="filter-select" id="filtro-notificaciones" onchange="filtrarNotificaciones()">
+                    <option value="todas">Todas</option>
+                    <option value="RECOGIDA">Aprobadas</option>
+                    <option value="CANCELADA">Rechazadas</option>
                 </select>
 
             </div>
@@ -138,27 +131,31 @@
             <!-- NOTIFICATIONS -->
             <div class="notifications-container">
 
-                <!-- ITEM 1 -->
-                <div class="notification-item">
+                <!-- DYNAMIC ITEMS -->
+                <div th:each="reserva : ${notificacionesReservas}"
+                     th:attr="data-estado=${reserva.estado.name()}"
+                     class="notification-item">
 
                     <div class="notification-left">
 
-                        <img th:src="@{/img/logo-CVE.png}"
-                            alt="logo">
+                        <img th:src="@{/img/logo-CVE.png}" alt="logo">
 
                         <div class="notification-info">
 
                             <h5>Sistema Bibliotecario</h5>
 
-                            <p>
-                                Tu Solicitud del libro
-                                "Paco Yunque" fue aprobada,
-                                acércate pronto a recogerlo.
+                            <!-- Aprobada -->
+                            <p th:if="${reserva.estado.name() == 'RECOGIDA'}">
+                                Tu Solicitud del libro "<span th:text="${reserva.libro.titulo}">Libro</span>" fue <strong style="color: #28a745;">aprobada</strong>, acércate pronto a recogerlo.
                             </p>
-
-                            <small>
+                            <small th:if="${reserva.estado.name() == 'RECOGIDA'}">
                                 (Plazo Max. 5 Días)
                             </small>
+
+                            <!-- Rechazada -->
+                            <p th:if="${reserva.estado.name() == 'CANCELADA'}">
+                                Tu Solicitud del libro "<span th:text="${reserva.libro.titulo}">Libro</span>" fue <strong style="color: #dc3545;">desaprobada</strong>, por razones de infracción de políticas escolares o falta de stock.
+                            </p>
 
                         </div>
 
@@ -167,41 +164,15 @@
                     <div class="notification-date">
 
                         <strong>Fecha:</strong>
-                        20-05-26
+                        <span th:text="${#temporals.format(reserva.fechaReserva, 'dd-MM-yy')}">20-05-26</span>
 
                     </div>
 
                 </div>
 
-                <!-- ITEM 2 -->
-                <div class="notification-item">
-
-                    <div class="notification-left">
-
-                        <img th:src="@{/img/logo-CVE.png}"
-                            alt="logo">
-
-                        <div class="notification-info">
-
-                            <h5>Sistema Bibliotecario</h5>
-
-                            <p>
-                                Tu Solicitud del libro
-                                "Psicología Moderna" fue desaprobada,
-                                por razones de infracción de políticas escolares.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                    <div class="notification-date">
-
-                        <strong>Fecha:</strong>
-                        21-05-26
-
-                    </div>
-
+                <!-- Empty State -->
+                <div th:if="${#lists.isEmpty(notificacionesReservas)}" class="text-center text-muted py-5 w-100">
+                    <p>No tienes notificaciones recientes.</p>
                 </div>
 
             </div>
@@ -210,6 +181,20 @@
 
     </div>
 
+
+    <script>
+        function filtrarNotificaciones() {
+            const filtro = document.getElementById('filtro-notificaciones').value;
+            const items = document.querySelectorAll('.notification-item[data-estado]');
+            items.forEach(item => {
+                if (filtro === 'todas' || item.dataset.estado === filtro) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+    </script>
 </body>
 
 </html>
