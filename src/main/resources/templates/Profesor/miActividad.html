@@ -148,6 +148,7 @@
                             <tr>
 
                                 <th>Título del Libro</th>
+                                <th>Categoría</th>
                                 <th>Fecha Entrega</th>
 
                             </tr>
@@ -194,6 +195,7 @@
                             <tr>
 
                                 <th>Título del Libro</th>
+                                <th>Categoría</th>
                                 <th>Fecha de Solicitud</th>
                                 <th>Estado de Solicitud</th>
                                 <th>Acciones</th>
@@ -260,7 +262,7 @@
             tbody.innerHTML = '';
 
             if (prestamos.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="2" class="text-center text-muted">No tienes libros prestados actualmente.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No tienes libros prestados actualmente.</td></tr>';
                 return;
             }
 
@@ -270,6 +272,10 @@
                     <td>
                         <strong>Libro:</strong>
                         ${p.libro.titulo}
+                    </td>
+                    <td>
+                        <strong>Categoría:</strong>
+                        ${p.libro.categoria ? p.libro.categoria.nombre : 'General'}
                     </td>
                     <td>
                         <strong>Fecha Límite:</strong>
@@ -285,7 +291,7 @@
             tbody.innerHTML = '';
 
             if (reservas.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No tienes solicitudes registradas.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No tienes solicitudes registradas.</td></tr>';
                 return;
             }
 
@@ -305,6 +311,10 @@
                     <td>
                         <strong>Libro:</strong>
                         ${r.libro.titulo}
+                    </td>
+                    <td>
+                        <strong>Categoría:</strong>
+                        ${r.libro.categoria ? r.libro.categoria.nombre : 'General'}
                     </td>
                     <td>
                         <strong>Fecha:</strong>

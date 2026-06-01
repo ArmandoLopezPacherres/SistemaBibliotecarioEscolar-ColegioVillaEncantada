@@ -192,7 +192,6 @@ body {
 .table-container {
     border: 1px solid #e3e3e3;
 
-    min-height: 420px;
     max-height: 420px;
 
     overflow-y: auto;
