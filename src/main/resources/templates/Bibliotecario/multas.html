@@ -77,7 +77,7 @@
                 </li>
 
                 <li>
-                    <a th:href="@{/panel-bibliotecario/multas}">
+                    <a th:href="@{/panel-bibliotecario/multas}" class="active">
                         <i class="fa-regular fa-pen-to-square"></i>
                         Lista blanca y multas
                     </a>
@@ -180,6 +180,7 @@
 
                     <th>Usuario</th>
                     <th>Libro</th>
+                    <th class="text-center">Cantidad</th>
                     <th>Motivo</th>
                     <th>Acciones</th>
 
@@ -194,6 +195,7 @@
                     <td th:text="${multa.usuario.nombre}">Maria Fernanda Lopez</td>
 
                     <td th:text="${multa.libro.titulo}">Historias Ancestrales</td>
+                    <td class="text-center" th:text="${multa.cantidad}">1</td>
 
                     <td th:text="${multa.observaciones != null && !multa.observaciones.isEmpty() ? multa.observaciones : 'Retraso en devolución'}">Retraso en devolución</td>
 
@@ -212,7 +214,7 @@
                 </tr>
 
                 <tr th:if="${#lists.isEmpty(multas)}" id="fila-vacia">
-                    <td colspan="4" class="text-center text-muted py-4">No hay multas activas registradas.</td>
+                    <td colspan="5" class="text-center text-muted py-4">No hay multas activas registradas.</td>
                 </tr>
 
                 </tbody>
@@ -371,7 +373,7 @@
             if (!emptyRow) {
                 const tr = document.createElement('tr');
                 tr.id = 'fila-vacia';
-                tr.innerHTML = `<td colspan="4" class="text-center text-muted py-4">No se encontraron multas activas con esos filtros.</td>`;
+                tr.innerHTML = `<td colspan="5" class="text-center text-muted py-4">No se encontraron multas activas con esos filtros.</td>`;
                 tbody.appendChild(tr);
             } else {
                 emptyRow.style.removeProperty('display');
