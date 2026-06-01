@@ -45,7 +45,7 @@
                 </li>
 
                 <li>
-                    <a th:href="@{/panel-bibliotecario/solicitudes}">
+                    <a th:href="@{/panel-bibliotecario/solicitudes}" class="active">
                         <i class="fa-regular fa-rectangle-list"></i>
                         Solicitudes Pendientes
                     </a>
@@ -188,6 +188,7 @@
                     <th>Código</th>
                     <th>Usuario</th>
                     <th>Libro</th>
+                    <th class="text-center">Cantidad</th>
                     <th>Fecha de solicitud</th>
                     <th>Acciones</th>
 
@@ -201,6 +202,7 @@
                     <td th:text="${reserva.usuario.codigo}">E123</td>
                     <td th:text="${reserva.usuario.nombre}">Maria Fernanda Lopez</td>
                     <td th:text="${reserva.libro.titulo}">Historias Ancestrales</td>
+                    <td class="text-center" th:text="${reserva.cantidad}">1</td>
                     <td th:attr="data-fecha=${reserva.fechaReserva}" th:text="${#temporals.format(reserva.fechaReserva, 'dd/MM/yyyy')}">
                         20/05/2026
                     </td>
@@ -219,13 +221,27 @@
                 </tr>
 
                 <tr th:if="${#lists.isEmpty(solicitudes)}">
-                    <td colspan="5" class="text-center text-muted py-4">No hay solicitudes pendientes en este momento.</td>
+                    <td colspan="6" class="text-center text-muted py-4">No hay solicitudes pendientes en este momento.</td>
                 </tr>
 
                 </tbody>
 
             </table>
 
+        </div>
+
+        <!-- Barra de paginación -->
+        <div class="pagination-bar" id="paginacionBar">
+            <span class="pagination-info" id="paginacionInfo">Mostrando 0 de 0</span>
+            <div class="pagination-controls">
+                <button class="btn-page" id="btnAnterior" onclick="cambiarPagina(-1)" disabled title="Anterior">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <span class="page-label" id="paginacionLabel">Pág. 1 / 1</span>
+                <button class="btn-page" id="btnSiguiente" onclick="cambiarPagina(1)" title="Siguiente">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
         </div>
 
     </main>
@@ -289,17 +305,86 @@
     let accionACargar = null;
     let confirmModalInstance = null;
 
+    // --- PAGINACIÓN ---
+    const FILAS_POR_PAGINA = 8;
+    let paginaActual = 1;
+    let todasLasFilas = []; // array de objetos reserva
+
     document.addEventListener('DOMContentLoaded', () => {
         toastElement = document.getElementById('statusToast');
         if (toastElement) {
             toastInstance = new bootstrap.Toast(toastElement, { delay: 4000 });
         }
-        
         const modalEl = document.getElementById('confirmacionModal');
         if (modalEl) {
             confirmModalInstance = new bootstrap.Modal(modalEl);
         }
+
+        // Cargar filas iniciales del servidor (Thymeleaf)
+        const filasDom = document.querySelectorAll('#tablaSolicitudes tr[id^="fila-solicitud-"]');
+        if (filasDom.length > 0) {
+            // Construir array desde DOM inicial
+            filasDom.forEach(tr => {
+                const celdas = tr.querySelectorAll('td');
+                todasLasFilas.push({
+                    id: tr.id.replace('fila-solicitud-', ''),
+                    codigo: celdas[0]?.innerText || '',
+                    usuario: celdas[1]?.innerText || '',
+                    libro: celdas[2]?.innerText || '',
+                    cantidad: celdas[3]?.innerText || '1',
+                    fecha: celdas[4]?.getAttribute('data-fecha') || '',
+                    fechaDisplay: celdas[4]?.innerText || ''
+                });
+            });
+        }
+        renderPagina();
     });
+
+    function renderPagina() {
+        const tbody = document.getElementById('tablaSolicitudes');
+        const totalFilas = todasLasFilas.length;
+        const totalPaginas = Math.max(1, Math.ceil(totalFilas / FILAS_POR_PAGINA));
+        paginaActual = Math.min(paginaActual, totalPaginas);
+
+        const inicio = (paginaActual - 1) * FILAS_POR_PAGINA;
+        const fin = Math.min(inicio + FILAS_POR_PAGINA, totalFilas);
+        const filasVista = todasLasFilas.slice(inicio, fin);
+
+        if (totalFilas === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">No hay solicitudes pendientes en este momento.</td></tr>`;
+        } else {
+            let html = '';
+            filasVista.forEach(r => {
+                html += `
+                <tr id="fila-solicitud-${r.id}">
+                    <td>${r.codigo}</td>
+                    <td>${r.usuario}</td>
+                    <td>${r.libro}</td>
+                    <td class="text-center">${r.cantidad}</td>
+                    <td data-fecha="${r.fecha}">${r.fechaDisplay}</td>
+                    <td>
+                        <div class="acciones">
+                            <button class="btn-aceptar" onclick="procesarAccion(${r.id}, 'aceptar')">Aceptar</button>
+                            <button class="btn-rechazar" onclick="procesarAccion(${r.id}, 'rechazar')">Rechazar</button>
+                        </div>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+
+        // Actualizar info y controles
+        document.getElementById('paginacionInfo').textContent =
+            totalFilas === 0 ? 'Sin resultados' : `Mostrando ${inicio + 1}–${fin} de ${totalFilas}`;
+        document.getElementById('paginacionLabel').textContent = `Pág. ${paginaActual} / ${totalPaginas}`;
+        document.getElementById('btnAnterior').disabled = paginaActual <= 1;
+        document.getElementById('btnSiguiente').disabled = paginaActual >= totalPaginas;
+    }
+
+    function cambiarPagina(delta) {
+        paginaActual += delta;
+        renderPagina();
+    }
 
     function showMessage(msg, isSuccess) {
         const toastBody = document.getElementById('toastMessage');
@@ -311,19 +396,11 @@
             toastElement.classList.remove('bg-success');
             toastElement.classList.add('bg-danger');
         }
-        if (toastInstance) {
-            toastInstance.show();
-        } else {
-            alert(msg);
-        }
+        if (toastInstance) { toastInstance.show(); } else { alert(msg); }
     }
 
     function toggleRoleFilter(role) {
-        if (currentFilter === role) {
-            currentFilter = null;
-        } else {
-            currentFilter = role;
-        }
+        currentFilter = currentFilter === role ? null : role;
         updateFilterButtons();
         buscarSolicitudes();
     }
@@ -331,7 +408,6 @@
     function updateFilterButtons() {
         const btnAlumnos = document.getElementById('btnAlumnos');
         const btnProfesor = document.getElementById('btnProfesor');
-        
         if (currentFilter === 'ESTUDIANTE') {
             btnAlumnos.classList.add('active');
             btnProfesor.classList.remove('active');
@@ -347,144 +423,90 @@
     function buscarSolicitudes() {
         const query = document.getElementById('searchInput').value.trim();
         const fecha = document.getElementById('filtroFecha').value;
-        const rol = currentFilter || "";
-        
-        fetch(`/panel-bibliotecario/solicitudes/buscar?query=${query}&fecha=${fecha}&rol=${rol}`)
-            .then(response => {
-                if (response.ok) {
-                    return response.json();
-                }
-                throw new Error('Error al buscar');
-            })
+        const rol = currentFilter || '';
+
+        fetch(`/panel-bibliotecario/solicitudes/buscar?query=${encodeURIComponent(query)}&fecha=${fecha}&rol=${rol}`)
+            .then(res => { if (res.ok) return res.json(); throw new Error(); })
             .then(reservas => {
-                const tbody = document.getElementById('tablaSolicitudes');
-                if (reservas.length === 0) {
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="5" class="text-center text-muted py-4">No se encontraron solicitudes pendientes con esos filtros.</td>
-                        </tr>
-                    `;
-                    return;
-                }
-                
-                let rowsHtml = "";
-                reservas.forEach(reserva => {
-                    let fechaDisplay = reserva.fechaReserva || "";
-                    if (fechaDisplay.includes("-")) {
-                        const parts = fechaDisplay.split("-");
-                        fechaDisplay = `${parts[2]}/${parts[1]}/${parts[0]}`;
-                    }
-                    
-                    rowsHtml += `
-                        <tr id="fila-solicitud-${reserva.id}">
-                            <td>${reserva.usuario.codigo}</td>
-                            <td>${reserva.usuario.nombre}</td>
-                            <td>${reserva.libro.titulo}</td>
-                            <td data-fecha="${reserva.fechaReserva}">${fechaDisplay}</td>
-                            <td>
-                                <div class="acciones">
-                                    <button class="btn-aceptar" onclick="procesarAccion(${reserva.id}, 'aceptar')">
-                                        Aceptar
-                                    </button>
-                                    <button class="btn-rechazar" onclick="procesarAccion(${reserva.id}, 'rechazar')">
-                                        Rechazar
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                });
-                tbody.innerHTML = rowsHtml;
+                todasLasFilas = reservas.map(r => ({
+                    id: r.id,
+                    codigo: r.usuario?.codigo || '',
+                    usuario: r.usuario?.nombre || '',
+                    libro: r.libro?.titulo || '',
+                    cantidad: r.cantidad || 1,
+                    fecha: r.fechaReserva || '',
+                    fechaDisplay: formatearFecha(r.fechaReserva)
+                }));
+                paginaActual = 1;
+                renderPagina();
             })
-            .catch(err => {
-                console.error(err);
-            });
+            .catch(() => {});
+    }
+
+    function formatearFecha(f) {
+        if (!f) return '';
+        if (f.includes('-')) {
+            const [y, m, d] = f.split('-');
+            return `${d}/${m}/${y}`;
+        }
+        return f;
     }
 
     function procesarAccion(id, accion) {
         solicitudIdACargar = id;
         accionACargar = accion;
-
         const modalLabel = document.getElementById('confirmacionModalLabel');
         const modalMsg = document.getElementById('modalConfirmMessage');
         const iconContainer = document.getElementById('modalIconContainer');
         const btnConfirmar = document.getElementById('btnConfirmarAccion');
 
         if (accion === 'aceptar') {
-            modalLabel.textContent = "Aceptar Solicitud";
-            modalMsg.textContent = "¿Estás seguro de que deseas aceptar esta solicitud de reserva? Se registrará un préstamo activo.";
+            modalLabel.textContent = 'Aceptar Solicitud';
+            modalMsg.textContent = '¿Estás seguro de que deseas aceptar esta solicitud de reserva? Se registrará un préstamo activo.';
             iconContainer.innerHTML = '<i class="fa-solid fa-circle-check text-success fa-2xl"></i>';
             iconContainer.style.backgroundColor = '#e6f7ed';
-            
-            btnConfirmar.className = "btn btn-success px-4";
-            btnConfirmar.textContent = "Sí, Aceptar";
+            btnConfirmar.className = 'btn btn-success px-4';
+            btnConfirmar.textContent = 'Sí, Aceptar';
         } else {
-            modalLabel.textContent = "Rechazar Solicitud";
-            modalMsg.textContent = "¿Estás seguro de que deseas rechazar esta solicitud de reserva? Esta acción no se puede deshacer.";
+            modalLabel.textContent = 'Rechazar Solicitud';
+            modalMsg.textContent = '¿Estás seguro de que deseas rechazar esta solicitud de reserva? Esta acción no se puede deshacer.';
             iconContainer.innerHTML = '<i class="fa-solid fa-circle-xmark text-danger fa-2xl"></i>';
             iconContainer.style.backgroundColor = '#fdf2f2';
-            
-            btnConfirmar.className = "btn btn-danger px-4";
-            btnConfirmar.textContent = "Sí, Rechazar";
+            btnConfirmar.className = 'btn btn-danger px-4';
+            btnConfirmar.textContent = 'Sí, Rechazar';
         }
-
         btnConfirmar.onclick = ejecutarAccionConfirmada;
-
-        if (confirmModalInstance) {
-            confirmModalInstance.show();
-        }
+        if (confirmModalInstance) confirmModalInstance.show();
     }
 
     function ejecutarAccionConfirmada() {
         if (!solicitudIdACargar || !accionACargar) return;
-
-        if (confirmModalInstance) {
-            confirmModalInstance.hide();
-        }
+        if (confirmModalInstance) confirmModalInstance.hide();
 
         const id = solicitudIdACargar;
         const accion = accionACargar;
-
-        // Obtener el token CSRF para Spring Security
         const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
         const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
         fetch(`/panel-bibliotecario/solicitudes/${accion}?id=${id}`, {
             method: 'POST',
-            headers: {
-                [csrfHeader]: csrfToken
-            }
+            headers: { [csrfHeader]: csrfToken }
         })
         .then(async response => {
             const text = await response.text();
             if (response.ok) {
                 showMessage(text, true);
-                // Remover fila de la tabla con animación
-                const fila = document.getElementById(`fila-solicitud-${id}`);
-                if (fila) {
-                    fila.style.transition = 'all 0.5s ease';
-                    fila.style.opacity = '0';
-                    setTimeout(() => {
-                        fila.remove();
-                        // Si no quedan filas, mostrar mensaje de vacío
-                        const tbody = document.getElementById('tablaSolicitudes');
-                        if (tbody && tbody.querySelectorAll('tr[id^="fila-solicitud-"]').length === 0) {
-                            tbody.innerHTML = `
-                                <tr>
-                                    <td colspan="5" class="text-center text-muted py-4">No hay solicitudes pendientes en este momento.</td>
-                                </tr>
-                            `;
-                        }
-                    }, 500);
-                }
+                // Quitar fila del array y re-renderizar
+                todasLasFilas = todasLasFilas.filter(f => String(f.id) !== String(id));
+                // Si la página actual queda vacía, retroceder una
+                const totalPaginas = Math.max(1, Math.ceil(todasLasFilas.length / FILAS_POR_PAGINA));
+                if (paginaActual > totalPaginas) paginaActual = totalPaginas;
+                renderPagina();
             } else {
                 showMessage(text || 'Ocurrió un error al procesar la solicitud.', false);
             }
         })
-        .catch(err => {
-            console.error(err);
-            showMessage('Error de red al procesar la solicitud.', false);
-        });
+        .catch(() => showMessage('Error de red al procesar la solicitud.', false));
     }
 </script>
 </body>

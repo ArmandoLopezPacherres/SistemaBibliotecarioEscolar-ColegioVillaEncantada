@@ -9,11 +9,14 @@
 
         body{
             background:#f5f5f5;
+            overflow: hidden;
+            height: 100vh;
         }
 
         .main-container{
             display:flex;
-            min-height:100vh;
+            height:100vh;
+            overflow: hidden;
         }
 
         /* SIDEBAR*/
@@ -67,7 +70,8 @@
             font-size:14px;
         }
 
-        .menu a:hover{
+        .menu a:hover,
+        .menu a.active{
             background:#16395f;
         }
 
@@ -84,6 +88,9 @@
         .content{
             flex:1;
             padding:35px 40px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         .top-header{
@@ -189,7 +196,66 @@
             border-radius:10px;
             overflow:hidden;
             border:1px solid #e2e2e2;
+        }
 
+        /* PAGINACIÓN */
+        .pagination-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 20px;
+            background: #f8f8f8;
+            border-top: 1px solid #e2e2e2;
+        }
+
+        .pagination-info {
+            font-size: 14px;
+            color: #6d6d6d;
+            font-weight: 500;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-page {
+            width: 36px;
+            height: 36px;
+            border: 2px solid #0c2745;
+            border-radius: 8px;
+            background: transparent;
+            color: #0c2745;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+        }
+
+        .btn-page:hover:not(:disabled) {
+            background: #0c2745;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .btn-page:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-color: #a0a0a0;
+            color: #a0a0a0;
+            background: #f0f0f0;
+        }
+
+        .page-label {
+            font-size: 14px;
+            color: #102c4d;
+            font-weight: 600;
+            min-width: 80px;
+            text-align: center;
         }
 
         table{
@@ -215,17 +281,19 @@
 
         .acciones{
             display:flex;
-            flex-direction:column;
-            gap:10px;
+            flex-direction:row;
+            justify-content:center;
+            gap:8px;
         }
 
         .btn-aceptar{
             background:#198754;
             color:white;
             border:none;
-            padding:10px 18px;
+            padding:8px 14px;
             border-radius:6px;
             font-weight:600;
+            font-size: 14px;
             transition:0.3s;
         }
 
@@ -237,9 +305,10 @@
             background:#dc3545;
             color:white;
             border:none;
-            padding:10px 18px;
+            padding:8px 14px;
             border-radius:6px;
             font-weight:600;
+            font-size: 14px;
             transition:0.3s;
         }
 
