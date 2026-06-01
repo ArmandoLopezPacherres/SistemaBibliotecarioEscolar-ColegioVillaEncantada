@@ -8,12 +8,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import sistema_biblioteca.demo.repository.UsuarioRepository;
 import java.security.Principal;
 
+import sistema_biblioteca.demo.repository.CategoriaRepository;
+
 @Controller
 @RequestMapping("/panel-profesor")
 public class ProfesorController {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private CategoriaRepository categoriaRepository;
 
     private void cargarUsuarioEnModelo(Model model, Principal principal) {
         if (principal != null) {
@@ -37,6 +42,7 @@ public class ProfesorController {
     @GetMapping("/buscar-libro")
     public String buscarLibro(Model model, Principal principal) {
         cargarUsuarioEnModelo(model, principal);
+        model.addAttribute("categorias", categoriaRepository.findByActivoTrue());
         return "Profesor/buscarLibro";
     }
 

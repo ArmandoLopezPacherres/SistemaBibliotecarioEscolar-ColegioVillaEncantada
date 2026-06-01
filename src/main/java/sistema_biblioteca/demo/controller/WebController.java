@@ -58,7 +58,7 @@ public class WebController {
         } else if (rol.equals("ROLE_BIBLIOTECARIO")) {
             return "redirect:/panel-bibliotecario/lectores";
         } else if (rol.equals("ROLE_PROFESOR")) {
-            return "redirect:/panel-profesor/mi-actividad";
+            return "redirect:/panel-profesor/buscar-libro";
         } else if (rol.equals("ROLE_ESTUDIANTE")) {
             return "redirect:/panel-estudiante";
         }

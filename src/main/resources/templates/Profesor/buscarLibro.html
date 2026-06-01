@@ -15,6 +15,13 @@
 
     <!-- CSS -->
     <link rel="stylesheet" th:href="@{/Profesor/buscarLibro.css}">
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- CSRF Tokens -->
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
 </head>
 
 <body>
@@ -123,13 +130,8 @@
             <!-- SEARCH -->
             <div class="search-section">
 
-                <input type="text" class="search-input" placeholder="Escribe el título del libro, autor o tema">
-
-                <button class="btn-search">
-
-                    Buscar
-
-                </button>
+                <input type="text" id="searchInput" class="search-input"
+                    placeholder="Escribe el título del libro, autor o tema">
 
             </div>
 
@@ -138,81 +140,26 @@
 
                 <h3>Recomendaciones</h3>
 
-                <select class="category-select">
+                <select id="categorySelect" class="category-select">
 
-                    <option selected disabled>
-                        Seleccionar categoría
+                    <option value="" selected>Todas las categorías</option>
+
+                    <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}">Categoría
                     </option>
-
-                    <option>Historia del Perú</option>
-                    <option>Historia Universal</option>
-                    <option>Novelas</option>
-                    <option>Fantasía</option>
-                    <option>Fábulas</option>
-                    <option>Ciencia Ficción</option>
-                    <option>Literatura Infantil</option>
-                    <option>Biografías</option>
-                    <option>Matemáticas</option>
-                    <option>Ciencias Naturales</option>
 
                 </select>
 
             </div>
 
-            <!-- LIBROS -->
-            <div class="books-container">
+            <!-- LIBROS + PAGINACIÓN -->
+            <div class="books-section-wrapper">
 
-                <!-- CARD 1 -->
-                <div class="book-card">
-
-                    <img src="https://covers.openlibrary.org/b/id/8225261-L.jpg" alt="Matilda">
-
-                    <div class="book-info">
-
-                        <h5>Matilda</h5>
-
-                        <small>Autor: Roald Dahl</small>
-
-                        <p>
-                            Descripción: Fábula que trata sobre una niña humilde
-                            que obtiene super poderes...
-                        </p>
-
-                        <button class="btn-book">
-
-                            Solicitar
-
-                        </button>
-
-                    </div>
-
+                <div id="booksContainer" class="books-container">
+                    <!-- Se llenará dinámicamente vía JavaScript -->
                 </div>
 
-                <!-- CARD 2 -->
-                <div class="book-card">
-
-                    <img src="https://covers.openlibrary.org/b/id/10523338-L.jpg" alt="Miguel Grau">
-
-                    <div class="book-info">
-
-                        <h5>Miguel Grau</h5>
-
-                        <small>Autor: Dayan Alin</small>
-
-                        <p>
-                            Descripción: Increíble historia basada en hechos reales
-                            sobre el héroe peruano...
-                        </p>
-
-                        <button class="btn-book">
-
-                            Solicitar
-
-                        </button>
-
-                    </div>
-
-                </div>
+                <!-- PAGINACIÓN -->
+                <div id="pagination" class="pagination-container" style="display:none;"></div>
 
             </div>
 
@@ -220,6 +167,206 @@
 
     </div>
 
+    <!-- Script de Funcionalidad -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('searchInput');
+            const categorySelect = document.getElementById('categorySelect');
+            const booksContainer = document.getElementById('booksContainer');
+            const paginationContainer = document.getElementById('pagination');
+
+            const PAGE_SIZE = 8;
+            let todosLosLibros = [];
+            let paginaActual = 1;
+
+            // Cargar libros al inicio
+            fetchLibros();
+
+            // Eventos: búsqueda con Enter o al cambiar categoría
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') fetchLibros();
+            });
+            categorySelect.addEventListener('change', fetchLibros);
+
+            function fetchLibros() {
+                const q = searchInput.value.trim();
+                const catId = categorySelect.value;
+
+                let url = '/api/profesor/libros?';
+                if (q) url += `q=${encodeURIComponent(q)}&`;
+                if (catId) url += `categoriaId=${catId}`;
+
+                fetch(url)
+                    .then(res => res.json())
+                    .then(data => {
+                        todosLosLibros = data;
+                        paginaActual = 1;
+                        renderPagina();
+                    })
+                    .catch(err => console.error("Error obteniendo libros:", err));
+            }
+
+            function renderPagina() {
+                booksContainer.innerHTML = '';
+                paginationContainer.innerHTML = '';
+
+                if (todosLosLibros.length === 0) {
+                    booksContainer.innerHTML = '<p class="empty-message"><i class="fas fa-book-open" style="display:block; font-size:32px; margin-bottom:12px; color:#ccc;"></i>No se encontraron libros con esos criterios.</p>';
+                    paginationContainer.style.display = 'none';
+                    return;
+                }
+
+                const totalPaginas = Math.ceil(todosLosLibros.length / PAGE_SIZE);
+                const inicio = (paginaActual - 1) * PAGE_SIZE;
+                const fin = Math.min(inicio + PAGE_SIZE, todosLosLibros.length);
+                const librosPagina = todosLosLibros.slice(inicio, fin);
+
+                librosPagina.forEach(libro => {
+                    const imgSrc = libro.isbn
+                        ? `https://covers.openlibrary.org/b/isbn/${libro.isbn}-L.jpg`
+                        : `https://via.placeholder.com/100x150?text=Sin+Portada`;
+
+                    const authorName = libro.autor ? libro.autor.nombreCompleto : 'Autor desconocido';
+                    const categoryName = libro.categoria ? libro.categoria.nombre : 'Sin categoría';
+                    const sinStock = libro.stock <= 0;
+                    const stockClass = sinStock ? 'sin-stock' : '';
+                    const stockText = sinStock ? '0' : libro.stock;
+
+                    const card = document.createElement('div');
+                    card.className = 'book-card';
+                    card.innerHTML = `
+                        <div class="book-cover">
+                            <img src="${imgSrc}" alt="${libro.titulo}"
+                                 onerror="this.parentElement.style.background='#dee2e6'; this.style.display='none';">
+                        </div>
+                        <div class="book-info">
+                            <p class="book-title">${libro.titulo}</p>
+                            <p class="book-author">${authorName}</p>
+                            <p class="book-category">${categoryName}</p>
+                            <p class="book-stock">Disponibles: <span class="${stockClass}">${stockText}</span></p>
+                            <button class="btn-book" onclick="solicitarLibro(${libro.id}, '${libro.titulo.replace(/'/g, "\\'")}', '${authorName.replace(/'/g, "\\'")}')"
+                                    ${sinStock ? 'disabled' : ''}>
+                                ${sinStock ? 'Sin stock' : 'Solicitar'}
+                            </button>
+                        </div>
+                    `;
+                    booksContainer.appendChild(card);
+                });
+
+                // Barra de paginación estilo imagen
+                paginationContainer.style.display = 'flex';
+                const mostrando = `Mostrando ${inicio + 1}–${fin} de ${todosLosLibros.length}`;
+
+                paginationContainer.innerHTML = `
+                    <span class="pagination-info">${mostrando}</span>
+                    <div class="pagination-controls">
+                        <button class="pagination-btn" id="btnPrev" ${paginaActual === 1 ? 'disabled' : ''}>
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <span class="pagination-label">Pág. ${paginaActual} / ${totalPaginas}</span>
+                        <button class="pagination-btn" id="btnNext" ${paginaActual === totalPaginas ? 'disabled' : ''}>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                `;
+
+                document.getElementById('btnPrev').addEventListener('click', () => {
+                    if (paginaActual > 1) { paginaActual--; renderPagina(); }
+                });
+                document.getElementById('btnNext').addEventListener('click', () => {
+                    if (paginaActual < totalPaginas) { paginaActual++; renderPagina(); }
+                });
+            }
+        });
+
+        function solicitarLibro(libroId, titulo, autor) {
+            const hoy = new Date();
+            const fechaSolicitud = hoy.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            
+            const max = new Date();
+            max.setDate(max.getDate() + 7);
+            const fechaMaxima = max.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            
+            // Formatear maxDate para el input type="date" (YYYY-MM-DD)
+            const maxInput = max.toISOString().split('T')[0];
+            const minInput = hoy.toISOString().split('T')[0];
+
+            Swal.fire({
+                html: `
+                    <div style="text-align: left; font-family: 'Segoe UI', sans-serif;">
+                        <h3 style="text-align: center; margin: 0 0 25px 0; font-weight: 800; color: #072b4a; letter-spacing: 1px;">SOLICITUD</h3>
+                        
+                        <p style="margin-bottom: 5px; color: #072b4a; font-size: 15px;"><strong>Nombre del libro:</strong></p>
+                        <p style="margin-bottom: 20px; color: #666; font-size: 15px;">${titulo}</p>
+                        
+                        <p style="margin-bottom: 5px; color: #072b4a; font-size: 15px;"><strong>Autor:</strong></p>
+                        <p style="margin-bottom: 20px; color: #666; font-size: 15px;">${autor}</p>
+                        
+                        <p style="margin-bottom: 5px; color: #072b4a; font-size: 15px;"><strong>Fecha de solicitud:</strong></p>
+                        <p style="margin-bottom: 20px; color: #666; font-size: 15px;">${fechaSolicitud}</p>
+                        
+                        <p style="margin-bottom: 5px; color: #072b4a; font-size: 15px;"><strong>Fecha máxima de devolución:</strong></p>
+                        <p style="margin-bottom: 25px; color: #666; font-size: 15px;">${fechaMaxima}</p>
+                        
+                        <p style="margin-bottom: 8px; color: #072b4a; font-size: 15px;"><strong>Selecciona la fecha de devolución:</strong></p>
+                        <input type="date" id="fechaDevolucion" class="swal2-input" 
+                               style="width: 100%; margin: 0; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-family: 'Segoe UI'; font-size: 15px; color: #333;"
+                               min="${minInput}" max="${maxInput}">
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonColor: '#072b4a',
+                cancelButtonColor: '#e0e5eb',
+                confirmButtonText: 'Confirmar solicitud',
+                cancelButtonText: '<span style="color: #444; font-weight: 500;">Cancelar</span>',
+                customClass: {
+                    popup: 'custom-solicitud-modal',
+                    confirmButton: 'btn-solicitar-custom',
+                    cancelButton: 'btn-cancelar-custom'
+                },
+                width: '450px',
+                preConfirm: () => {
+                    const fecha = document.getElementById('fechaDevolucion').value;
+                    if (!fecha) {
+                        Swal.showValidationMessage('Por favor selecciona una fecha de devolución');
+                        return false;
+                    }
+                    return fecha;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const fechaDevolucionSeleccionada = result.value;
+                    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+                    // Aunque por ahora el backend no guarda la fecha de devolución, la enviamos por si acaso
+                    fetch(`/api/profesor/reservas/solicitar?libroId=${libroId}&fechaDevolucion=${fechaDevolucionSeleccionada}`, {
+                        method: 'POST',
+                        headers: {
+                            [csrfHeader]: csrfToken
+                        }
+                    })
+                        .then(res => {
+                            if (res.ok) {
+                                Swal.fire({
+                                    title: '¡Solicitado!',
+                                    text: 'Tu reserva está pendiente de aprobación.',
+                                    icon: 'success',
+                                    confirmButtonColor: '#072b4a'
+                                });
+                                document.getElementById('categorySelect').dispatchEvent(new Event('change'));
+                            } else {
+                                res.text().then(msg => Swal.fire('Error', msg || 'No se pudo realizar la solicitud.', 'error'));
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            Swal.fire('Error', 'Error de conexión con el servidor.', 'error');
+                        });
+                }
+            });
+        }
+    </script>
 </body>
 
 </html>
