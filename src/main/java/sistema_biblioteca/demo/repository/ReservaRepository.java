@@ -14,4 +14,6 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
            "(LOWER(r.usuario.nombre) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
            "LOWER(r.libro.titulo) LIKE LOWER(CONCAT('%', :query, '%')))")
     List<Reserva> buscarPendientesPorUsuarioOLibro(@Param("estado") EstadoReserva estado, @Param("query") String query);
+
+    List<Reserva> findByUsuarioId(Long usuarioId);
 }
