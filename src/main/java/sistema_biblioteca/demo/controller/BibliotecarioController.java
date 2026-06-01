@@ -387,6 +387,7 @@ public class BibliotecarioController {
 
     @PostMapping("/prestamos/registrar")
     @ResponseBody
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<String> registrarEntrega(
             @RequestParam("id") Long id,
             @RequestParam("fechaPrestamo") String fechaPrestamoStr,
@@ -433,6 +434,17 @@ public class BibliotecarioController {
             
             prestamoRepository.save(prestamo);
             
+            // Marcar la reserva como COMPLETADA para que ya no salga en "Mis solicitudes" pero se mantenga para notificaciones
+            reservaRepository.findAll().stream()
+                .filter(r -> r.getUsuario() != null && prestamo.getUsuario() != null && r.getUsuario().getId().equals(prestamo.getUsuario().getId()))
+                .filter(r -> r.getLibro() != null && prestamo.getLibro() != null && r.getLibro().getId().equals(prestamo.getLibro().getId()))
+                .filter(r -> r.getEstado() == EstadoReserva.RECOGIDA)
+                .findFirst()
+                .ifPresent(r -> {
+                    r.setEstado(EstadoReserva.COMPLETADA);
+                    reservaRepository.save(r);
+                });
+            
             return ResponseEntity.ok("Préstamo registrado como entregado con éxito.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Formato de fecha inválido.");
@@ -441,6 +453,7 @@ public class BibliotecarioController {
 
     @PostMapping("/prestamos/devolver")
     @ResponseBody
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<String> devolverLibro(@RequestParam("id") Long id) {
         Optional<Prestamo> optPrestamo = prestamoRepository.findById(id);
         if (optPrestamo.isEmpty()) {
