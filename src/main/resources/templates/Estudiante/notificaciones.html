@@ -132,11 +132,17 @@
                         <img th:src="@{/img/logo-CVE.png}" alt="Logo">
                         <div class="notification-info">
                             <h5>Sistema Bibliotecario</h5>
+                            <!-- Aprobada -->
                             <p th:if="${notif.estado.name() == 'RECOGIDA' or notif.estado.name() == 'COMPLETADA'}">
-                                Tu Solicitud del libro "<span th:text="${notif.libro.titulo}">Libro</span>" fue aprobada, acércate pronto a recogerlo.
+                                Tu Solicitud del libro "<span th:text="${notif.libro.titulo}">Libro</span>" fue <strong style="color: #28a745;">aprobada</strong>, acércate pronto a recogerlo.
                             </p>
+                            <small th:if="${notif.estado.name() == 'RECOGIDA' or notif.estado.name() == 'COMPLETADA'}">
+                                (Plazo Max. 5 Días)
+                            </small>
+
+                            <!-- Rechazada -->
                             <p th:if="${notif.estado.name() == 'CANCELADA'}">
-                                Tu Solicitud del libro "<span th:text="${notif.libro.titulo}">Libro</span>" fue desaprobada, por razones de infracción de políticas escolares.
+                                Tu Solicitud del libro "<span th:text="${notif.libro.titulo}">Libro</span>" fue <strong style="color: #dc3545;">desaprobada</strong>, por razones de infracción de políticas escolares.
                             </p>
                         </div>
                     </div>

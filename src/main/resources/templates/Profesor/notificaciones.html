@@ -145,10 +145,10 @@
                             <h5>Sistema Bibliotecario</h5>
 
                             <!-- Aprobada -->
-                            <p th:if="${reserva.estado.name() == 'RECOGIDA'}">
+                            <p th:if="${reserva.estado.name() == 'RECOGIDA' or reserva.estado.name() == 'COMPLETADA'}">
                                 Tu Solicitud del libro "<span th:text="${reserva.libro.titulo}">Libro</span>" fue <strong style="color: #28a745;">aprobada</strong>, acércate pronto a recogerlo.
                             </p>
-                            <small th:if="${reserva.estado.name() == 'RECOGIDA'}">
+                            <small th:if="${reserva.estado.name() == 'RECOGIDA' or reserva.estado.name() == 'COMPLETADA'}">
                                 (Plazo Max. 5 Días)
                             </small>
 
@@ -187,7 +187,7 @@
             const filtro = document.getElementById('filtro-notificaciones').value;
             const items = document.querySelectorAll('.notification-item[data-estado]');
             items.forEach(item => {
-                if (filtro === 'todas' || item.dataset.estado === filtro) {
+                if (filtro === 'todas' || item.dataset.estado === filtro || (filtro === 'RECOGIDA' && item.dataset.estado === 'COMPLETADA')) {
                     item.style.display = '';
                 } else {
                     item.style.display = 'none';
