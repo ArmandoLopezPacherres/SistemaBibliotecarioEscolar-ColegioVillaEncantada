@@ -25,7 +25,7 @@ import sistema_biblioteca.demo.dto.PerfilDTO;
 import sistema_biblioteca.demo.dto.PasswordChangeDTO;
 import java.security.Principal;
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -65,7 +65,13 @@ public class BibliotecarioController {
     public String prestamos(Model model, Principal principal) {
         cargarUsuarioEnModelo(model, principal);
         actualizarPrestamosVencidos();
-        model.addAttribute("prestamos", prestamoRepository.findAll());
+        // Solo mostrar préstamos ACTIVOS y RETRASADOS (los DEVUELTOS van a la sección de devoluciones)
+        List<Prestamo> prestamos = prestamoRepository.findAll().stream()
+                .filter(p -> p.getEstado() != EstadoPrestamo.DEVUELTO)
+                .sorted(Comparator.comparing(Prestamo::getUpdatedAt, Comparator.nullsLast(Comparator.reverseOrder()))
+                                  .thenComparing(Prestamo::getId, Comparator.reverseOrder()))
+                .toList();
+        model.addAttribute("prestamos", prestamos);
         return "Bibliotecario/prestamos";
     }
 
@@ -74,6 +80,8 @@ public class BibliotecarioController {
         cargarUsuarioEnModelo(model, principal);
         List<Prestamo> devoluciones = prestamoRepository.findAll().stream()
                 .filter(p -> p.getEstado() == EstadoPrestamo.DEVUELTO)
+                .sorted(Comparator.comparing(Prestamo::getUpdatedAt, Comparator.nullsLast(Comparator.reverseOrder()))
+                                  .thenComparing(Prestamo::getId, Comparator.reverseOrder()))
                 .toList();
         model.addAttribute("devoluciones", devoluciones);
         return "Bibliotecario/devoluciones";
@@ -190,6 +198,15 @@ public class BibliotecarioController {
     @GetMapping("/notificaciones")
     public String notificaciones(Model model, Principal principal) {
         cargarUsuarioEnModelo(model, principal);
+        actualizarPrestamosVencidos();
+        
+        List<Reserva> solicitudes = reservaRepository.findByEstado(EstadoReserva.PENDIENTE);
+        List<Prestamo> retrasos = prestamoRepository.findAll().stream()
+                .filter(p -> p.getEstado() == EstadoPrestamo.RETRASADO)
+                .toList();
+        
+        model.addAttribute("solicitudes", solicitudes);
+        model.addAttribute("retrasos", retrasos);
         return "Bibliotecario/notificaciones";
     }
 
@@ -250,7 +267,10 @@ public class BibliotecarioController {
     @GetMapping("/solicitudes")
     public String solicitudes(Model model, Principal principal) {
         cargarUsuarioEnModelo(model, principal);
-        model.addAttribute("solicitudes", reservaRepository.findByEstado(EstadoReserva.PENDIENTE));
+        List<Reserva> pendientes = reservaRepository.findByEstado(EstadoReserva.PENDIENTE).stream()
+                .sorted(Comparator.comparing(Reserva::getId).reversed())
+                .toList();
+        model.addAttribute("solicitudes", pendientes);
         return "Bibliotecario/solicitudes";
     }
 
@@ -311,22 +331,14 @@ public class BibliotecarioController {
             return ResponseEntity.badRequest().body("El libro asociado no existe.");
         }
         
-        if (libro.getStock() <= 0) {
-            return ResponseEntity.badRequest().body("No hay stock suficiente para prestar este libro.");
-        }
-        
-        // Disminuir stock
-        libro.setStock(libro.getStock() - 1);
-        if (libro.getStock() == 0) {
-            libro.setDisponible(false);
-        }
-        libroRepository.save(libro);
+        // No se descuenta stock aquí; el stock se descuenta cuando se registra
+        // físicamente la entrega del libro al usuario (endpoint /prestamos/registrar)
         
         // Cambiar estado de reserva a RECOGIDA (procesada)
         reserva.setEstado(EstadoReserva.RECOGIDA);
         reservaRepository.save(reserva);
         
-        // Crear Prestamo
+        // Crear Prestamo (sin entrega física aún)
         Prestamo prestamo = new Prestamo();
         prestamo.setUsuario(reserva.getUsuario());
         prestamo.setLibro(libro);
@@ -334,6 +346,7 @@ public class BibliotecarioController {
         prestamo.setFechaDevolucionEsperada(reserva.getFechaLimiteRecojo() != null ? reserva.getFechaLimiteRecojo() : LocalDate.now().plusDays(7));
         prestamo.setEstado(EstadoPrestamo.ACTIVO);
         prestamo.setEntregado(false);
+        prestamo.setCantidad(reserva.getCantidad());
         prestamoRepository.save(prestamo);
         
         return ResponseEntity.ok("Solicitud aceptada y préstamo registrado con éxito.");
@@ -397,6 +410,19 @@ public class BibliotecarioController {
                 return ResponseEntity.badRequest().body("La fecha de devolución no puede ser anterior a la de préstamo.");
             }
             
+            // Descontar stock al registrar la entrega física del libro
+            Libro libroEntregado = prestamo.getLibro();
+            if (libroEntregado != null) {
+                if (libroEntregado.getStock() < prestamo.getCantidad()) {
+                    return ResponseEntity.badRequest().body("No hay stock disponible suficiente para entregar este libro.");
+                }
+                libroEntregado.setStock(libroEntregado.getStock() - prestamo.getCantidad());
+                if (libroEntregado.getStock() == 0) {
+                    libroEntregado.setDisponible(false);
+                }
+                libroRepository.save(libroEntregado);
+            }
+            
             prestamo.setFechaPrestamo(fechaPrestamo);
             prestamo.setFechaDevolucionEsperada(fechaDevolucionEsperada);
             prestamo.setEntregado(true);
@@ -434,7 +460,7 @@ public class BibliotecarioController {
         // Aumentar stock del libro
         Libro libro = prestamo.getLibro();
         if (libro != null) {
-            libro.setStock(libro.getStock() + 1);
+            libro.setStock(libro.getStock() + prestamo.getCantidad());
             libro.setDisponible(true);
             libroRepository.save(libro);
         }
@@ -463,7 +489,7 @@ public class BibliotecarioController {
         // Aumentar stock del libro
         Libro libro = prestamo.getLibro();
         if (libro != null) {
-            libro.setStock(libro.getStock() + 1);
+            libro.setStock(libro.getStock() + prestamo.getCantidad());
             libro.setDisponible(true);
             libroRepository.save(libro);
         }

@@ -41,6 +41,18 @@ public class Prestamo {
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean entregado = false;
 
+    @Column(nullable = false, columnDefinition = "INT DEFAULT 1")
+    private int cantidad = 1;
+
+    @Column(name = "updated_at")
+    private java.time.LocalDateTime updatedAt;
+
+    @PreUpdate
+    @PrePersist
+    public void updateTimeStamps() {
+        updatedAt = java.time.LocalDateTime.now();
+    }
+
     public Prestamo() {}
 
     public boolean isEntregado() { return entregado; }
@@ -72,4 +84,10 @@ public class Prestamo {
 
     public int getRenovaciones() { return renovaciones; }
     public void setRenovaciones(int renovaciones) { this.renovaciones = renovaciones; }
+
+    public int getCantidad() { return cantidad; }
+    public void setCantidad(int cantidad) { this.cantidad = cantidad; }
+
+    public java.time.LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(java.time.LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }
