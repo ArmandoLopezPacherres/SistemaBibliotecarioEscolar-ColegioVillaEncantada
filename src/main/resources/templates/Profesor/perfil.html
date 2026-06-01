@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
@@ -18,7 +18,7 @@
 
     <!-- CSS -->
     <link rel="stylesheet"
-        href="../../static//Profesor/perfil.css">
+        th:href="@{/Profesor/perfil.css}">
 
 </head>
 
@@ -34,7 +34,7 @@
                 <!-- LOGO -->
                 <div class="logo-section">
 
-                    <img src="../../static/img/logo-CVE.png"
+                    <img th:src="@{/img/logo-CVE.png}"
                         alt="logo">
 
                     <h5>Profesor</h5>
@@ -47,35 +47,35 @@
                 <ul class="menu">
 
                     <li>
-                        <a href="#">
+                        <a th:href="@{/panel-profesor/buscar-libro}">
                             <i class="fa-solid fa-book-open"></i>
                             Buscar libros
                         </a>
                     </li>
 
                     <li>
-                        <a href="#">
+                        <a th:href="@{/panel-profesor/mi-actividad}">
                             <i class="fa-solid fa-bolt"></i>
                             Mi actividad
                         </a>
                     </li>
 
                     <li>
-                        <a href="#">
+                        <a th:href="@{/panel-profesor/historial}">
                             <i class="fa-regular fa-clock"></i>
                             Historial
                         </a>
                     </li>
 
                     <li>
-                        <a href="#">
+                        <a th:href="@{/panel-profesor/notificaciones}">
                             <i class="fa-regular fa-bell"></i>
                             Notificaciones
                         </a>
                     </li>
 
                     <li>
-                        <a href="#" class="active">
+                        <a th:href="@{/panel-profesor/perfil}" class="active">
                             <i class="fa-regular fa-user"></i>
                             Perfil
                         </a>
@@ -88,7 +88,7 @@
             <!-- LOGOUT -->
             <div class="logout">
 
-                <a href="#">
+                <a th:href="@{/logout}">
 
                     <i class="fa-solid fa-right-from-bracket"></i>
                     Cerrar sesión
@@ -120,7 +120,7 @@
                     <i class="fa-regular fa-user"></i>
 
                     ¡Bienvenido
-                    <strong>Juan</strong>!
+                    <strong th:text="${usuario.nombre}">Usuario</strong>!
 
                 </div>
 

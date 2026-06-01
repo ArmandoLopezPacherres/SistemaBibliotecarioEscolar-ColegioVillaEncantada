@@ -58,17 +58,11 @@ public class WebController {
         } else if (rol.equals("ROLE_BIBLIOTECARIO")) {
             return "redirect:/panel-bibliotecario/lectores";
         } else if (rol.equals("ROLE_PROFESOR")) {
-            return "redirect:/panel-profesor";
+            return "redirect:/panel-profesor/mi-actividad";
         } else if (rol.equals("ROLE_ESTUDIANTE")) {
             return "redirect:/panel-estudiante";
         }
         return "redirect:/";
-    }
-
-    @GetMapping("/panel-profesor")
-    public String panelProfesor(Model model, Principal principal) {
-        cargarUsuarioEnModelo(model, principal);
-        return "panel-profesor";
     }
 
     @GetMapping("/panel-estudiante")
