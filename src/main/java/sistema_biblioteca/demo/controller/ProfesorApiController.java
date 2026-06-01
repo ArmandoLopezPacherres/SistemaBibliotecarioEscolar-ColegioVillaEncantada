@@ -13,9 +13,11 @@ import sistema_biblioteca.demo.repository.PrestamoRepository;
 import sistema_biblioteca.demo.repository.ReservaRepository;
 import sistema_biblioteca.demo.repository.UsuarioRepository;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -33,6 +35,9 @@ public class ProfesorApiController {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @GetMapping("/libros")
     public ResponseEntity<List<Libro>> buscarLibros(
@@ -158,5 +163,34 @@ public class ProfesorApiController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(historial);
+    }
+
+    @PostMapping("/perfil/actualizar")
+    public ResponseEntity<?> actualizarPerfil(@RequestBody Map<String, String> payload, Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).body("No autorizado");
+        
+        Usuario usuario = usuarioRepository.findByCodigo(principal.getName()).orElse(null);
+        if (usuario == null) return ResponseEntity.status(404).body("Usuario no encontrado");
+
+        String passwordActual = payload.get("passwordActual");
+        String nuevaPassword = payload.get("nuevaPassword");
+        String confirmarPassword = payload.get("confirmarPassword");
+        
+        if (passwordActual != null && !passwordActual.trim().isEmpty()) {
+            if (!passwordEncoder.matches(passwordActual, usuario.getPassword())) {
+                return ResponseEntity.status(400).body(Map.of("message", "La contraseña actual es incorrecta"));
+            }
+            if (nuevaPassword == null || nuevaPassword.trim().isEmpty()) {
+                return ResponseEntity.status(400).body(Map.of("message", "La nueva contraseña no puede estar vacía"));
+            }
+            if (!nuevaPassword.equals(confirmarPassword)) {
+                return ResponseEntity.status(400).body(Map.of("message", "Las nuevas contraseñas no coinciden"));
+            }
+            usuario.setPassword(passwordEncoder.encode(nuevaPassword.trim()));
+        }
+
+        usuarioRepository.save(usuario);
+
+        return ResponseEntity.ok(Map.of("message", "Perfil actualizado correctamente"));
     }
 }
