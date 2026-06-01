@@ -60,7 +60,7 @@ public class WebController {
         } else if (rol.equals("ROLE_PROFESOR")) {
             return "redirect:/panel-profesor";
         } else if (rol.equals("ROLE_ESTUDIANTE")) {
-            return "redirect:/panel-estudiante";
+            return "redirect:/estudiante/buscar-libro";
         }
         return "redirect:/";
     }
