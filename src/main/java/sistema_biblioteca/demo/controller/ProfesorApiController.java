@@ -4,10 +4,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sistema_biblioteca.demo.model.Libro;
+import sistema_biblioteca.demo.model.Prestamo;
 import sistema_biblioteca.demo.model.Reserva;
 import sistema_biblioteca.demo.model.Usuario;
 import sistema_biblioteca.demo.model.enums.EstadoReserva;
 import sistema_biblioteca.demo.repository.LibroRepository;
+import sistema_biblioteca.demo.repository.PrestamoRepository;
 import sistema_biblioteca.demo.repository.ReservaRepository;
 import sistema_biblioteca.demo.repository.UsuarioRepository;
 
@@ -25,6 +27,9 @@ public class ProfesorApiController {
 
     @Autowired
     private ReservaRepository reservaRepository;
+
+    @Autowired
+    private PrestamoRepository prestamoRepository;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -89,5 +94,69 @@ public class ProfesorApiController {
         reservaRepository.save(reserva);
 
         return ResponseEntity.ok("Solicitud de reserva enviada exitosamente");
+    }
+
+    @GetMapping("/actividad/prestamos")
+    public ResponseEntity<?> obtenerPrestamosActivos(Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).body("No autorizado");
+        
+        Usuario usuario = usuarioRepository.findByCodigo(principal.getName()).orElse(null);
+        if (usuario == null) return ResponseEntity.status(404).body("Usuario no encontrado");
+
+        List<Prestamo> activos = prestamoRepository.findByUsuarioId(usuario.getId())
+                .stream()
+                .filter(p -> !p.isEntregado()) // Solo los que aún tiene en su poder
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(activos);
+    }
+
+    @GetMapping("/actividad/reservas")
+    public ResponseEntity<?> obtenerReservas(Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).body("No autorizado");
+        
+        Usuario usuario = usuarioRepository.findByCodigo(principal.getName()).orElse(null);
+        if (usuario == null) return ResponseEntity.status(404).body("Usuario no encontrado");
+
+        List<Reserva> reservas = reservaRepository.findByUsuarioId(usuario.getId());
+        return ResponseEntity.ok(reservas);
+    }
+
+    @PostMapping("/reservas/{id}/cancelar")
+    public ResponseEntity<?> cancelarReserva(@PathVariable Long id, Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).body("No autorizado");
+        
+        Usuario usuario = usuarioRepository.findByCodigo(principal.getName()).orElse(null);
+        if (usuario == null) return ResponseEntity.status(404).body("Usuario no encontrado");
+
+        Reserva reserva = reservaRepository.findById(id).orElse(null);
+        if (reserva == null) return ResponseEntity.status(404).body("Reserva no encontrada");
+
+        if (!reserva.getUsuario().getId().equals(usuario.getId())) {
+            return ResponseEntity.status(403).body("No tienes permiso para cancelar esta reserva");
+        }
+
+        if (reserva.getEstado() != EstadoReserva.PENDIENTE) {
+            return ResponseEntity.badRequest().body("Solo se pueden cancelar reservas en estado PENDIENTE");
+        }
+
+        reservaRepository.delete(reserva); // Eliminamos la reserva o la pasamos a CANCELADO, aquí la eliminamos para no dejar basura o según la lógica del negocio.
+        return ResponseEntity.ok("Reserva cancelada exitosamente");
+    }
+
+    @GetMapping("/historial/prestamos")
+    public ResponseEntity<?> obtenerHistorialPrestamos(Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).body("No autorizado");
+        
+        Usuario usuario = usuarioRepository.findByCodigo(principal.getName()).orElse(null);
+        if (usuario == null) return ResponseEntity.status(404).body("Usuario no encontrado");
+
+        // Retornamos todos los préstamos que el usuario ya devolvió (entregado == true)
+        List<Prestamo> historial = prestamoRepository.findByUsuarioId(usuario.getId())
+                .stream()
+                .filter(Prestamo::isEntregado)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(historial);
     }
 }
