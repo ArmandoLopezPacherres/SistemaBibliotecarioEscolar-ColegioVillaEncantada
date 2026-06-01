@@ -171,12 +171,12 @@
                     <div class="filters">
 
                         <select class="filter-select" id="filtro-estado" onchange="aplicarFiltrosReservas()">
-                            <option value="TODOS">Todos los Estados</option>
-                            <option value="PENDIENTE">Pendiente</option>
-                            <option value="RECOGIDA">Recogida</option>
-                            <option value="VENCIDA">Vencida</option>
-                            <option value="CANCELADA">Cancelada</option>
-                        </select>
+                                <option value="TODOS">Todos los Estados</option>
+                                <option value="PENDIENTE">Pendiente (esperando respuesta)</option>
+                                <option value="RECOGIDA">Recoger</option>
+                                <option value="CANCELADA">Cancelada</option>
+                                <option value="VENCIDA">Vencida</option>
+                            </select>
 
                     </div>
 
@@ -221,6 +221,26 @@
     <script>
         let allPrestamos = [];
         let allReservas = [];
+
+        function getLabelEstado(estado) {
+            const labels = {
+                'PENDIENTE': 'Pendiente',
+                'RECOGIDA': 'RECOGER',
+                'CANCELADA': 'Cancelada',
+                'VENCIDA': 'Vencida'
+            };
+            return labels[estado] || estado;
+        }
+
+        function getColorEstado(estado) {
+            const colors = {
+                'PENDIENTE': '#e65100',
+                'RECOGIDA': '#1565c0',
+                'CANCELADA': '#c62828',
+                'VENCIDA': '#c62828'
+            };
+            return colors[estado] || '#333';
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchPrestamos();
@@ -318,8 +338,8 @@
                     </td>
                     <td>
                         <strong>Estado:</strong>
-                        <span style="font-weight: 500; color: ${r.estado === 'RECOGIDA' ? '#2e7d32' : (r.estado === 'CANCELADA' || r.estado === 'VENCIDA' ? '#c62828' : '#e65100')}">
-                            ${r.estado}
+                        <span style="font-weight: 500; color: ${getColorEstado(r.estado)}">
+                            ${getLabelEstado(r.estado)}
                         </span>
                     </td>
                     <td>${actionHtml}</td>

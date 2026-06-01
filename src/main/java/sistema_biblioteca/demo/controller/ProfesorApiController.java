@@ -8,6 +8,7 @@ import sistema_biblioteca.demo.model.Prestamo;
 import sistema_biblioteca.demo.model.Reserva;
 import sistema_biblioteca.demo.model.Usuario;
 import sistema_biblioteca.demo.model.enums.EstadoReserva;
+import sistema_biblioteca.demo.model.enums.EstadoPrestamo;
 import sistema_biblioteca.demo.repository.LibroRepository;
 import sistema_biblioteca.demo.repository.PrestamoRepository;
 import sistema_biblioteca.demo.repository.ReservaRepository;
@@ -84,13 +85,29 @@ public class ProfesorApiController {
             return ResponseEntity.badRequest().body("El libro no está disponible o no hay stock suficiente.");
         }
 
+        // Verificar límite de 20 libros activos (solo los que tiene físicamente en su poder)
+        long librosActivos = prestamoRepository.findByUsuarioId(usuario.getId())
+                .stream()
+                .filter(p -> p.isEntregado() && p.getEstado() != EstadoPrestamo.DEVUELTO)
+                .mapToLong(p -> p.getCantidad())
+                .sum();
+        if (librosActivos >= 20) {
+            return ResponseEntity.badRequest().body("Ya tienes 20 libros en tu poder. No puedes solicitar más hasta devolver alguno.");
+        }
+
+        // Verificar que no tenga ya una solicitud PENDIENTE del mismo libro
+        boolean yaSolicito = reservaRepository.findByUsuarioId(usuario.getId())
+                .stream()
+                .anyMatch(r -> r.getLibro().getId().equals(libroId) && r.getEstado() == EstadoReserva.PENDIENTE);
+        if (yaSolicito) {
+            return ResponseEntity.badRequest().body("Ya tienes una solicitud pendiente para este libro.");
+        }
+
         // Creamos la solicitud de reserva
         Reserva reserva = new Reserva();
         reserva.setUsuario(usuario);
         reserva.setLibro(libro);
         reserva.setFechaReserva(LocalDate.now());
-        // Por defecto damos 5 días para recoger el libro una vez aprobado, aunque al ser PENDIENTE, 
-        // la fecha límite aplica más desde que se acepta. Lo guardamos como referencia.
         reserva.setFechaLimiteRecojo(LocalDate.now().plusDays(5));
         reserva.setEstado(EstadoReserva.PENDIENTE);
         reserva.setCantidad(1);
@@ -108,9 +125,10 @@ public class ProfesorApiController {
         Usuario usuario = usuarioRepository.findByCodigo(principal.getName()).orElse(null);
         if (usuario == null) return ResponseEntity.status(404).body("Usuario no encontrado");
 
+        // Solo los que el profesor tiene físicamente (entregado=true) y aún no devueltos
         List<Prestamo> activos = prestamoRepository.findByUsuarioId(usuario.getId())
                 .stream()
-                .filter(p -> !p.isEntregado()) // Solo los que aún tiene en su poder
+                .filter(p -> p.isEntregado() && p.getEstado() != EstadoPrestamo.DEVUELTO)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(activos);
@@ -123,7 +141,26 @@ public class ProfesorApiController {
         Usuario usuario = usuarioRepository.findByCodigo(principal.getName()).orElse(null);
         if (usuario == null) return ResponseEntity.status(404).body("Usuario no encontrado");
 
-        List<Reserva> reservas = reservaRepository.findByUsuarioId(usuario.getId());
+        // IDs de préstamos que ya fueron entregados físicamente al profesor
+        List<Long> librosYaRecogidosIds = prestamoRepository.findByUsuarioId(usuario.getId())
+                .stream()
+                .filter(Prestamo::isEntregado)
+                .map(p -> p.getLibro().getId())
+                .collect(Collectors.toList());
+
+        // Solo mostrar reservas que NO tienen un préstamo entregado (pendientes de aprobación o de recojo)
+        List<Reserva> reservas = reservaRepository.findByUsuarioId(usuario.getId())
+                .stream()
+                .filter(r -> {
+                    // Siempre mostrar canceladas y vencidas (informativo)
+                    if (r.getEstado() == EstadoReserva.CANCELADA || r.getEstado() == EstadoReserva.VENCIDA) {
+                        return true;
+                    }
+                    // Para PENDIENTE y RECOGIDA: solo si el libro aún no fue recogido físicamente
+                    return !librosYaRecogidosIds.contains(r.getLibro().getId());
+                })
+                .collect(Collectors.toList());
+
         return ResponseEntity.ok(reservas);
     }
 
