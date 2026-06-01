@@ -68,4 +68,15 @@ public class Usuario {
     public void setActivo(boolean activo) {
         this.activo = activo;
     }
+
+    @Transient
+    private String estadoLector;
+
+    public String getEstadoLector() {
+        return estadoLector;
+    }
+
+    public void setEstadoLector(String estadoLector) {
+        this.estadoLector = estadoLector;
+    }
 }

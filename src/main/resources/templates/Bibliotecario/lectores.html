@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -13,8 +13,9 @@
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
 
     <!-- CSS -->
-    <link rel="stylesheet" href="../../static/Bibliotecario.css/lectores.css">
-    
+    <link rel="stylesheet" th:href="@{/Bibliotecario/lectores.css}">
+</head>
+<body>
     <div class="main-container">
 
     <!-- SIDEBAR -->
@@ -23,7 +24,7 @@
         <div>
 
             <div class="logo-section">
-                <img src="../../static/img/logo-CVE.png" alt="logo">
+                <img th:src="@{/img/logo-CVE.png}" alt="logo">
                 <h5>Bibliotecario</h5>
             </div>
 
@@ -32,56 +33,56 @@
             <ul class="menu">
 
                 <li>
-                    <a href="lectores.html">
+                    <a th:href="@{/panel-bibliotecario/lectores}" class="active">
                         <i class="fa-regular fa-address-book"></i>
                         Gestión de Lectores
                     </a>
                 </li>
 
                 <li>
-                    <a href="solicitudes.html">
+                    <a th:href="@{/panel-bibliotecario/solicitudes}">
                         <i class="fa-regular fa-rectangle-list"></i>
                         Solicitudes Pendientes
                     </a>
                 </li>
 
                 <li>
-                    <a href="inventario.html">
+                    <a th:href="@{/panel-bibliotecario/inventario}">
                         <i class="fa-regular fa-folder"></i>
                         Consulta de inventario
                     </a>
                 </li>
 
                 <li>
-                    <a href="prestamos.html">
+                    <a th:href="@{/panel-bibliotecario/prestamos}">
                         <i class="fa-regular fa-calendar-check"></i>
                         Gestión de préstamos
                     </a>
                 </li>
 
                 <li>
-                    <a href="devoluciones.html">
+                    <a th:href="@{/panel-bibliotecario/devoluciones}">
                         <i class="fa-regular fa-calendar"></i>
                         Gestión de devoluciones
                     </a>
                 </li>
 
                 <li>
-                    <a href="multas.html">
+                    <a th:href="@{/panel-bibliotecario/multas}">
                         <i class="fa-regular fa-pen-to-square"></i>
                         Lista blanca y multas
                     </a>
                 </li>
 
                 <li>
-                    <a href="notificaciones.html">
+                    <a th:href="@{/panel-bibliotecario/notificaciones}">
                         <i class="fa-regular fa-bell"></i>
                         Notificaciones
                     </a>
                 </li>
 
                 <li>
-                    <a href="perfil.html">
+                    <a th:href="@{/panel-bibliotecario/perfil}">
                         <i class="fa-regular fa-user"></i>
                         Perfil
                     </a>
@@ -92,7 +93,8 @@
         </div>
 
         <div class="logout">
-            <a href="#" class="text-white text-decoration-none">
+            <form th:action="@{/logout}" method="post" id="logoutForm" style="display: none;"></form>
+            <a href="javascript:document.getElementById('logoutForm').submit();" class="text-white text-decoration-none">
                 <i class="fa-solid fa-right-from-bracket"></i>
                 Cerrar sesión
             </a>
@@ -112,7 +114,7 @@
 
             <div class="user">
                 <i class="fa-regular fa-user"></i>
-                ¡Bienvenido <strong>Juan</strong>!
+                ¡Bienvenido <strong th:text="${usuario.nombre}">Juan</strong>!
             </div>
 
         </div>
@@ -122,26 +124,37 @@
 
             <div class="search-box">
                 <input type="text"
+                    name="search"
                     id="searchInput"
-                    placeholder="Busca un lector"
+                    th:value="${searchValue}"
+                    placeholder="Busca por código de estudiante o profesor..."
                     >
             </div>
 
-            <!--Boton buscar-->
-            <div class="buttons">
-                <button class="btn-custom" onclick="">
-                    Buscar
+            <!-- Botón Filtro con Dropdown -->
+            <div class="dropdown">
+                <button class="btn-filter dropdown-toggle" type="button" id="btnFiltroDropdown" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                    <i class="fa-solid fa-filter"></i> Filtro
                 </button>
-
-
-                <!--boton crear lector-->
-                <button class="btn-custom"
-                        data-bs-toggle="modal"
-                        data-bs-target="#lectorModal"
-                        onclick="">
-                    <i class="fa-solid fa-plus"></i>
-                    Crear lector
-                </button>
+                <div class="dropdown-menu p-3 dropdown-menu-end shadow" aria-labelledby="btnFiltroDropdown" style="min-width: 250px; border-radius: 12px; border: 1px solid #dcdcdc; background: white; z-index: 1050;">
+                    <div class="mb-3">
+                        <label for="filterRol" class="form-label fw-bold text-dark mb-1" style="font-size: 14px;">Rol</label>
+                        <select id="filterRol" class="form-select form-select-sm" onchange="aplicarFiltros()">
+                            <option value="">Todos</option>
+                            <option value="ESTUDIANTE">Estudiante</option>
+                            <option value="PROFESOR">Profesor</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="filterEstado" class="form-label fw-bold text-dark mb-1" style="font-size: 14px;">Estado</label>
+                        <select id="filterEstado" class="form-select form-select-sm" onchange="aplicarFiltros()">
+                            <option value="">Todos</option>
+                            <option value="ACTIVO">Activo</option>
+                            <option value="INACTIVO">Inactivo</option>
+                            <option value="MULTADO">Multado</option>
+                        </select>
+                    </div>
+                </div>
             </div>
 
         </div>
@@ -157,62 +170,46 @@
                     <th>Nombre</th>
                     <th>Rol</th>
                     <th>Estado del lector</th>
-                    <th>Acciones</th>
                 </tr>
                 </thead>
 
                 <tbody id="tablaLectores">
 
-                <tr>
-                    <td>E238</td>
-                    <td>Maria Fernanda Lopez</td>
-                    <td>Estudiante</td>
-                    <td class="estado">Estado: Activo</td>
-
+                <tr th:each="lector : ${lectores}">
+                    <td th:text="${lector.codigo}">E238</td>
+                    <td th:text="${lector.nombre}">Maria Fernanda Lopez</td>
+                    <td th:text="${lector.rol.name() == 'ESTUDIANTE' ? 'Estudiante' : 'Profesor'}">Estudiante</td>
                     <td>
-                        <div class="acciones">
-                            <!--Boton editar lector-->
-                            <button class="icon-btn edit-btn"
-                                    onclick="">
-                                <i class="fa-solid fa-pen"></i>
-                            </button>
-
-                            <!--boton eliminar lector-->
-                            <button class="icon-btn delete-btn"
-                                    onclick="">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-
-                        </div>
+                        <span class="badge-status" 
+                              th:classappend="${lector.estadoLector == 'ACTIVO' ? 'estado-activo' : (lector.estadoLector == 'MULTADO' ? 'estado-multado' : 'estado-inactivo')}"
+                              th:text="'Estado: ' + ${lector.estadoLector != null ? lector.estadoLector : 'Inactivo'}">
+                            Estado: Inactivo
+                        </span>
                     </td>
                 </tr>
 
-                <tr>
-                    <td>P463</td>
-                    <td>Juan Pérez Ramirez</td>
-                    <td>Profesor</td>
-                    <td class="estado">Estado: Inactivo</td>
-
-                    <td>
-                        <div class="acciones">
-
-                            <button class="icon-btn edit-btn"
-                                    onclick="editarLector(this)">
-                                <i class="fa-solid fa-pen"></i>
-                            </button>
-
-                            <button class="icon-btn delete-btn"
-                                    onclick="eliminarLector(this)">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-
-                        </div>
-                    </td>
+                <tr th:if="${#lists.isEmpty(lectores)}">
+                    <td colspan="4" class="text-center text-muted py-4">Ingrese un código para comenzar la búsqueda.</td>
                 </tr>
 
                 </tbody>
 
             </table>
+
+            <!-- Paginación -->
+            <div class="pagination-section" id="paginationControls" style="display: none !important;">
+                <div class="pagination-info" id="paginationInfo">
+                    Mostrando 1-10 de 10 lectores
+                </div>
+                <div class="pagination-nav">
+                    <button class="btn-page" id="btnPrevPage" onclick="changePage(-1)">
+                        <i class="fa-solid fa-chevron-left"></i> Anterior
+                    </button>
+                    <button class="btn-page" id="btnNextPage" onclick="changePage(1)">
+                        Siguiente <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
 
         </div>
 
@@ -220,140 +217,181 @@
 
 </div>
 
-<!--ventana modal-->
-
-<div class="modal fade"
-    id="lectorModal"
-    tabindex="-1">
-
-    <div class="modal-dialog modal-dialog-centered">
-        
-        <div class="modal-content">
-
-            <div class="modal-header">
-
-                <div>
-                    <h2 class="modal-title" id="tituloModal">
-                        Crear Lector
-                    </h2>
-                </div>
-
-                <img src="../../static/img/logo-CVE.png"
-                    class="logo-modal"
-                    alt="logo">
-
-            </div>
-
-            <div class="modal-body">
-
-                <form id="formLector">
-
-                    <div class="mb-3">
-                        <label class="form-label">
-                            Rol del usuario
-                        </label>
-
-                        <select class="form-select" id="rol">
-                            <option>Estudiante</option>
-                            <option>Profesor</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">
-                            Correo Personal
-                        </label>
-
-                        <input type="email"
-                            class="form-control"
-                            id="correo"
-                            placeholder="Ingrese correo...">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">
-                            Nombre
-                        </label>
-
-                        <input type="text"
-                            class="form-control"
-                            id="nombre"
-                            placeholder="Ingrese nombre...">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">
-                            Apellido
-                        </label>
-
-                        <input type="text"
-                            class="form-control"
-                            id="apellido"
-                            placeholder="Ingrese apellido...">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">
-                            Contraseña
-                        </label>
-
-                        <input type="password"
-                            class="form-control"
-                            id="password"
-                            placeholder="Ingrese contraseña...">
-                    </div>
-                    <div class="mb-3">
-
-                        <label class="form-label">
-                            Estado del lector
-                        </label>
-
-                        <select class="form-select" id="estado">
-                            <option value="Activo">
-                                    Activo
-                            </option>
-
-                            <option value="Inactivo">
-                            Inactivo
-                            </option>
-
-                            <option value="Multado">
-                                Multado
-                            </option>
-
-                        </select>
-
-                    </div>
-
-                </form>
-
-            </div>
-
-            <div class="modal-footer">
-
-                <button type="button"
-                        class="btn-modal"
-                        data-bs-dismiss="modal">
-                        Atrás
-                </button>
-
-                <button type="button"
-                        class="btn-modal"
-                        onclick="guardarLector()">
-                        Guardar
-                </button>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
 <!-- Bootstrap -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
- <script src="../../../../../assets/js/lectores.js"></script>
+<script>
+    let lectoresData = [];
+    let currentRolFilter = "";
+    let currentEstadoFilter = "";
+    let originalTbodyHtml = "";
+    let currentPage = 1;
+    const pageSize = 10;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        originalTbodyHtml = document.getElementById('tablaLectores').innerHTML;
+        
+        // Cargar lectores desde la tabla inicial (Thymeleaf)
+        const rows = document.querySelectorAll('#tablaLectores tr');
+        if (rows.length > 0 && !rows[0].querySelector('td[colspan]')) {
+            lectoresData = Array.from(rows).map(row => {
+                const cells = row.querySelectorAll('td');
+                const codigo = cells[0].textContent.trim();
+                const nombre = cells[1].textContent.trim();
+                const rolDisplay = cells[2].textContent.trim();
+                const rol = rolDisplay === 'Estudiante' ? 'ESTUDIANTE' : 'PROFESOR';
+                
+                const badge = cells[3].querySelector('.badge-status');
+                let estadoLector = 'INACTIVO';
+                if (badge) {
+                    const txt = badge.textContent.trim().toUpperCase();
+                    if (txt.includes('ACTIVO')) {
+                        estadoLector = 'ACTIVO';
+                    } else if (txt.includes('MULTADO')) {
+                        estadoLector = 'MULTADO';
+                    }
+                }
+                
+                return { codigo, nombre, rol, estadoLector };
+            });
+            renderLectores();
+        }
+    });
+
+    function aplicarFiltros() {
+        currentRolFilter = document.getElementById('filterRol').value;
+        currentEstadoFilter = document.getElementById('filterEstado').value;
+        
+        const btnFiltro = document.getElementById('btnFiltroDropdown');
+        if (currentRolFilter || currentEstadoFilter) {
+            btnFiltro.classList.add('active');
+        } else {
+            btnFiltro.classList.remove('active');
+        }
+        
+        currentPage = 1;
+        renderLectores();
+    }
+
+    function buscarLectorAutomatico() {
+        const query = document.getElementById('searchInput').value.trim();
+        currentPage = 1;
+        
+        fetch(`/panel-bibliotecario/lectores/buscar?codigo=${query}`)
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Error al buscar');
+            })
+            .then(lectores => {
+                lectoresData = lectores;
+                renderLectores();
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById('tablaLectores').innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">Ocurrió un error al realizar la búsqueda.</td>
+                    </tr>
+                `;
+                document.getElementById('paginationControls').style.setProperty('display', 'none', 'important');
+            });
+    }
+
+    function renderLectores() {
+        const query = document.getElementById('searchInput').value.trim();
+        
+        let filtered = lectoresData;
+        if (currentRolFilter) {
+            filtered = filtered.filter(lector => lector.rol === currentRolFilter);
+        }
+        if (currentEstadoFilter) {
+            filtered = filtered.filter(lector => lector.estadoLector === currentEstadoFilter);
+        }
+
+        if (filtered.length === 0) {
+            const displayMsg = query.length > 0 
+                ? `No se encontraron lectores con esos filtros para la búsqueda "${query}".`
+                : "No se encontraron lectores con esos filtros.";
+            document.getElementById('tablaLectores').innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-4">${displayMsg}</td>
+                </tr>
+            `;
+            document.getElementById('paginationControls').style.setProperty('display', 'none', 'important');
+            return;
+        }
+        
+        // Paginación
+        const totalItems = filtered.length;
+        const totalPages = Math.ceil(totalItems / pageSize);
+        
+        if (currentPage > totalPages) {
+            currentPage = totalPages;
+        }
+        if (currentPage < 1) {
+            currentPage = 1;
+        }
+        
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = Math.min(startIndex + pageSize, totalItems);
+        const paginatedData = filtered.slice(startIndex, endIndex);
+
+        let rowsHtml = "";
+        paginatedData.forEach(lector => {
+            const rolDisplay = lector.rol === 'ESTUDIANTE' ? 'Estudiante' : 'Profesor';
+            let statusClass = "estado-inactivo";
+            let statusText = "Inactivo";
+            
+            const est = lector.estadoLector ? lector.estadoLector.toUpperCase() : 'INACTIVO';
+            if (est === 'ACTIVO') {
+                statusClass = "estado-activo";
+                statusText = "Activo";
+            } else if (est === 'MULTADO') {
+                statusClass = "estado-multado";
+                statusText = "Multado";
+            }
+            
+            rowsHtml += `
+                <tr>
+                    <td>${lector.codigo}</td>
+                    <td>${lector.nombre}</td>
+                    <td>${rolDisplay}</td>
+                    <td><span class="badge-status ${statusClass}">Estado: ${statusText}</span></td>
+                </tr>
+            `;
+        });
+        document.getElementById('tablaLectores').innerHTML = rowsHtml;
+        
+        updatePaginationControls(startIndex + 1, endIndex, totalItems, currentPage, totalPages);
+    }
+
+    function updatePaginationControls(start, end, total, page, totalPages) {
+        const controls = document.getElementById('paginationControls');
+        const info = document.getElementById('paginationInfo');
+        const btnPrev = document.getElementById('btnPrevPage');
+        const btnNext = document.getElementById('btnNextPage');
+        
+        info.textContent = `Mostrando ${start}-${end} de ${total} lectores`;
+        
+        btnPrev.disabled = (page === 1);
+        btnNext.disabled = (page === totalPages);
+        
+        if (total <= pageSize) {
+            controls.style.setProperty('display', 'none', 'important');
+        } else {
+            controls.style.removeProperty('display');
+        }
+    }
+
+    function changePage(direction) {
+        currentPage += direction;
+        renderLectores();
+    }
+
+    // Escuchar el evento de tipeo en el campo de búsqueda
+    document.getElementById('searchInput').addEventListener('input', buscarLectorAutomatico);
+</script>
 </body>
 </html>

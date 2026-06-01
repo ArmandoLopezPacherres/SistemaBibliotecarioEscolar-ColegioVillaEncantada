@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,7 +14,7 @@
 
 
     <!--css-->
-    <link rel="stylesheet" href="../../static/Bibliotecario.css/prestamos.css">
+    <link rel="stylesheet" th:href="@{/Bibliotecario/prestamos.css}">
 
     </head>
 <body>
@@ -28,7 +28,7 @@
 
             <div class="logo-section">
 
-                <img src="../../static/img/logo-CVE.png" alt="logo">
+                <img th:src="@{/img/logo-CVE.png}" alt="logo">
 
                 <h5>Bibliotecario</h5>
 
@@ -39,56 +39,56 @@
             <ul class="menu">
 
                 <li>
-                    <a href="lectores.html">
+                    <a th:href="@{/panel-bibliotecario/lectores}">
                         <i class="fa-regular fa-address-book"></i>
                         Gestión de Lectores
                     </a>
                 </li>
 
                 <li>
-                    <a href="solicitudes.html">
+                    <a th:href="@{/panel-bibliotecario/solicitudes}">
                         <i class="fa-regular fa-rectangle-list"></i>
                         Solicitudes Pendientes
                     </a>
                 </li>
 
                 <li>
-                    <a href="inventario.html">
+                    <a th:href="@{/panel-bibliotecario/inventario}">
                         <i class="fa-regular fa-folder"></i>
                         Consulta de inventario
                     </a>
                 </li>
 
                 <li>
-                    <a href="prestamos.html">
+                    <a th:href="@{/panel-bibliotecario/prestamos}">
                         <i class="fa-regular fa-calendar-check"></i>
                         Gestión de préstamos
                     </a>
                 </li>
 
                 <li>
-                    <a href="devoluciones.html">
+                    <a th:href="@{/panel-bibliotecario/devoluciones}" class="active">
                         <i class="fa-regular fa-calendar"></i>
                         Gestión de devoluciones
                     </a>
                 </li>
 
                 <li>
-                    <a href="multas.html">
+                    <a th:href="@{/panel-bibliotecario/multas}">
                         <i class="fa-regular fa-pen-to-square"></i>
                         Lista blanca y multas
                     </a>
                 </li>
 
                 <li>
-                    <a href="notificaciones.html">
+                    <a th:href="@{/panel-bibliotecario/notificaciones}">
                         <i class="fa-regular fa-bell"></i>
                         Notificaciones
                     </a>
                 </li>
 
                 <li>
-                    <a href="perfil.html">
+                    <a th:href="@{/panel-bibliotecario/perfil}">
                         <i class="fa-regular fa-user"></i>
                         Perfil
                     </a>
@@ -99,14 +99,11 @@
         </div>
 
         <div class="logout">
-
-            <a href="#" class="text-white text-decoration-none">
-
+            <form th:action="@{/logout}" method="post" id="logoutForm" style="display: none;"></form>
+            <a href="javascript:document.getElementById('logoutForm').submit();" class="text-white text-decoration-none">
                 <i class="fa-solid fa-right-from-bracket"></i>
                 Cerrar sesión
-
             </a>
-
         </div>
 
     </aside>
@@ -130,7 +127,7 @@
                 <i class="fa-regular fa-user"></i>
 
                 ¡Bienvenido
-                <strong th:text="${#authentication.name}">
+                <strong th:text="${usuario.nombre}">
                     Juan
                 </strong>!
 
@@ -138,24 +135,18 @@
 
         </div>
 
-        <!-- buscador -->
-        <div class="search-section">
+        <!-- FILTROS -->
+        <div class="search-section" style="justify-content: flex-end;">
 
-            <div class="search-box">
-
-                <input type="text"
-                    id="searchInput"
-                    placeholder="Busca un lector..."
-                    onkeyup="buscarPrestamo()">
-
+            <!-- Filtro por ROL -->
+            <div class="role-filter-buttons">
+                <button type="button" id="btnRolAlumno" class="btn-role-filter" onclick="toggleRoleFilter('ESTUDIANTE')">
+                    <i class="fa-solid fa-graduation-cap"></i> Alumno
+                </button>
+                <button type="button" id="btnRolProfesor" class="btn-role-filter" onclick="toggleRoleFilter('PROFESOR')">
+                    <i class="fa-solid fa-chalkboard-user"></i> Profesor
+                </button>
             </div>
-
-            <button class="btn-search"
-                    onclick="buscarPrestamo()">
-
-                Buscar
-
-            </button>
 
         </div>
 
@@ -198,93 +189,177 @@
             <table class="table align-middle mb-0">
 
                 <thead>
-
                 <tr>
-
+                    <th>Código</th>
                     <th>Usuario</th>
                     <th>Libro</th>
+                    <th class="text-center">Cantidad</th>
                     <th>Fecha de préstamo</th>
                     <th>Fecha de devolución</th>
-                    <th>Acciones</th>
-
+                    <th>Estado</th>
                 </tr>
-
                 </thead>
 
                 <tbody id="tablaPrestamos">
 
-                <tr>
-
-                    <td>Maria Fernanda Lopez</td>
-
-                    <td>Historias Ancestrales</td>
-
+                <tr th:each="prestamo : ${devoluciones}"
+                    th:data-codigo="${prestamo.usuario.codigo}"
+                    th:data-rol="${prestamo.usuario.rol.name()}">
+                    <td th:text="${prestamo.usuario.codigo}">E2026001</td>
+                    <td th:text="${prestamo.usuario.nombre}">Maria Fernanda Lopez</td>
+                    <td th:text="${prestamo.libro.titulo}">Historias Ancestrales</td>
+                    <td class="text-center" th:text="${prestamo.cantidad}">1</td>
+                    <td class="col-fecha-prestamo" th:attr="data-raw=${prestamo.fechaPrestamo}" th:text="${#temporals.format(prestamo.fechaPrestamo, 'dd/MM/yyyy')}">20/05/2026</td>
+                    <td class="col-fecha-devolucion" th:attr="data-raw=${prestamo.fechaDevolucionReal}" th:text="${#temporals.format(prestamo.fechaDevolucionReal, 'dd/MM/yyyy')}">27/05/2026</td>
                     <td>
-
-                        <input type="date"
-                            class="fecha-input fecha-prestamo">
-
+                        <span class="badge-devuelto-info">✓ DEVUELTO</span>
                     </td>
-
-                    <td>
-
-                        <input type="date"
-                            class="fecha-input fecha-devolucion">
-
-                    </td>
-
-                    <td>
-
-                        <button class="btn-registrar"
-                                onclick="registrarPrestamo(this)">
-
-                            REGISTRAR
-
-                        </button>
-
-                    </td>
-
                 </tr>
 
-                <tr>
-
-                    <td>Juan Pérez Ramirez</td>
-
-                    <td>Matemática Avanzada</td>
-
-                    <td>
-
-                        <input type="date"
-                            class="fecha-input fecha-prestamo">
-
-                    </td>
-
-                    <td>
-
-                        <input type="date"
-                            class="fecha-input fecha-devolucion">
-
-                    </td>
-
-                    <td>
-
-                        <button class="btn-registrar"
-                                onclick="registrarPrestamo(this)">
-
-                            REGISTRAR
-
-                        </button>
-
-                    </td>
-
+                <tr th:if="${#lists.isEmpty(devoluciones)}">
+                    <td colspan="7" class="text-center text-muted py-4">No hay registros de devoluciones.</td>
                 </tr>
 
                 </tbody>
 
             </table>
 
+            <!-- Barra de paginación -->
+            <div class="pagination-bar" id="paginacionBar">
+                <span class="pagination-info" id="paginacionInfo">Mostrando 0 de 0</span>
+                <div class="pagination-controls">
+                    <button class="btn-page" id="btnAnterior" onclick="cambiarPagina(-1)" disabled>
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <span class="page-label" id="paginacionLabel">Pág. 1 / 1</span>
+                    <button class="btn-page" id="btnSiguiente" onclick="cambiarPagina(1)">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
         </div>
 
     </main>
 
 </div>
+
+<!-- Bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    const FILAS_POR_PAGINA = 8;
+    let devolucionesData = [];
+    let currentRoleFilter = null; // null = todos, 'ESTUDIANTE', 'PROFESOR'
+    let paginaActual = 1;
+    let filtradasActuales = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Extraer datos del DOM generado por Thymeleaf
+        const rows = document.querySelectorAll('#tablaPrestamos tr[data-codigo]');
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            devolucionesData.push({
+                usuarioCodigo:        row.getAttribute('data-codigo') || cells[0]?.textContent.trim() || '',
+                usuarioNombre:        cells[1]?.textContent.trim() || '',
+                libroTitulo:          cells[2]?.textContent.trim() || '',
+                cantidad:             cells[3]?.textContent.trim() || '1',
+                fechaPrestamo:        cells[4]?.getAttribute('data-raw') || '',
+                fechaDevolucion:      cells[5]?.getAttribute('data-raw') || '',
+                rol:                  row.getAttribute('data-rol') || ''
+            });
+        });
+
+        // Escuchar cambios en los inputs de fecha
+        const fP = document.getElementById('filtroPrestamo');
+        const fD = document.getElementById('filtroDevolucion');
+        if (fP) fP.addEventListener('change', aplicarFiltrosDeFecha);
+        if (fD) fD.addEventListener('change', aplicarFiltrosDeFecha);
+
+        renderPagina();
+    });
+
+    // ==================== FILTROS ====================
+    function toggleRoleFilter(rol) {
+        currentRoleFilter = currentRoleFilter === rol ? null : rol;
+        document.getElementById('btnRolAlumno').classList.toggle('active', currentRoleFilter === 'ESTUDIANTE');
+        document.getElementById('btnRolProfesor').classList.toggle('active', currentRoleFilter === 'PROFESOR');
+        paginaActual = 1;
+        renderPagina();
+    }
+
+    function aplicarFiltrosDeFecha() {
+        paginaActual = 1;
+        renderPagina();
+    }
+
+    // ==================== RENDER ====================
+    function getFiltradas() {
+        const inputP = document.getElementById('filtroPrestamo');
+        const inputD = document.getElementById('filtroDevolucion');
+        const datePrestamo   = inputP ? inputP.value : '';
+        const dateDevolucion = inputD ? inputD.value : '';
+
+        return devolucionesData.filter(d => {
+            const matchRol    = !currentRoleFilter || d.rol === currentRoleFilter;
+            const matchFP     = !datePrestamo   || d.fechaPrestamo  === datePrestamo;
+            const matchFD     = !dateDevolucion || d.fechaDevolucion === dateDevolucion;
+            return matchRol && matchFP && matchFD;
+        });
+    }
+
+    function renderPagina() {
+        filtradasActuales = getFiltradas();
+        const total       = filtradasActuales.length;
+        const totalPags   = Math.max(1, Math.ceil(total / FILAS_POR_PAGINA));
+        paginaActual      = Math.min(paginaActual, totalPags);
+        const inicio      = (paginaActual - 1) * FILAS_POR_PAGINA;
+        const fin         = Math.min(inicio + FILAS_POR_PAGINA, total);
+        const vista       = filtradasActuales.slice(inicio, fin);
+
+        const tbody = document.getElementById('tablaPrestamos');
+
+        if (total === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">No hay registros para este filtro.</td></tr>`;
+        } else {
+            tbody.innerHTML = vista.map(d => {
+                const fp = fmt(d.fechaPrestamo);
+                const fd = fmt(d.fechaDevolucion);
+                return `<tr>
+                    <td>${d.usuarioCodigo}</td>
+                    <td>${d.usuarioNombre}</td>
+                    <td>${d.libroTitulo}</td>
+                    <td class="text-center">${d.cantidad}</td>
+                    <td class="col-fecha-prestamo" data-raw="${d.fechaPrestamo}">${fp}</td>
+                    <td class="col-fecha-devolucion" data-raw="${d.fechaDevolucion}">${fd}</td>
+                    <td><span class="badge-devuelto-info">✓ DEVUELTO</span></td>
+                </tr>`;
+            }).join('');
+        }
+
+        // Paginación
+        const pagInfo = document.getElementById('paginacionInfo');
+        const pagLabel = document.getElementById('paginacionLabel');
+        const btnAnt = document.getElementById('btnAnterior');
+        const btnSig = document.getElementById('btnSiguiente');
+
+        if(pagInfo) pagInfo.textContent  = total === 0 ? 'Sin resultados' : `Mostrando ${inicio+1}–${fin} de ${total}`;
+        if(pagLabel) pagLabel.textContent = `Pág. ${paginaActual} / ${totalPags}`;
+        if(btnAnt) btnAnt.disabled  = paginaActual <= 1;
+        if(btnSig) btnSig.disabled = paginaActual >= totalPags;
+    }
+
+    function cambiarPagina(delta) { 
+        paginaActual += delta; 
+        renderPagina(); 
+    }
+
+    function fmt(f) {
+        if (!f) return '';
+        if (f.includes('-')) { const [y,m,d] = f.split('-'); return `${d}/${m}/${y}`; }
+        return f;
+    }
+</script>
+
+</body>
+</html>
