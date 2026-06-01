@@ -182,11 +182,16 @@
             // Cargar libros al inicio
             fetchLibros();
 
-            // Eventos: búsqueda con Enter o al cambiar categoría
-            searchInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') fetchLibros();
-            });
+            // Eventos: búsqueda al cambiar categoría o escribir (con debounce)
             categorySelect.addEventListener('change', fetchLibros);
+            
+            let debounceTimer;
+            searchInput.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    fetchLibros();
+                }, 400); // 400ms de espera al terminar de escribir
+            });
 
             function fetchLibros() {
                 const q = searchInput.value.trim();
