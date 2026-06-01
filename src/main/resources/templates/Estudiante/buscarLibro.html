@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
@@ -14,7 +14,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 
     <!-- CSS -->
-    <link rel="stylesheet" href="../../../resources/static/Estudiante/buscarLibros.css">
+    <link rel="stylesheet" th:href="@{/Estudiante/buscarLibros.css}">
+
+    <!-- CSRF Tokens -->
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 </head>
 
 <body>
@@ -29,7 +33,7 @@
                 <!-- LOGO -->
                 <div class="logo-section">
 
-                    <img src="../../static/img/logo-CVE.png" alt="Logo">
+                    <img th:src="@{/img/logo-CVE.png}" alt="Logo">
 
                     <h5>Estudiante</h5>
 
@@ -41,38 +45,33 @@
                 <ul class="menu">
 
                     <li>
-                        <a href="#">
+                        <a th:href="@{/estudiante/buscar-libro}">
                             <i class="fa-solid fa-book-open"></i>
-                            Buscar libros
-                        </a>
+                            Buscar libros</a>
                     </li>
 
                     <li>
-                        <a href="#">
+                        <a th:href="@{/estudiante/mi-actividad}">
                             <i class="fa-solid fa-bolt"></i>
-                            Mi actividad
-                        </a>
+                            Mi actividad</a>
                     </li>
 
                     <li>
-                        <a href="#">
+                        <a th:href="@{/estudiante/historial}">
                             <i class="fa-regular fa-clock"></i>
-                            Historial
-                        </a>
+                            Historial</a>
                     </li>
 
                     <li>
-                        <a href="#">
+                        <a th:href="@{/estudiante/notificaciones}">
                             <i class="fa-regular fa-bell"></i>
-                            Notificaciones +2
-                        </a>
+                            Notificaciones</a>
                     </li>
 
                     <li>
-                        <a href="#">
+                        <a th:href="@{/estudiante/perfil}">
                             <i class="fa-regular fa-user"></i>
-                            Perfil
-                        </a>
+                            Perfil</a>
                     </li>
 
                 </ul>
@@ -81,14 +80,12 @@
 
             <!-- LOGOUT -->
             <div class="logout">
-
-                <a href="#">
-
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                    Cerrar sesión
-
-                </a>
-
+                <form th:action="@{/logout}" method="post" style="margin: 0;">
+                    <a href="#" onclick="this.closest('form').submit(); return false;">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        Cerrar sesión
+                    </a>
+                </form>
             </div>
 
         </aside>
@@ -114,7 +111,7 @@
                     <i class="fa-regular fa-user"></i>
 
                     ¡Bienvenido
-                    <strong>Alexander</strong>!
+                    <strong th:text="${usuario.nombre}">Alexander</strong>!
 
                 </div>
 
@@ -122,104 +119,338 @@
 
             <!-- SEARCH -->
             <div class="search-section">
-
-                <input type="text" class="search-input" placeholder="Escribe el título del libro, autor o tema">
-
-                <button class="btn-search">
-
-                    Buscar
-
-                </button>
-
+                <input type="text" id="searchInput" class="search-input" placeholder="Escribe el título del libro, autor o tema" onkeyup="aplicarFiltros()">
             </div>
 
             <!-- RECOMENDACIONES -->
             <div class="recommendation-header">
-
                 <h3>Recomendaciones</h3>
-
-                <select class="category-select">
-
-                    <option selected disabled>
-                        Seleccionar categoría
-                    </option>
-
-                    <option>Historia del Perú</option>
-                    <option>Historia Universal</option>
-                    <option>Novelas</option>
-                    <option>Fantasía</option>
-                    <option>Fábulas</option>
-                    <option>Ciencia Ficción</option>
-                    <option>Literatura Infantil</option>
-                    <option>Biografías</option>
-                    <option>Matemáticas</option>
-                    <option>Ciencias Naturales</option>
-
+                <select class="category-select" id="categoryFilter" onchange="aplicarFiltros()">
+                    <option value="">Todas las categorías</option>
                 </select>
-
             </div>
 
             <!-- LIBROS -->
-            <div class="books-container">
+            <div class="books-container" id="booksContainer">
 
-                <!-- CARD 1 -->
-                <div class="book-card">
+                <div class="book-card" th:each="libro : ${libros}"
+                     th:data-categoria="${libro.categoria != null ? libro.categoria.nombre : 'Sin categoría'}"
+                     th:data-titulo="${libro.titulo.toLowerCase()}"
+                     th:data-autor="${libro.autor != null ? libro.autor.nombreCompleto.toLowerCase() : 'sin autor'}">
 
-                    <img src="https://covers.openlibrary.org/b/id/8225261-L.jpg" alt="Matilda">
+                    <img th:src="@{'https://covers.openlibrary.org/b/isbn/' + ${libro.isbn} + '-M.jpg'}" 
+                         th:alt="${libro.titulo}"
+                         onerror="this.src='https://openlibrary.org/images/icons/avatar_book-sm.png';">
 
                     <div class="book-info">
+                        <h5 class="book-title" th:text="${libro.titulo}">Título</h5>
+                        
+                        <small class="book-author">
+                            <i class="fa-solid fa-user"></i> 
+                            <span th:text="${libro.autor != null ? libro.autor.nombreCompleto : 'Sin autor'}">Autor</span>
+                        </small>
 
-                        <h5>Matilda</h5>
-
-                        <small>Autor: Roald Dahl</small>
-
-                        <p>
-                            Descripción: Fábula que trata sobre una niña humilde
-                            que obtiene super poderes...
+                        <p class="book-category">
+                            <i class="fa-solid fa-tag"></i> 
+                            <span th:text="${libro.categoria != null ? #strings.toUpperCase(libro.categoria.nombre) : 'SIN CATEGORÍA'}">CATEGORÍA</span>
                         </p>
 
-                        <button class="btn-book">
+                        <p class="book-stock">
+                            Disponibles: <span class="stock-number" th:text="${libro.stock}">15</span>
+                        </p>
 
-                            Solicitar
-
+                        <button class="btn-book" 
+                                th:disabled="${!libro.disponible || libro.stock <= 0}"
+                                th:data-id="${libro.id}"
+                                th:data-titulo="${libro.titulo}"
+                                th:data-autor="${libro.autor != null ? libro.autor.nombreCompleto : 'Sin autor'}"
+                                onclick="abrirModalSolicitud(this)">
+                            <i class="fa-solid fa-book-reader" th:if="${libro.disponible && libro.stock > 0}"></i>
+                            <span th:text="${libro.disponible && libro.stock > 0 ? 'Solicitar' : 'No disponible'}">Solicitar</span>
                         </button>
-
                     </div>
 
                 </div>
 
-                <!-- CARD 2 -->
-                <div class="book-card">
-
-                    <img src="https://covers.openlibrary.org/b/id/10523338-L.jpg" alt="Miguel Grau">
-
-                    <div class="book-info">
-
-                        <h5>Miguel Grau</h5>
-
-                        <small>Autor: Dayan Alin</small>
-
-                        <p>
-                            Descripción: Increíble historia basada en hechos reales
-                            sobre el héroe peruano...
-                        </p>
-
-                        <button class="btn-book">
-
-                            Solicitar
-
-                        </button>
-
-                    </div>
-
+                <div th:if="${#lists.isEmpty(libros)}" style="width: 100%; text-align: center; margin-top: 2rem;">
+                    <p class="text-muted">No hay libros disponibles en este momento.</p>
                 </div>
 
+            </div>
+
+            <!-- Barra de paginación -->
+            <div class="pagination-bar" id="paginacionBar">
+                <span class="pagination-info" id="paginacionInfo">Mostrando 0 de 0</span>
+                <div class="pagination-controls">
+                    <button class="btn-page" id="btnAnterior" onclick="cambiarPagina(-1)" disabled>
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <span class="page-label" id="paginacionLabel">Pág. 1 / 1</span>
+                    <button class="btn-page" id="btnSiguiente" onclick="cambiarPagina(1)">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
             </div>
 
         </main>
 
     </div>
 
+    <!-- MODAL SOLICITUD -->
+    <div class="modal fade" id="solicitudModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+            <div class="modal-content" style="border: none; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.15); padding: 20px;">
+                <div class="modal-header" style="border-bottom: none; justify-content: center; padding-bottom: 0;">
+                    <h4 class="modal-title" style="color: #0c2947; font-weight: 800; letter-spacing: 2px;">SOLICITUD</h4>
+                </div>
+                <div class="modal-body" style="padding-top: 15px;">
+                    <form id="formSolicitud">
+                        <input type="hidden" id="modalLibroId">
+                        
+                        <div class="mb-3">
+                            <h6 style="color: #0c2947; font-weight: 700; margin-bottom: 4px;">Nombre del libro:</h6>
+                            <p style="color: #666; margin-bottom: 0; font-size: 15px;" id="modalLibroTitulo"></p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h6 style="color: #0c2947; font-weight: 700; margin-bottom: 4px;">Autor:</h6>
+                            <p style="color: #666; margin-bottom: 0; font-size: 15px;" id="modalLibroAutor"></p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h6 style="color: #0c2947; font-weight: 700; margin-bottom: 4px;">Fecha de solicitud:</h6>
+                            <p style="color: #666; margin-bottom: 0; font-size: 15px;" id="modalFechaSolicitud"></p>
+                        </div>
+
+                        <div class="mb-3">
+                            <h6 style="color: #0c2947; font-weight: 700; margin-bottom: 4px;">Fecha máxima de devolución:</h6>
+                            <p style="color: #666; margin-bottom: 0; font-size: 15px;" id="modalFechaMaxima"></p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6 style="color: #0c2947; font-weight: 700; margin-bottom: 8px;">Selecciona la fecha de devolución:</h6>
+                            <input type="date" class="form-control" id="modalFechaDevolucion" required style="border: 1px solid #ccc; color: #333; padding: 10px;">
+                        </div>
+                        
+                        <div class="d-flex justify-content-center gap-2">
+                            <button type="button" class="btn text-white" style="background-color: #0c2947; font-weight: 500; padding: 8px 20px; border-radius: 4px;" onclick="enviarSolicitud()">Solicitar libro</button>
+                            <button type="button" class="btn" style="background-color: #e2e6ea; color: #555; font-weight: 500; padding: 8px 20px; border-radius: 4px;" data-bs-dismiss="modal">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST DE NOTIFICACIÓN -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
+        <div id="actionToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toastMessage">
+                    Operación exitosa.
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const CARDS_POR_PAGINA = 8;
+        let paginaActual = 1;
+        let filteredCards = [];
+        let allCards = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            allCards = Array.from(document.querySelectorAll('.book-card'));
+            
+            // Populate category filter dynamically
+            const categorySet = new Set();
+            allCards.forEach(card => {
+                const cat = card.getAttribute('data-categoria');
+                if (cat && cat !== 'Sin categoría') {
+                    categorySet.add(cat);
+                }
+            });
+            
+            const select = document.getElementById('categoryFilter');
+            Array.from(categorySet).sort().forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                select.appendChild(option);
+            });
+
+            aplicarFiltros();
+        });
+
+        function aplicarFiltros() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const category = document.getElementById('categoryFilter').value;
+
+            filteredCards = allCards.filter(card => {
+                const titulo = card.getAttribute('data-titulo') || '';
+                const autor = card.getAttribute('data-autor') || '';
+                const cat = card.getAttribute('data-categoria') || '';
+                
+                const matchQuery = !query || titulo.includes(query) || autor.includes(query);
+                const matchCat = !category || cat === category;
+
+                return matchQuery && matchCat;
+            });
+
+            paginaActual = 1;
+            renderPagina();
+        }
+
+        function cambiarPagina(delta) {
+            paginaActual += delta;
+            renderPagina();
+        }
+
+        function renderPagina() {
+            const total = filteredCards.length;
+            const totalPags = Math.max(1, Math.ceil(total / CARDS_POR_PAGINA));
+            paginaActual = Math.min(Math.max(1, paginaActual), totalPags);
+            
+            const inicio = (paginaActual - 1) * CARDS_POR_PAGINA;
+            const fin = Math.min(inicio + CARDS_POR_PAGINA, total);
+
+            // Hide all first
+            allCards.forEach(card => card.style.display = 'none');
+
+            // Show current page
+            const vista = filteredCards.slice(inicio, fin);
+            vista.forEach(card => card.style.display = 'flex');
+
+            // Handle "No results" message
+            let noResultsMsg = document.getElementById('noResultsMsg');
+            if (total === 0 && allCards.length > 0) {
+                if (!noResultsMsg) {
+                    noResultsMsg = document.createElement('div');
+                    noResultsMsg.id = 'noResultsMsg';
+                    noResultsMsg.style.width = '100%';
+                    noResultsMsg.style.textAlign = 'center';
+                    noResultsMsg.style.marginTop = '2rem';
+                    noResultsMsg.style.gridColumn = '1 / -1';
+                    noResultsMsg.innerHTML = '<p class="text-muted">No se encontraron libros que coincidan con la búsqueda.</p>';
+                    document.getElementById('booksContainer').appendChild(noResultsMsg);
+                } else {
+                    noResultsMsg.style.display = 'block';
+                }
+            } else if (noResultsMsg) {
+                noResultsMsg.style.display = 'none';
+            }
+
+            // Update Pagination UI
+            const pagInfo = document.getElementById('paginacionInfo');
+            const pagLabel = document.getElementById('paginacionLabel');
+            const btnAnt = document.getElementById('btnAnterior');
+            const btnSig = document.getElementById('btnSiguiente');
+            const paginacionBar = document.getElementById('paginacionBar');
+
+            if(total === 0) {
+                paginacionBar.style.display = 'none';
+            } else {
+                paginacionBar.style.display = 'flex';
+                if(pagInfo) pagInfo.textContent = `Mostrando ${inicio+1}–${fin} de ${total}`;
+                if(pagLabel) pagLabel.textContent = `Pág. ${paginaActual} / ${totalPags}`;
+                if(btnAnt) btnAnt.disabled = paginaActual <= 1;
+                if(btnSig) btnSig.disabled = paginaActual >= totalPags;
+            }
+        }
+
+        function abrirModalSolicitud(btn) {
+            const id = btn.getAttribute('data-id');
+            const titulo = btn.getAttribute('data-titulo');
+            const autor = btn.getAttribute('data-autor');
+
+            document.getElementById('modalLibroId').value = id;
+            document.getElementById('modalLibroTitulo').textContent = titulo;
+            document.getElementById('modalLibroAutor').textContent = autor;
+
+            const hoy = new Date();
+            const yyyy = hoy.getFullYear();
+            const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+            const dd = String(hoy.getDate()).padStart(2, '0');
+            document.getElementById('modalFechaSolicitud').textContent = `${dd}/${mm}/${yyyy}`;
+
+            const maxDate = new Date();
+            maxDate.setDate(hoy.getDate() + 7);
+            const max_yyyy = maxDate.getFullYear();
+            const max_mm = String(maxDate.getMonth() + 1).padStart(2, '0');
+            const max_dd = String(maxDate.getDate()).padStart(2, '0');
+            document.getElementById('modalFechaMaxima').textContent = `${max_dd}/${max_mm}/${max_yyyy}`;
+
+            const dateInput = document.getElementById('modalFechaDevolucion');
+            dateInput.min = `${yyyy}-${mm}-${dd}`;
+            dateInput.max = `${max_yyyy}-${max_mm}-${max_dd}`;
+            dateInput.value = '';
+
+            const modal = new bootstrap.Modal(document.getElementById('solicitudModal'));
+            modal.show();
+        }
+
+        function enviarSolicitud() {
+            const id = document.getElementById('modalLibroId').value;
+            const fechaDevolucion = document.getElementById('modalFechaDevolucion').value;
+            if (!fechaDevolucion) {
+                showMessage("Por favor, selecciona la fecha de devolución.", false);
+                return;
+            }
+
+            const csrfTokenElement = document.querySelector('meta[name="_csrf"]');
+            const csrfHeaderElement = document.querySelector('meta[name="_csrf_header"]');
+            
+            const csrfToken = csrfTokenElement ? csrfTokenElement.getAttribute('content') : '';
+            const csrfHeader = csrfHeaderElement ? csrfHeaderElement.getAttribute('content') : '';
+            
+            const formData = new URLSearchParams();
+            formData.append('libroId', id);
+            formData.append('fechaDevolucion', fechaDevolucion);
+
+            fetch('/estudiante/solicitar', {
+                method: 'POST',
+                headers: {
+                    [csrfHeader]: csrfToken,
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData.toString()
+            })
+            .then(async response => {
+                const text = await response.text();
+                if (response.ok) {
+                    showMessage(text, true);
+                    const modalEl = document.getElementById('solicitudModal');
+                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                    if (modalInstance) modalInstance.hide();
+                } else {
+                    showMessage(text, false);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showMessage("Error de red al solicitar.", false);
+            });
+        }
+
+        function showMessage(msg, isSuccess) {
+            const toastEl = document.getElementById('actionToast');
+            const toastMsg = document.getElementById('toastMessage');
+            
+            if (isSuccess) {
+                toastEl.classList.remove('bg-danger');
+                toastEl.classList.add('bg-success');
+            } else {
+                toastEl.classList.remove('bg-success');
+                toastEl.classList.add('bg-danger');
+            }
+            
+            toastMsg.textContent = msg;
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+    </script>
 </body>
 
 </html>
