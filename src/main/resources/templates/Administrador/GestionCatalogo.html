@@ -1,169 +1,107 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Catálogo</title>
-
-    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Iconos -->
-    <link rel="stylesheet" 
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-    <!-- Ruta Css -->
-    <link rel="stylesheet" href="../../static/Administrador/GestionCatalogo.css">
-
-   
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/Administrador/GestionCatalogo.css}">
 </head>
 
 <body>
 
-    <!--SIDEBAR-->
-
     <aside class="sidebar">
-
         <div>
-
             <div class="logo-section">
-                <img src="../../static/img/logo-CVE.png" alt="logo">
+                <img th:src="@{/img/logo-CVE.png}" alt="logo">
                 <h5>Administrador</h5>
             </div>
-
             <nav class="menu">
-
-                <a href="#">
-                    <i class="bi bi-graph-up"></i>
-                    Dashboard
+                <a th:href="@{/panel-admin}">
+                    <i class="bi bi-graph-up"></i> Dashboard
                 </a>
-
-                <a href="#">
-                    <i class="bi bi-people-fill"></i>
-                    Gestión de usuarios
+                <a th:href="@{/panel-admin/usuarios}">
+                    <i class="bi bi-people-fill"></i> Gestión de usuarios
                 </a>
-
-                <a href="#" class="activo">
-                    <i class="bi bi-journal"></i>
-                    Gestión de catálogo
+                <a th:href="@{/panel-admin/catalogo}" class="activo">
+                    <i class="bi bi-journal"></i> Gestión de catálogo
                 </a>
-
-                <a href="#">
-                    <i class="bi bi-bar-chart-line"></i>
-                    Reportes
+                <a th:href="@{/panel-admin/reportes}">
+                    <i class="bi bi-bar-chart-line"></i> Reportes
                 </a>
-
-                <a href="#">
-                    <i class="bi bi-person"></i>
-                    Perfil
+                <a th:href="@{/panel-admin/perfil}">
+                    <i class="bi bi-person"></i> Perfil
                 </a>
-
             </nav>
-
         </div>
         <div class="logout">
-
-            <form href="../../templates/index.html" method="post">
-
-                <button type="submit"
-                    class="btn btn-outline-light w-100 rounded-pill fw-bold">
-
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="btn-logout">
                     <i class="bi bi-box-arrow-right"></i>
                     Cerrar Sesión
-
                 </button>
-
             </form>
-
         </div>
-       
-
     </aside>
 
 
-    <!-- CONTENIDO-->
-
     <main class="contenido">
 
-        <!-- TOP -->
         <div class="top">
-
             <div>
                 <h1>Gestión de Catálogo</h1>
                 <p>Administra libros, autores, editoriales y categorías</p>
             </div>
-
-            <div>
-                ¡Bienvenido <strong>Karolay</strong>!
+            <div class="welcome">
+                <i class="bi bi-person-circle"></i>
+                ¡Bienvenido <strong th:text="${usuario != null ? usuario.nombre : 'Administrador'}">Administrador</strong>!
             </div>
-
         </div>
 
+        <div th:if="${mensajeExito}"
+             id="toastData"
+             data-tipo="exito"
+             th:data-mensaje="${mensajeExito}"
+             style="display:none;"></div>
+        <div th:if="${mensajeError}"
+             id="toastData"
+             data-tipo="error"
+             th:data-mensaje="${mensajeError}"
+             style="display:none;"></div>
+        <div id="tabActivaData" th:attr="data-tab=${tabActiva}" style="display:none;"></div>
 
-        <!-- BUSQUEDA -->
         <div class="busqueda">
-
-            <input type="text"
-                placeholder="Busca libro, autor, editorial o categoría">
-            
-            <div class="botones">
-                <button class="btn-azul">
-                    Buscar
-                </button> 
-                <button class="btn-azul"
-                    onclick="abrirModal()">
-                    Crear nuevo
-                </button>
-            </div>
-            
+            <input id="inputBusqueda" type="text" placeholder="Busca en la tabla activa..." oninput="filtrarCatalogo()">
+            <button class="btn-azul" id="btnCrearNuevo" onclick="abrirModal()">
+                <i class="bi bi-plus"></i>
+                <span id="labelCrear">Crear Libro</span>
+            </button>
         </div>
 
-
-        <!-- TABS -->
         <div class="tabs">
-
-            <div class="tab activo"
-                onclick="mostrarTabla('libros', this)">
-
+            <div class="tab activo" id="tab-libros" onclick="mostrarTabla('libros', this)">
                 <i class="bi bi-book-half"></i>
                 Libros
-
             </div>
-
-            <div class="tab"
-                onclick="mostrarTabla('autores', this)">
-
+            <div class="tab" id="tab-autores" onclick="mostrarTabla('autores', this)">
                 <i class="bi bi-person"></i>
                 Autores
-
             </div>
-
-            <div class="tab"
-                onclick="mostrarTabla('editoriales', this)">
-
+            <div class="tab" id="tab-editoriales" onclick="mostrarTabla('editoriales', this)">
                 <i class="bi bi-building"></i>
                 Editorial
-
             </div>
-
-            <div class="tab"
-                onclick="mostrarTabla('categorias', this)">
-
+            <div class="tab" id="tab-categorias" onclick="mostrarTabla('categorias', this)">
                 <i class="bi bi-folder"></i>
                 Categoría
-
             </div>
-
         </div>
 
 
-        <!-- TABLA LIBROS-->
-
         <div id="tabla-libros" class="tabla-contenedor">
-
             <table>
-
                 <thead>
                     <tr>
                         <th>Título</th>
@@ -174,61 +112,60 @@
                         <th>Acciones</th>
                     </tr>
                 </thead>
-
-                <tbody>
-
-                    <tr>
-                        <td>Cien Años de Soledad</td>
-                        <td>Gabriel García Márquez</td>
-                        <td>Sudamericana</td>
-                        <td>Literatura</td>
-                        <td>3</td>
-
+                <tbody id="tbody-libros">
+                    <tr th:each="l : ${listaLibros}"
+                        th:attr="data-busqueda=${l.titulo + ' ' + (l.autor != null ? l.autor.nombreCompleto : '')}"
+                        th:classappend="${!l.activo} ? 'fila-inactiva' : ''">
+                        <td>
+                            <span th:text="${l.titulo}" style="font-weight:500;">Título</span>
+                            <span th:if="${!l.activo}" class="badge-inactivo">Inactivo</span>
+                            <br>
+                            <small style="color:#999; font-size:11px;">
+                                <span th:if="${l.isbn != null}" th:text="|ISBN: ${l.isbn}|"></span>
+                                <span th:if="${l.isbn != null and l.anioPublicacion != null}"> &bull; </span>
+                                <span th:if="${l.anioPublicacion != null}" th:text="${l.anioPublicacion}"></span>
+                            </small>
+                        </td>
+                        <td th:text="${l.autor != null ? l.autor.nombreCompleto : '-'}">Autor</td>
+                        <td th:text="${l.editorial != null ? l.editorial.nombre : '-'}">Editorial</td>
+                        <td th:text="${l.categoria != null ? l.categoria.nombre : '-'}">Categoría</td>
+                        <td>
+                            <span th:text="${l.stock}"
+                                  th:class="${l.stock > 0 ? 'stock-badge' : 'stock-badge agotado'}">0</span>
+                        </td>
                         <td class="acciones">
-
-                            <i class="bi bi-pencil"
-                                onclick="abrirModal()"></i>
-
-                            <i class="bi bi-trash"></i>
-
+                            <th:block th:if="${l.activo}">
+                                <i class="bi bi-pencil"
+                                   th:attr="onclick=|abrirModalEdicionLibro(
+                                       '${l.id}','${l.titulo}','${l.isbn != null ? l.isbn : ''}',
+                                       '${l.anioPublicacion != null ? l.anioPublicacion : 0}','${l.stock}',
+                                       '${l.autor != null ? l.autor.id : 0}',
+                                       '${l.editorial != null ? l.editorial.id : 0}',
+                                       '${l.categoria != null ? l.categoria.id : 0}')|"
+                                   title="Editar libro"></i>
+                                <i class="bi bi-trash text-danger"
+                                   th:attr="onclick=|abrirModalEliminar(
+                                       '/panel-admin/catalogo/libros/eliminar/${l.id}',
+                                       '${l.titulo}', 'el libro')|"
+                                   title="Eliminar libro"></i>
+                            </th:block>
+                            <th:block th:unless="${l.activo}">
+                                <form th:action="@{/panel-admin/catalogo/libros/restaurar/{id}(id=${l.id})}" method="post" style="display:inline;">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <button type="submit" style="background:none; border:none; padding:0;"><i class="bi bi-arrow-counterclockwise text-success" title="Restaurar libro"></i></button>
+                                </form>
+                            </th:block>
                         </td>
                     </tr>
-
-                    <tr>
-                        <td>Don Quijote</td>
-                        <td>Miguel de Cervantes</td>
-                        <td>Alfaguara</td>
-                        <td>Clásicos</td>
-                        <td>10</td>
-
-                        <td class="acciones">
-
-                            <i class="bi bi-pencil"
-                                onclick="abrirModal()"></i>
-
-                            <i class="bi bi-trash"></i>
-
-                        </td>
-                    </tr>
-
                 </tbody>
-
             </table>
-
         </div>
 
 
-        <!--  TABLA AUTORES-->
-
-        <div id="tabla-autores"
-            class="tabla-contenedor"
-            style="display:none;">
-
+        <div id="tabla-autores" class="tabla-contenedor" style="display:none;">
             <table>
-
                 <thead>
                     <tr>
-                        <th>Perfil</th>
                         <th>Nombre Completo</th>
                         <th>Nacionalidad</th>
                         <th>Descripción</th>
@@ -236,53 +173,41 @@
                         <th>Acciones</th>
                     </tr>
                 </thead>
-
-                <tbody>
-                    <tr>
+                <tbody id="tbody-autores">
+                    <tr th:each="a : ${listaAutores}"
+                        th:attr="data-busqueda=${a.nombreCompleto + ' ' + (a.nacionalidad != null ? a.nacionalidad : '')},data-id=${a.id},data-nombre=${a.nombreCompleto},data-nac=${a.nacionalidad != null ? a.nacionalidad : ''},data-desc=${a.descripcion != null ? a.descripcion : ''}"
+                        th:classappend="${!a.activo} ? 'fila-inactiva' : ''">
                         <td>
-                            <img class="foto-autor"
-                            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyW1LFVLrTeSynKd6fZW2JFbbIwM3-jBJilg&s">
+                            <span th:text="${a.nombreCompleto}">Nombre</span>
+                            <span th:if="${!a.activo}" class="badge-inactivo">Inactivo</span>
                         </td>
-
-                        <td>Gabriel García Márquez</td>
-                        <td>Colombia</td>
-
-                        <td>
-                            Escritor y periodista colombiano,
-                            ganador del Nobel.
-                        </td>
-
-                        <td>15</td>
-
+                        <td th:text="${a.nacionalidad != null ? a.nacionalidad : '-'}">Nacionalidad</td>
+                        <td th:text="${a.descripcion != null ? a.descripcion : '-'}">Descripción</td>
+                        <td th:text="${librosPerAutor[a.id] != null ? librosPerAutor[a.id] : 0}">0</td>
                         <td class="acciones">
-
-                            <i class="bi bi-pencil"
-                                onclick="abrirModal()"></i>
-
-                            <i class="bi bi-trash"></i>
-
+                            <th:block th:if="${a.activo}">
+                                <i class="bi bi-pencil" onclick="abrirModalEdicionAutor(this.closest('tr'))" title="Editar autor"></i>
+                                <i class="bi bi-trash text-danger"
+                                   th:attr="onclick=|abrirModalEliminar('/panel-admin/catalogo/autores/eliminar/${a.id}','${a.nombreCompleto}','el autor')|"
+                                   title="Eliminar autor"></i>
+                            </th:block>
+                            <th:block th:unless="${a.activo}">
+                                <form th:action="@{/panel-admin/catalogo/autores/restaurar/{id}(id=${a.id})}" method="post" style="display:inline;">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <button type="submit" style="background:none; border:none; padding:0;"><i class="bi bi-arrow-counterclockwise text-success" title="Restaurar autor"></i></button>
+                                </form>
+                            </th:block>
                         </td>
-
                     </tr>
-
                 </tbody>
-
             </table>
-
         </div>
 
 
-        <!-- TABLA EDITORIALES-->
-
-        <div id="tabla-editoriales"
-            class="tabla-contenedor"
-            style="display:none;">
-
+        <div id="tabla-editoriales" class="tabla-contenedor" style="display:none;">
             <table>
-
                 <thead>
                     <tr>
-                        <th>Logo</th>
                         <th>Editorial</th>
                         <th>País</th>
                         <th>Correo</th>
@@ -290,45 +215,39 @@
                         <th>Acciones</th>
                     </tr>
                 </thead>
-
-                <tbody>
-
-                    <tr>
+                <tbody id="tbody-editoriales">
+                    <tr th:each="ed : ${listaEditoriales}"
+                        th:attr="data-busqueda=${ed.nombre + ' ' + (ed.pais != null ? ed.pais : '')},data-id=${ed.id},data-nombre=${ed.nombre},data-pais=${ed.pais != null ? ed.pais : ''},data-correo=${ed.correo != null ? ed.correo : ''}"
+                        th:classappend="${!ed.activo} ? 'fila-inactiva' : ''">
                         <td>
-                            <img class="foto-autor"
-                            src="https://images.milenio.com/QQ8QtdbJHGGdSfe1l36H0uBmTyA=/345x194/uploads/media/2014/03/19/la-venta-se-hizo-a.jpeg">
+                            <span th:text="${ed.nombre}">Editorial</span>
+                            <span th:if="${!ed.activo}" class="badge-inactivo">Inactivo</span>
                         </td>
-                        <td>Alfaguara</td>
-                        <td>España</td>
-                        <td>info@alfaguara.com</td>
-                        <td>38</td>
-
+                        <td th:text="${ed.pais != null ? ed.pais : '-'}">País</td>
+                        <td th:text="${ed.correo != null ? ed.correo : '-'}">Correo</td>
+                        <td th:text="${librosPerEditorial[ed.id] != null ? librosPerEditorial[ed.id] : 0}">0</td>
                         <td class="acciones">
-
-                            <i class="bi bi-pencil"
-                                onclick="abrirModal()"></i>
-
-                            <i class="bi bi-trash"></i>
-
+                            <th:block th:if="${ed.activo}">
+                                <i class="bi bi-pencil" onclick="abrirModalEdicionEditorial(this.closest('tr'))" title="Editar editorial"></i>
+                                <i class="bi bi-trash text-danger"
+                                   th:attr="onclick=|abrirModalEliminar('/panel-admin/catalogo/editoriales/eliminar/${ed.id}','${ed.nombre}','la editorial')|"
+                                   title="Eliminar editorial"></i>
+                            </th:block>
+                            <th:block th:unless="${ed.activo}">
+                                <form th:action="@{/panel-admin/catalogo/editoriales/restaurar/{id}(id=${ed.id})}" method="post" style="display:inline;">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <button type="submit" style="background:none; border:none; padding:0;"><i class="bi bi-arrow-counterclockwise text-success" title="Restaurar editorial"></i></button>
+                                </form>
+                            </th:block>
                         </td>
-
                     </tr>
-
                 </tbody>
-
             </table>
-
         </div>
 
 
-        <!-- TABLA CATEGORIAS -->
-
-        <div id="tabla-categorias"
-            class="tabla-contenedor"
-            style="display:none;">
-
+        <div id="tabla-categorias" class="tabla-contenedor" style="display:none;">
             <table>
-
                 <thead>
                     <tr>
                         <th>Categoría</th>
@@ -337,273 +256,298 @@
                         <th>Acciones</th>
                     </tr>
                 </thead>
-
-                <tbody>
-
-                    <tr>
-                        <td>Literatura</td>
+                <tbody id="tbody-categorias">
+                    <tr th:each="c : ${listaCategorias}"
+                        th:attr="data-busqueda=${c.nombre + ' ' + (c.descripcion != null ? c.descripcion : '')},data-id=${c.id},data-nombre=${c.nombre},data-desc=${c.descripcion != null ? c.descripcion : ''}"
+                        th:classappend="${!c.activo} ? 'fila-inactiva' : ''">
                         <td>
-                            Libros literarios clásicos y modernos
+                            <span th:text="${c.nombre}">Categoría</span>
+                            <span th:if="${!c.activo}" class="badge-inactivo">Inactivo</span>
                         </td>
-                        <td>120</td>
+                        <td th:text="${c.descripcion != null ? c.descripcion : '-'}">Descripción</td>
+                        <td th:text="${librosPerCategoria[c.id] != null ? librosPerCategoria[c.id] : 0}">0</td>
                         <td class="acciones">
-                            <i class="bi bi-pencil"
-                                onclick="abrirModal()"></i>
-                            <i class="bi bi-trash"></i>
+                            <th:block th:if="${c.activo}">
+                                <i class="bi bi-pencil" onclick="abrirModalEdicionCategoria(this.closest('tr'))" title="Editar categoría"></i>
+                                <i class="bi bi-trash text-danger"
+                                   th:attr="onclick=|abrirModalEliminar('/panel-admin/catalogo/categorias/eliminar/${c.id}','${c.nombre}','la categoría')|"
+                                   title="Eliminar categoría"></i>
+                            </th:block>
+                            <th:block th:unless="${c.activo}">
+                                <form th:action="@{/panel-admin/catalogo/categorias/restaurar/{id}(id=${c.id})}" method="post" style="display:inline;">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <button type="submit" style="background:none; border:none; padding:0;"><i class="bi bi-arrow-counterclockwise text-success" title="Restaurar categoría"></i></button>
+                                </form>
+                            </th:block>
                         </td>
                     </tr>
-
-                    <tr>
-                        <td>Ciencia</td>
-                        <td>
-                            Texto científicos y académicos
-                        </td>
-                        <td>245</td>
-                        <td class="acciones">
-                            <i class="bi bi-pencil"
-                                onclick="abrirModal()"></i>
-                            <i class="bi bi-trash"></i>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td>Matemáticas</td>
-                        <td>
-                            Libros de matemáticas y álgebra
-                        </td>
-                        <td>180</td>
-                        <td class="acciones">
-                            <i class="bi bi-pencil"
-                                onclick="abrirModal()"></i>
-                            <i class="bi bi-trash"></i>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td>Historia</td>
-                        <td>
-                            Textos históricos y biografías
-                        </td>
-                        <td>150</td>
-                        <td class="acciones">
-                            <i class="bi bi-pencil"
-                                onclick="abrirModal()"></i>
-                            <i class="bi bi-trash"></i>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td>Pedagogías</td>
-                        <td>
-                            Métodos y técnicas de educativas
-                        </td>
-                        <td>135</td>
-                        <td class="acciones">
-                            <i class="bi bi-pencil"
-                                onclick="abrirModal()"></i>
-                            <i class="bi bi-trash"></i>
-                        </td>
-                    </tr>
-
                 </tbody>
-
             </table>
-
         </div>
 
     </main>
 
 
-    <!-- MODAL -->
-
-    <div class="fondo-modal" id="modal">
-
+    <div class="fondo-modal" id="modal-libros">
         <div class="modal-personalizado">
-
-            <h2 id="titulo-modal">
-                Crear Libro
-                
-            </h2>
-
-            <div id="contenido-modal">
-
-                <!-- EL CONTENIDO CAMBIA SEGUN TAB -->
-
-            </div>
-
-            <div class="acciones-modal">
-
-                <button class="btn-cancelar"
-                    onclick="cerrarModal()">
-
-                    Cancelar
-
-                </button>
-
-                <button class="btn-guardar">
-                    Guardar
-                </button>
-
-            </div>
-
+            <form th:action="@{/panel-admin/catalogo/libros/guardar}" method="post" id="formLibros">
+                <input type="hidden" name="id" id="libroId">
+                <h2 id="tituloModalLibro">Crear Libro</h2>
+                <label>ISBN</label>
+                <input type="text" name="isbn" id="libroIsbn" required>
+                <label>Título</label>
+                <input type="text" name="titulo" id="libroTitulo" required>
+                <label>Año de Publicación</label>
+                <input type="number" name="anioPublicacion" id="libroAnio" min="1000" max="2099">
+                <label>Stock</label>
+                <input type="number" name="stock" id="libroStock" required min="0">
+                <label>Autor</label>
+                <select name="autor.id" id="libroAutorId">
+                    <option value="">— Sin autor —</option>
+                    <option th:each="a : ${listaAutores}" th:value="${a.id}" th:text="${a.nombreCompleto}"></option>
+                </select>
+                <label>Editorial</label>
+                <select name="editorial.id" id="libroEditorialId">
+                    <option value="">— Sin editorial —</option>
+                    <option th:each="ed : ${listaEditoriales}" th:value="${ed.id}" th:text="${ed.nombre}"></option>
+                </select>
+                <label>Categoría</label>
+                <select name="categoria.id" id="libroCategoriaId">
+                    <option value="">— Sin categoría —</option>
+                    <option th:each="c : ${listaCategorias}" th:value="${c.id}" th:text="${c.nombre}"></option>
+                </select>
+                <div class="acciones-modal">
+                    <button type="button" class="btn-cancelar" onclick="cerrarModal('modal-libros')">Cancelar</button>
+                    <button type="submit" class="btn-guardar">Guardar</button>
+                </div>
+            </form>
         </div>
-
     </div>
 
 
+    <div class="fondo-modal" id="modal-autores">
+        <div class="modal-personalizado">
+            <form th:action="@{/panel-admin/catalogo/autores/guardar}" method="post" id="formAutores">
+                <input type="hidden" name="id" id="autorId">
+                <h2 id="tituloModalAutor">Crear Autor</h2>
+                <label>Nombre Completo</label>
+                <input type="text" name="nombreCompleto" id="autorNombre" required>
+                <label>Nacionalidad</label>
+                <input type="text" name="nacionalidad" id="autorNacionalidad">
+                <label>Descripción</label>
+                <textarea name="descripcion" id="autorDescripcion"></textarea>
+                <div class="acciones-modal">
+                    <button type="button" class="btn-cancelar" onclick="cerrarModal('modal-autores')">Cancelar</button>
+                    <button type="submit" class="btn-guardar">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-    <!-- JAVASCRIPT -->
+
+    <div class="fondo-modal" id="modal-editoriales">
+        <div class="modal-personalizado">
+            <form th:action="@{/panel-admin/catalogo/editoriales/guardar}" method="post" id="formEditoriales">
+                <input type="hidden" name="id" id="editorialId">
+                <h2 id="tituloModalEditorial">Crear Editorial</h2>
+                <label>Nombre</label>
+                <input type="text" name="nombre" id="editorialNombre" required>
+                <label>País</label>
+                <input type="text" name="pais" id="editorialPais">
+                <label>Correo</label>
+                <input type="email" name="correo" id="editorialCorreo">
+                <div class="acciones-modal">
+                    <button type="button" class="btn-cancelar" onclick="cerrarModal('modal-editoriales')">Cancelar</button>
+                    <button type="submit" class="btn-guardar">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="fondo-modal" id="modal-categorias">
+        <div class="modal-personalizado">
+            <form th:action="@{/panel-admin/catalogo/categorias/guardar}" method="post" id="formCategorias">
+                <input type="hidden" name="id" id="categoriaId">
+                <h2 id="tituloModalCategoria">Crear Categoría</h2>
+                <label>Nombre</label>
+                <input type="text" name="nombre" id="categoriaNombre" required>
+                <label>Descripción</label>
+                <textarea name="descripcion" id="categoriaDescripcion"></textarea>
+                <div class="acciones-modal">
+                    <button type="button" class="btn-cancelar" onclick="cerrarModal('modal-categorias')">Cancelar</button>
+                    <button type="submit" class="btn-guardar">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="fondo-modal" id="modal-eliminar">
+        <div class="modal-personalizado modal-confirm">
+            <div class="confirm-icon">
+                <i class="bi bi-trash-fill"></i>
+            </div>
+            <h2>Eliminar</h2>
+            <p id="eliminarMsg">¿Estás seguro de que deseas eliminar este elemento?</p>
+            <p class="confirm-warning">Esta acción no se puede deshacer.</p>
+            <form method="post" id="eliminarForm">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <div class="acciones-modal">
+                    <button type="button" class="btn-cancelar" onclick="cerrarModal('modal-eliminar')">Cancelar</button>
+                    <button type="submit" class="btn-eliminar-confirm">Eliminar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div id="toast" class="toast-notif" role="alert" aria-live="polite">
+        <span id="toastIcon"></span>
+        <span id="toastMsg"></span>
+    </div>
+
 
     <script>
-
         let seccionActual = "libros";
 
-        // CAMBIAR TABLAS
+        const LABELS_CREAR = {
+            libros:      "Crear Libro",
+            autores:     "Crear Autor",
+            editoriales: "Crear Editorial",
+            categorias:  "Crear Categoría"
+        };
 
-        function mostrarTabla(seccion, elemento){
-
+        function mostrarTabla(seccion, elemento) {
             seccionActual = seccion;
 
-            document.getElementById("tabla-libros").style.display="none";
-            document.getElementById("tabla-autores").style.display="none";
-            document.getElementById("tabla-editoriales").style.display="none";
-            document.getElementById("tabla-categorias").style.display="none";
-
-            document.getElementById("tabla-" + seccion)
-            .style.display="block";
-
-            let tabs = document.querySelectorAll(".tab");
-
-            tabs.forEach(tab => {
-                tab.classList.remove("activo");
+            ["libros", "autores", "editoriales", "categorias"].forEach(s => {
+                document.getElementById("tabla-" + s).style.display = "none";
             });
+            document.getElementById("tabla-" + seccion).style.display = "block";
 
+            document.querySelectorAll(".tab").forEach(t => t.classList.remove("activo"));
             elemento.classList.add("activo");
 
+            document.getElementById("labelCrear").textContent = LABELS_CREAR[seccion];
+            document.getElementById("inputBusqueda").value = "";
+            filtrarCatalogo();
         }
 
-        // ABRIR MODAL
+        function filtrarCatalogo() {
+            const texto = document.getElementById("inputBusqueda").value.toLowerCase();
+            const filas = document.querySelectorAll("#tbody-" + seccionActual + " tr");
 
-        function abrirModal(){
-
-            document.getElementById("modal")
-            .style.display="flex";
-
-            let contenido = "";
-
-            // LIBROS
-
-            if(seccionActual === "libros"){
-
-                document.getElementById("titulo-modal")
-                .innerHTML = "Crear Libro";
-
-                contenido = `
-
-                    <label>Título</label>
-                    <input type="text">
-
-                    <label>Autor</label>
-                    <input type="text">
-
-                    <label>Editorial</label>
-                    <input type="text">
-
-                    <label>Categoría</label>
-                    <input type="text">
-
-                    <label>Cantidad disponible</label>
-                    <input type="number">
-
-                `;
-            }
-
-            // AUTORES
-
-            if(seccionActual === "autores"){
-
-                document.getElementById("titulo-modal")
-                .innerHTML = "Crear Autor";
-
-                contenido = `
-
-                    <label>Foto de perfil</label>
-                    <input type="file">
-
-                    <label>Nombre completo</label>
-                    <input type="text">
-
-                    <label>Nacionalidad</label>
-                    <input type="text">
-
-                    <label>Descripción</label>
-                    <textarea></textarea>
-
-                    <label>Cantidad de libros</label>
-                    <input type="number">
-
-                `;
-            }
-
-            // EDITORIALES
-
-            if(seccionActual === "editoriales"){
-
-                document.getElementById("titulo-modal")
-                .innerHTML = "Crear Editorial";
-
-                contenido = `
-
-                    <label>Nombre editorial</label>
-                    <input type="text">
-
-                    <label>País</label>
-                    <input type="text">
-
-                    <label>Correo</label>
-                    <input type="email">
-
-                    <label>Cantidad de libros</label>
-                    <input type="number">
-
-                `;
-            }
-
-            // CATEGORIAS
-
-            if(seccionActual === "categorias"){
-
-                document.getElementById("titulo-modal")
-                .innerHTML = "Crear Categoría";
-
-                contenido = `
-
-                    <label>Nombre categoría</label>
-                    <input type="text">
-
-                    <label>Descripción</label>
-                    <textarea></textarea>
-
-                    <label>Cantidad libros</label>
-                    <input type="number">
-
-                `;
-            }
-
-            document.getElementById("contenido-modal")
-            .innerHTML = contenido;
-
+            filas.forEach(fila => {
+                const busqueda = (fila.dataset.busqueda || "").toLowerCase();
+                fila.style.display = busqueda.includes(texto) ? "" : "none";
+            });
         }
 
-        // CERRAR MODAL
-
-        function cerrarModal(){
-
-            document.getElementById("modal")
-            .style.display="none";
-
+        function abrirModal() {
+            const id = "modal-" + seccionActual;
+            if (seccionActual === "libros") {
+                document.getElementById("libroId").value = "";
+                document.getElementById("tituloModalLibro").textContent = "Crear Libro";
+                document.getElementById("formLibros").reset();
+            } else if (seccionActual === "autores") {
+                document.getElementById("autorId").value = "";
+                document.getElementById("tituloModalAutor").textContent = "Crear Autor";
+                document.getElementById("formAutores").reset();
+            } else if (seccionActual === "editoriales") {
+                document.getElementById("editorialId").value = "";
+                document.getElementById("tituloModalEditorial").textContent = "Crear Editorial";
+                document.getElementById("formEditoriales").reset();
+            } else if (seccionActual === "categorias") {
+                document.getElementById("categoriaId").value = "";
+                document.getElementById("tituloModalCategoria").textContent = "Crear Categoría";
+                document.getElementById("formCategorias").reset();
+            }
+            document.getElementById(id).style.display = "flex";
         }
 
+        function abrirModalEdicionLibro(id, titulo, isbn, anio, stock, autorId, editorialId, categoriaId) {
+            document.getElementById("libroId").value = id;
+            document.getElementById("libroTitulo").value = titulo;
+            document.getElementById("libroIsbn").value = (isbn && isbn !== "0") ? isbn : "";
+            document.getElementById("libroAnio").value = (anio && anio !== "0") ? anio : "";
+            document.getElementById("libroStock").value = stock;
+            document.getElementById("libroAutorId").value = autorId !== "0" ? autorId : "";
+            document.getElementById("libroEditorialId").value = editorialId !== "0" ? editorialId : "";
+            document.getElementById("libroCategoriaId").value = categoriaId !== "0" ? categoriaId : "";
+            document.getElementById("tituloModalLibro").textContent = "Editar Libro";
+            document.getElementById("modal-libros").style.display = "flex";
+        }
+
+        function abrirModalEdicionAutor(row) {
+            document.getElementById("autorId").value = row.dataset.id;
+            document.getElementById("autorNombre").value = row.dataset.nombre || "";
+            document.getElementById("autorNacionalidad").value = row.dataset.nac || "";
+            document.getElementById("autorDescripcion").value = row.dataset.desc || "";
+            document.getElementById("tituloModalAutor").textContent = "Editar Autor";
+            document.getElementById("modal-autores").style.display = "flex";
+        }
+
+        function abrirModalEdicionEditorial(row) {
+            document.getElementById("editorialId").value = row.dataset.id;
+            document.getElementById("editorialNombre").value = row.dataset.nombre || "";
+            document.getElementById("editorialPais").value = row.dataset.pais || "";
+            document.getElementById("editorialCorreo").value = row.dataset.correo || "";
+            document.getElementById("tituloModalEditorial").textContent = "Editar Editorial";
+            document.getElementById("modal-editoriales").style.display = "flex";
+        }
+
+        function abrirModalEdicionCategoria(row) {
+            document.getElementById("categoriaId").value = row.dataset.id;
+            document.getElementById("categoriaNombre").value = row.dataset.nombre || "";
+            document.getElementById("categoriaDescripcion").value = row.dataset.desc || "";
+            document.getElementById("tituloModalCategoria").textContent = "Editar Categoría";
+            document.getElementById("modal-categorias").style.display = "flex";
+        }
+
+        function abrirModalEliminar(accion, nombre, tipo) {
+            document.getElementById("eliminarMsg").textContent =
+                "¿Estás seguro de que deseas eliminar " + tipo + " \"" + nombre + "\"?";
+            document.getElementById("eliminarForm").action = accion;
+            document.getElementById("modal-eliminar").style.display = "flex";
+        }
+
+        function cerrarModal(idModal) {
+            document.getElementById(idModal).style.display = "none";
+        }
+
+        document.querySelectorAll(".fondo-modal").forEach(overlay => {
+            overlay.addEventListener("click", function(e) {
+                if (e.target === this) this.style.display = "none";
+            });
+        });
+
+        function mostrarToast(mensaje, tipo) {
+            const toast = document.getElementById("toast");
+            const icon  = document.getElementById("toastIcon");
+            const msg   = document.getElementById("toastMsg");
+
+            icon.textContent = tipo === "exito" ? "✓" : "✕";
+            msg.textContent  = mensaje;
+            toast.className  = "toast-notif toast-" + tipo + " toast-show";
+
+            setTimeout(() => {
+                toast.classList.remove("toast-show");
+            }, 2000);
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const tabData = document.getElementById("tabActivaData");
+            const tabActiva = tabData ? tabData.dataset.tab : "libros";
+            if (tabActiva && tabActiva !== "libros") {
+                const tabEl = document.getElementById("tab-" + tabActiva);
+                if (tabEl) mostrarTabla(tabActiva, tabEl);
+            }
+            const data = document.getElementById("toastData");
+            if (data) {
+                mostrarToast(data.dataset.mensaje, data.dataset.tipo);
+            }
+        });
     </script>
 
 </body>

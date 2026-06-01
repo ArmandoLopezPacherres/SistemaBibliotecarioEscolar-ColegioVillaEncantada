@@ -1,32 +1,25 @@
-package sistema_biblioteca.demo.model;
+package sistema_biblioteca.demo.dto;
 
-import jakarta.persistence.*;
 import sistema_biblioteca.demo.model.enums.RolUsuario;
 
-@Entity
-@Table(name = "usuarios")
-public class Usuario {
+public class UsuarioDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String nombre;
+    private String apellido;
     private String codigo;
     private String password;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private RolUsuario rol;
 
-    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
-    private boolean activo = true;
-
-    public Usuario() {
+    public UsuarioDTO() {
     }
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getNombre() {
@@ -35,6 +28,14 @@ public class Usuario {
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
+    }
+
+    public String getApellido() {
+        return apellido;
+    }
+
+    public void setApellido(String apellido) {
+        this.apellido = apellido;
     }
 
     public String getCodigo() {
@@ -59,24 +60,5 @@ public class Usuario {
 
     public void setRol(RolUsuario rol) {
         this.rol = rol;
-    }
-
-    public boolean isActivo() {
-        return activo;
-    }
-
-    public void setActivo(boolean activo) {
-        this.activo = activo;
-    }
-
-    @Transient
-    private String estadoLector;
-
-    public String getEstadoLector() {
-        return estadoLector;
-    }
-
-    public void setEstadoLector(String estadoLector) {
-        this.estadoLector = estadoLector;
     }
 }

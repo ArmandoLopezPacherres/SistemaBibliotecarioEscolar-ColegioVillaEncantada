@@ -58,7 +58,7 @@ public class BibliotecarioController {
 
     @GetMapping
     public String panelBibliotecario() {
-        return "redirect:/panel-bibliotecario/prestamos";
+        return "redirect:/panel-bibliotecario/lectores";
     }
 
     @GetMapping("/prestamos")
