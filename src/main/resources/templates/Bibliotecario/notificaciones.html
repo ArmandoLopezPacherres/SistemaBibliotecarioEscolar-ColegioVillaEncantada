@@ -9,11 +9,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- FontAwesome -->
-    <link class="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
-        </head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
 
-        <link rel="stylesheet" th:href="@{/Bibliotecario/notifiaciones.css}">
+    <!-- css -->
+    <link rel="stylesheet" th:href="@{/Bibliotecario/notifiaciones.css}">
+</head>
 <body>
 
 <div class="main-container">
@@ -78,7 +78,7 @@
                 </li>
 
                 <li>
-                    <a th:href="@{/panel-bibliotecario/notificaciones}">
+                    <a th:href="@{/panel-bibliotecario/notificaciones}" class="active">
                         <i class="fa-regular fa-bell"></i>
                         Notificaciones
                     </a>
@@ -132,28 +132,31 @@
 
         </div>
 
-        <!-- BUSCADOR-->
+        <!-- BUSCADOR Y FILTROS -->
         <div class="search-section">
 
             <div class="search-box">
 
                 <input type="text"
                        id="searchInput"
-                       placeholder="Busca nombres..."
-                       onkeyup="buscarNotificacion()">
+                       placeholder="Busca nombres o libros..."
+                       onkeyup="filtrarNotificaciones()">
 
             </div>
 
-            <button class="btn-search"
-                    onclick="buscarNotificacion()">
-
-                Buscar
-
-            </button>
+            <!-- Filtros de Tipo -->
+            <div class="filter-buttons">
+                <button type="button" id="btnSolicitudes" class="btn-filter" onclick="toggleFilter('solicitud')">
+                    <i class="fa-solid fa-rectangle-list"></i> Solicitudes
+                </button>
+                <button type="button" id="btnRetrasos" class="btn-filter" onclick="toggleFilter('retraso')">
+                    <i class="fa-solid fa-clock"></i> Retrasos
+                </button>
+            </div>
 
         </div>
 
-        <!-- FILTRO -->
+        <!-- FILTRO DE FECHA -->
         <div class="filter-section">
 
             <div class="filter-box">
@@ -164,92 +167,231 @@
 
                 <input type="date"
                        id="filtroFecha"
-                       onchange="filtrarFecha()">
+                       onchange="filtrarNotificaciones()">
 
             </div>
 
         </div>
 
         <!-- NOTIFICACIONES -->
-        <div class="notification-container"
-             id="contenedorNotificaciones">
+        <div class="notification-container" id="contenedorNotificaciones">
 
-            <div class="notification-card"
-                 data-fecha="2026-05-10">
+            <!-- Loop para Solicitudes Pendientes (Reservas PENDIENTES) -->
+            <div class="notification-card cursor-pointer" 
+                 th:each="solicitud : ${solicitudes}" 
+                 th:data-fecha="${solicitud.fechaReserva}" 
+                 data-tipo="solicitud" 
+                 th:onclick="|location.href='@{/panel-bibliotecario/solicitudes}'|">
 
                 <div class="notification-left">
 
                     <div class="notification-logo">
-
                         <i class="fa-regular fa-bell"></i>
-
                     </div>
 
                     <div class="notification-content">
-
-                        <h4>
-                            Nueva Solicitud
-                        </h4>
-
-                        <p>
-
-                            Hay una nueva solicitud de reserva de
-                            Carlos Enrique Ruiz, no olvides revisarla pronto.
-
-                        </p>
-
+                        <h4>Nueva Solicitud</h4>
+                        <p th:text="'El lector ' + ${solicitud.usuario.nombre} + ' (' + ${solicitud.usuario.rol.name()} + ') ha solicitado el libro \'' + ${solicitud.libro.titulo} + '\'.'"></p>
                     </div>
 
                 </div>
 
-                <div class="notification-date">
-
+                <div class="notification-date" th:text="'Fecha: ' + ${#temporals.format(solicitud.fechaReserva, 'dd/MM/yyyy')}">
                     Fecha: 10/05/2026
-
                 </div>
 
             </div>
 
-            <div class="notification-card"
-                 data-fecha="2026-05-12">
+            <!-- Loop para Retrasos de devolución (Préstamos RETRASADOS) -->
+            <div class="notification-card cursor-pointer" 
+                 th:each="retraso : ${retrasos}" 
+                 th:data-fecha="${retraso.fechaDevolucionEsperada}" 
+                 data-tipo="retraso" 
+                 th:onclick="|location.href='@{/panel-bibliotecario/multas}'|">
 
                 <div class="notification-left">
 
                     <div class="notification-logo">
-
                         <i class="fa-regular fa-clock"></i>
-
                     </div>
 
                     <div class="notification-content">
-
-                        <h4>
-                            Retraso de devolución
-                        </h4>
-
-                        <p>
-
-                            El lector Maria Fernanda Lopez aún no devuelve
-                            el libro “Historias Ancestrales”.
-
-                        </p>
-
+                        <h4>Retraso de devolución</h4>
+                        <p th:text="'El lector ' + ${retraso.usuario.nombre} + ' (' + ${retraso.usuario.rol.name()} + ') tiene el libro \'' + ${retraso.libro.titulo} + '\' retrasado y una multa pendiente.'"></p>
                     </div>
 
                 </div>
 
-                <div class="notification-date">
-
+                <div class="notification-date" th:text="'Fecha límite: ' + ${#temporals.format(retraso.fechaDevolucionEsperada, 'dd/MM/yyyy')}">
                     Fecha: 12/05/2026
-
                 </div>
 
             </div>
 
+            <!-- Mensaje cuando la lista está completamente vacía -->
+            <div th:if="${#lists.isEmpty(solicitudes) && #lists.isEmpty(retrasos)}" id="mensaje-inicial-vacio" class="text-center text-muted py-5 w-100">
+                <i class="fa-regular fa-bell-slash fs-1 mb-3 d-block text-secondary"></i>
+                No hay notificaciones ni alertas activas en este momento.
+            </div>
+
+        </div>
+
+        <!-- CONTROLES DE PAGINACIÓN -->
+        <div id="paginationControls" class="pagination-container">
+            <button type="button" id="btnPrev" class="btn-pagination" onclick="changePage(-1)">
+                <i class="fa-solid fa-chevron-left"></i> Anterior
+            </button>
+            <span id="pageIndicator" class="page-indicator">
+                Página 1 de 1
+            </span>
+            <button type="button" id="btnNext" class="btn-pagination" onclick="changePage(1)">
+                Siguiente <i class="fa-solid fa-chevron-right"></i>
+            </button>
         </div>
 
     </main>
 
 </div>
+
+<script>
+    let currentFilter = null; // 'solicitud' o 'retraso' o null
+    let currentPage = 1;
+    const itemsPerPage = 5;
+    let matchingCards = [];
+
+    function toggleFilter(tipo) {
+        const btnSolicitudes = document.getElementById('btnSolicitudes');
+        const btnRetrasos = document.getElementById('btnRetrasos');
+
+        if (currentFilter === tipo) {
+            currentFilter = null;
+            btnSolicitudes.classList.remove('active');
+            btnRetrasos.classList.remove('active');
+        } else {
+            currentFilter = tipo;
+            if (tipo === 'solicitud') {
+                btnSolicitudes.classList.add('active');
+                btnRetrasos.classList.remove('active');
+            } else {
+                btnSolicitudes.classList.remove('active');
+                btnRetrasos.classList.add('active');
+            }
+        }
+        currentPage = 1; // Reiniciar a la primera página al cambiar filtros
+        filtrarNotificaciones();
+    }
+
+    function changePage(direction) {
+        const totalPages = Math.ceil(matchingCards.length / itemsPerPage);
+        const newPage = currentPage + direction;
+        
+        if (newPage >= 1 && newPage <= totalPages) {
+            currentPage = newPage;
+            displayCurrentPage();
+        }
+    }
+
+    function displayCurrentPage() {
+        const cards = document.querySelectorAll('.notification-card');
+        
+        // Primero ocultamos todas las tarjetas
+        cards.forEach(card => {
+            card.style.display = 'none';
+        });
+
+        // Calculamos rango para la página actual
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+
+        // Mostramos solo las que pertenecen a la página actual de la lista de filtradas
+        const cardsToShow = matchingCards.slice(startIndex, endIndex);
+        cardsToShow.forEach(card => {
+            card.style.removeProperty('display');
+        });
+
+        // Actualizar controles de paginación
+        const totalPages = Math.ceil(matchingCards.length / itemsPerPage) || 1;
+        document.getElementById('pageIndicator').textContent = `Página ${currentPage} de ${totalPages}`;
+        
+        document.getElementById('btnPrev').disabled = (currentPage === 1);
+        document.getElementById('btnNext').disabled = (currentPage === totalPages);
+        
+        const pagContainer = document.getElementById('paginationControls');
+        if (matchingCards.length <= itemsPerPage) {
+            pagContainer.style.display = 'none';
+        } else {
+            pagContainer.style.display = 'flex';
+        }
+    }
+
+    function filtrarNotificaciones() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        const fechaSeleccionada = document.getElementById('filtroFecha').value;
+        
+        const cards = document.querySelectorAll('.notification-card');
+        matchingCards = []; // Reiniciamos la lista de tarjetas que pasan los filtros
+
+        cards.forEach(card => {
+            const text = card.textContent.toLowerCase();
+            const tipo = card.getAttribute('data-tipo');
+            const fechaCard = card.getAttribute('data-fecha');
+
+            const matchesQuery = !query || text.includes(query);
+            const matchesTipo = !currentFilter || tipo === currentFilter;
+            const matchesFecha = !fechaSeleccionada || fechaCard === fechaSeleccionada;
+
+            if (matchesQuery && matchesTipo && matchesFecha) {
+                matchingCards.push(card);
+            }
+        });
+
+        // Si la página actual queda fuera de rango después de filtrar
+        const totalPages = Math.ceil(matchingCards.length / itemsPerPage) || 1;
+        if (currentPage > totalPages) {
+            currentPage = totalPages;
+        }
+
+        // Renderizar la página actual
+        displayCurrentPage();
+
+        // Ocultar o mostrar el mensaje inicial de vacío si corresponde
+        const inicialVacio = document.getElementById('mensaje-inicial-vacio');
+        if (inicialVacio) {
+            if (matchingCards.length > 0) {
+                inicialVacio.style.display = 'none';
+            } else if (!query && !currentFilter && !fechaSeleccionada) {
+                inicialVacio.style.removeProperty('display');
+            }
+        }
+
+        // Manejar el mensaje de filtros vacíos
+        const container = document.getElementById('contenedorNotificaciones');
+        let msgVacio = document.getElementById('mensaje-vacio');
+        
+        if (matchingCards.length === 0) {
+            if (!inicialVacio || inicialVacio.style.display === 'none') {
+                if (!msgVacio) {
+                    msgVacio = document.createElement('div');
+                    msgVacio.id = 'mensaje-vacio';
+                    msgVacio.className = 'text-center text-muted py-5 w-100';
+                    msgVacio.innerHTML = `
+                        <i class="fa-regular fa-bell-slash fs-1 mb-3 d-block text-secondary"></i>
+                        No hay notificaciones que coincidan con los filtros seleccionados.
+                    `;
+                    container.appendChild(msgVacio);
+                } else {
+                    msgVacio.style.removeProperty('display');
+                }
+            }
+        } else if (msgVacio) {
+            msgVacio.style.display = 'none';
+        }
+    }
+
+    // Inicializar llamando al filtro al cargar la página
+    document.addEventListener('DOMContentLoaded', () => {
+        filtrarNotificaciones();
+    });
+</script>
 </body>
 </html>
