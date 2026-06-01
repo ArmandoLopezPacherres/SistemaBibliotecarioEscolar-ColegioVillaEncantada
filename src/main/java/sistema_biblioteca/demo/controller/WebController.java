@@ -56,7 +56,7 @@ public class WebController {
         if (rol.equals("ROLE_ADMINISTRADOR")) {
             return "redirect:/panel-admin";
         } else if (rol.equals("ROLE_BIBLIOTECARIO")) {
-            return "redirect:/panel-bibliotecario";
+            return "redirect:/panel-bibliotecario/lectores";
         } else if (rol.equals("ROLE_PROFESOR")) {
             return "redirect:/panel-profesor";
         } else if (rol.equals("ROLE_ESTUDIANTE")) {

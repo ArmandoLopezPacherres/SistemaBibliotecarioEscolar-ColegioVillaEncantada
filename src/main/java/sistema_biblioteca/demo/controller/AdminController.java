@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import org.springframework.data.domain.Sort;
+import sistema_biblioteca.demo.repository.LibroRepository;
 
 @Controller
 public class AdminController {
@@ -45,6 +47,9 @@ public class AdminController {
 
     @Autowired
     private LibroService libroService;
+
+    @Autowired
+    private LibroRepository libroRepository;
 
     @Autowired
     private AutorRepository autorRepository;
@@ -201,11 +206,11 @@ public class AdminController {
             @RequestParam(required = false, defaultValue = "libros") String tab,
             Model model, Principal principal) {
         cargarUsuarioEnModelo(model, principal);
-        List<Libro> libros = libroService.listarLibros();
+        List<Libro> libros = libroRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
         model.addAttribute("listaLibros", libros);
-        model.addAttribute("listaAutores", autorRepository.findAll());
-        model.addAttribute("listaCategorias", categoriaRepository.findAll());
-        model.addAttribute("listaEditoriales", editorialRepository.findAll());
+        model.addAttribute("listaAutores", autorRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
+        model.addAttribute("listaCategorias", categoriaRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
+        model.addAttribute("listaEditoriales", editorialRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
 
         Map<Long, Long> librosPerAutor = libros.stream()
             .filter(l -> l.getAutor() != null)
@@ -256,8 +261,12 @@ public class AdminController {
     @PostMapping("/panel-admin/catalogo/libros/eliminar/{id}")
     public String eliminarLibro(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
-            libroService.eliminarLibro(id);
-            redirectAttributes.addFlashAttribute("mensajeExito", "Libro eliminado.");
+            Libro libro = libroService.obtenerPorId(id);
+            if (libro != null) {
+                libro.setActivo(false);
+                libroService.guardarLibro(libro);
+            }
+            redirectAttributes.addFlashAttribute("mensajeExito", "Libro eliminado lógicamente.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensajeError", "Error al eliminar el libro.");
         }
@@ -287,8 +296,12 @@ public class AdminController {
     @PostMapping("/panel-admin/catalogo/autores/eliminar/{id}")
     public String eliminarAutor(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
-            autorRepository.deleteById(id);
-            redirectAttributes.addFlashAttribute("mensajeExito", "Autor eliminado.");
+            Autor autor = autorRepository.findById(id).orElse(null);
+            if (autor != null) {
+                autor.setActivo(false);
+                autorRepository.save(autor);
+            }
+            redirectAttributes.addFlashAttribute("mensajeExito", "Autor eliminado lógicamente.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensajeError", "Error al eliminar el autor.");
         }
@@ -318,8 +331,12 @@ public class AdminController {
     @PostMapping("/panel-admin/catalogo/editoriales/eliminar/{id}")
     public String eliminarEditorial(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
-            editorialRepository.deleteById(id);
-            redirectAttributes.addFlashAttribute("mensajeExito", "Editorial eliminada.");
+            Editorial editorial = editorialRepository.findById(id).orElse(null);
+            if (editorial != null) {
+                editorial.setActivo(false);
+                editorialRepository.save(editorial);
+            }
+            redirectAttributes.addFlashAttribute("mensajeExito", "Editorial eliminada lógicamente.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensajeError", "Error al eliminar la editorial.");
         }
@@ -347,10 +364,74 @@ public class AdminController {
     @PostMapping("/panel-admin/catalogo/categorias/eliminar/{id}")
     public String eliminarCategoria(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
-            categoriaRepository.deleteById(id);
-            redirectAttributes.addFlashAttribute("mensajeExito", "Categoría eliminada.");
+            Categoria categoria = categoriaRepository.findById(id).orElse(null);
+            if (categoria != null) {
+                categoria.setActivo(false);
+                categoriaRepository.save(categoria);
+            }
+            redirectAttributes.addFlashAttribute("mensajeExito", "Categoría eliminada lógicamente.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensajeError", "Error al eliminar la categoría.");
+        }
+        return "redirect:/panel-admin/catalogo?tab=categorias";
+    }
+
+    @PostMapping("/panel-admin/catalogo/libros/restaurar/{id}")
+    public String restaurarLibro(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            Libro libro = libroRepository.findById(id).orElse(null);
+            if (libro != null) {
+                libro.setActivo(true);
+                libroRepository.save(libro);
+            }
+            redirectAttributes.addFlashAttribute("mensajeExito", "Libro restaurado.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensajeError", "Error al restaurar el libro.");
+        }
+        return "redirect:/panel-admin/catalogo?tab=libros";
+    }
+
+    @PostMapping("/panel-admin/catalogo/autores/restaurar/{id}")
+    public String restaurarAutor(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            Autor autor = autorRepository.findById(id).orElse(null);
+            if (autor != null) {
+                autor.setActivo(true);
+                autorRepository.save(autor);
+            }
+            redirectAttributes.addFlashAttribute("mensajeExito", "Autor restaurado.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensajeError", "Error al restaurar el autor.");
+        }
+        return "redirect:/panel-admin/catalogo?tab=autores";
+    }
+
+    @PostMapping("/panel-admin/catalogo/editoriales/restaurar/{id}")
+    public String restaurarEditorial(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            Editorial editorial = editorialRepository.findById(id).orElse(null);
+            if (editorial != null) {
+                editorial.setActivo(true);
+                editorialRepository.save(editorial);
+            }
+            redirectAttributes.addFlashAttribute("mensajeExito", "Editorial restaurada.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensajeError", "Error al restaurar la editorial.");
+        }
+        return "redirect:/panel-admin/catalogo?tab=editoriales";
+    }
+
+    @PostMapping("/panel-admin/catalogo/categorias/restaurar/{id}")
+    public String restaurarCategoria(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            Categoria categoria = categoriaRepository.findById(id).orElse(null);
+            if (categoria != null) {
+                categoria.setActivo(true);
+                categoriaRepository.save(categoria);
+            }
+            redirectAttributes.addFlashAttribute("mensajeExito", "Categoría restaurada.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensajeError", "Error al restaurar la categoría.");
         }
         return "redirect:/panel-admin/catalogo?tab=categorias";
     }

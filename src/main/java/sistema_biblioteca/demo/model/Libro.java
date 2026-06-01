@@ -23,6 +23,9 @@ public class Libro {
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean disponible = true;
 
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
+    private boolean activo = true;
+
     @ManyToOne
     @JoinColumn(name = "autor_id")
     private Autor autor;
@@ -54,6 +57,14 @@ public class Libro {
 
     public boolean isDisponible() { return disponible; }
     public void setDisponible(boolean disponible) { this.disponible = disponible; }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
+    }
 
     public Autor getAutor() { return autor; }
     public void setAutor(Autor autor) { this.autor = autor; }
