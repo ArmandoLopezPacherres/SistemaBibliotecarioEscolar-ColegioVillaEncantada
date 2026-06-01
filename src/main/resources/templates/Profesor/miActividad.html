@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 
     <title>Mi Actividad</title>
 
@@ -15,7 +17,7 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 
     <!-- CSS -->
-    <link rel="stylesheet" href="../../static/Profesor/miActividad.css">
+    <link rel="stylesheet" th:href="@{/Profesor/miActividad.css}">
 
 </head>
 
@@ -31,7 +33,7 @@
                 <!-- LOGO -->
                 <div class="logo-section">
 
-                    <img src="../../static/img/logo-CVE.png" alt="logo">
+                    <img th:src="@{/img/logo-CVE.png}" alt="logo">
 
                     <h5>Profesor</h5>
 
@@ -43,35 +45,35 @@
                 <ul class="menu">
 
                     <li>
-                        <a href="#">
+                        <a th:href="@{/panel-profesor/buscar-libro}">
                             <i class="fa-solid fa-book-open"></i>
                             Buscar libros
                         </a>
                     </li>
 
                     <li>
-                        <a href="#" class="active">
+                        <a th:href="@{/panel-profesor/mi-actividad}" class="active">
                             <i class="fa-solid fa-bolt"></i>
                             Mi actividad
                         </a>
                     </li>
 
                     <li>
-                        <a href="#">
+                        <a th:href="@{/panel-profesor/historial}">
                             <i class="fa-regular fa-clock"></i>
                             Historial
                         </a>
                     </li>
 
                     <li>
-                        <a href="#">
+                        <a th:href="@{/panel-profesor/notificaciones}">
                             <i class="fa-regular fa-bell"></i>
-                            Notificaciones +2
+                            Notificaciones
                         </a>
                     </li>
 
                     <li>
-                        <a href="#">
+                        <a th:href="@{/panel-profesor/perfil}">
                             <i class="fa-regular fa-user"></i>
                             Perfil
                         </a>
@@ -83,14 +85,10 @@
 
             <!-- LOGOUT -->
             <div class="logout">
-
-                <a href="#">
-
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                    Cerrar sesión
-
+                <form th:action="@{/logout}" method="post" id="logoutForm" style="display: none;"></form>
+                <a href="javascript:document.getElementById('logoutForm').submit();">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar sesión
                 </a>
-
             </div>
 
         </aside>
@@ -116,7 +114,7 @@
                     <i class="fa-regular fa-user"></i>
 
                     ¡Bienvenido
-                    <strong>Juan</strong>!
+                    <strong th:text="${usuario.nombre}">Usuario</strong>!
 
                 </div>
 
@@ -129,12 +127,10 @@
 
                     <h3>Libros que tengo</h3>
 
-                    <select class="filter-select">
-
-                        <option>Fecha Entrega</option>
-                        <option>19-05-26</option>
-                        <option>18-05-26</option>
-
+                    <select class="filter-select" id="filtro-prestamos" onchange="aplicarFiltrosPrestamos()">
+                        <option value="todos">Fechas</option>
+                        <option value="asc">Más próximos a vencer</option>
+                        <option value="desc">Más lejanos a vencer</option>
                     </select>
 
                 </div>
@@ -148,56 +144,15 @@
                             <tr>
 
                                 <th>Título del Libro</th>
+                                <th>Categoría</th>
                                 <th>Fecha Entrega</th>
 
                             </tr>
 
                         </thead>
 
-                        <tbody>
-
-                            <tr>
-
-                                <td>
-                                    <strong>Libro:</strong>
-                                    El Mago de Oz 1959
-                                </td>
-
-                                <td>
-                                    <strong>Fecha:</strong>
-                                    19-05-26
-                                </td>
-
-                            </tr>
-
-                            <tr>
-
-                                <td>
-                                    <strong>Libro:</strong>
-                                    Charlee y la Fabrica de Chocolates 1984
-                                </td>
-
-                                <td>
-                                    <strong>Fecha:</strong>
-                                    18-05-26
-                                </td>
-
-                            </tr>
-
-                            <tr>
-
-                                <td>
-                                    <strong>Libro:</strong>
-                                    Paco Yunque
-                                </td>
-
-                                <td>
-                                    <strong>Fecha:</strong>
-                                    18-05-26
-                                </td>
-
-                            </tr>
-
+                        <tbody id="tbody-prestamos">
+                            <!-- Datos llenados por JS -->
                         </tbody>
 
                     </table>
@@ -215,22 +170,13 @@
 
                     <div class="filters">
 
-                        <select class="filter-select">
-
-                            <option>Fecha Solicitud</option>
-                            <option>23-05-26</option>
-                            <option>20-05-26</option>
-
-                        </select>
-
-                        <select class="filter-select">
-
-                            <option>Estado</option>
-                            <option>Pendiente</option>
-                            <option>Aprobado</option>
-                            <option>Rechazado</option>
-
-                        </select>
+                        <select class="filter-select" id="filtro-estado" onchange="aplicarFiltrosReservas()">
+                                <option value="TODOS">Todos los Estados</option>
+                                <option value="PENDIENTE">Pendiente (esperando respuesta)</option>
+                                <option value="RECOGIDA">Recoger</option>
+                                <option value="CANCELADA">Cancelada</option>
+                                <option value="VENCIDA">Vencida</option>
+                            </select>
 
                     </div>
 
@@ -245,6 +191,7 @@
                             <tr>
 
                                 <th>Título del Libro</th>
+                                <th>Categoría</th>
                                 <th>Fecha de Solicitud</th>
                                 <th>Estado de Solicitud</th>
                                 <th>Acciones</th>
@@ -253,95 +200,8 @@
 
                         </thead>
 
-                        <tbody>
-
-                            <tr>
-
-                                <td>
-                                    <strong>Libro:</strong>
-                                    El Mago de Oz 1959
-                                </td>
-
-                                <td>
-                                    <strong>Fecha:</strong>
-                                    23-05-26
-                                </td>
-
-                                <td>
-                                    <strong>Estado:</strong>
-                                    Pendiente
-                                </td>
-
-                                <td>
-
-                                    <button class="btn-cancelar">
-
-                                        Cancelar
-
-                                    </button>
-
-                                </td>
-
-                            </tr>
-
-                            <tr>
-
-                                <td>
-                                    <strong>Libro:</strong>
-                                    Charlee y la Fabrica de Chocolates 1984
-                                </td>
-
-                                <td>
-                                    <strong>Fecha:</strong>
-                                    23-05-26
-                                </td>
-
-                                <td>
-                                    <strong>Estado:</strong>
-                                    Pendiente
-                                </td>
-
-                                <td>
-
-                                    <button class="btn-cancelar">
-
-                                        Cancelar
-
-                                    </button>
-
-                                </td>
-
-                            </tr>
-
-                            <tr>
-
-                                <td>
-                                    <strong>Libro:</strong>
-                                    Paco Yunque
-                                </td>
-
-                                <td>
-                                    <strong>Fecha:</strong>
-                                    20-05-26
-                                </td>
-
-                                <td>
-                                    <strong>Estado:</strong>
-                                    Aprobado
-                                </td>
-
-                                <td>
-
-                                    <span class="approved-text">
-
-                                        Sin acciones
-
-                                    </span>
-
-                                </td>
-
-                            </tr>
-
+                        <tbody id="tbody-reservas">
+                            <!-- Datos llenados por JS -->
                         </tbody>
 
                     </table>
@@ -354,6 +214,208 @@
 
     </div>
 
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Script Principal -->
+    <script>
+        let allPrestamos = [];
+        let allReservas = [];
+
+        function getLabelEstado(estado) {
+            const labels = {
+                'PENDIENTE': 'Pendiente',
+                'RECOGIDA': 'RECOGER',
+                'CANCELADA': 'Cancelada',
+                'VENCIDA': 'Vencida'
+            };
+            return labels[estado] || estado;
+        }
+
+        function getColorEstado(estado) {
+            const colors = {
+                'PENDIENTE': '#e65100',
+                'RECOGIDA': '#1565c0',
+                'CANCELADA': '#c62828',
+                'VENCIDA': '#c62828'
+            };
+            return colors[estado] || '#333';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchPrestamos();
+            fetchReservas();
+        });
+
+        function fetchPrestamos() {
+            fetch('/api/profesor/actividad/prestamos')
+                .then(res => res.json())
+                .then(data => {
+                    allPrestamos = data;
+                    aplicarFiltrosPrestamos();
+                })
+                .catch(err => console.error("Error cargando préstamos", err));
+        }
+
+        function fetchReservas() {
+            fetch('/api/profesor/actividad/reservas')
+                .then(res => res.json())
+                .then(data => {
+                    allReservas = data;
+                    aplicarFiltrosReservas();
+                })
+                .catch(err => console.error("Error cargando reservas", err));
+        }
+
+        function formatDate(isoString) {
+            if (!isoString) return '-';
+            const [year, month, day] = isoString.split('-');
+            return `${day}-${month}-${year.substring(2)}`;
+        }
+
+        function renderPrestamos(prestamos) {
+            const tbody = document.getElementById('tbody-prestamos');
+            tbody.innerHTML = '';
+
+            if (prestamos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No tienes libros prestados actualmente.</td></tr>';
+                return;
+            }
+
+            prestamos.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <strong>Libro:</strong>
+                        ${p.libro.titulo}
+                    </td>
+                    <td>
+                        <strong>Categoría:</strong>
+                        ${p.libro.categoria ? p.libro.categoria.nombre : 'General'}
+                    </td>
+                    <td>
+                        <strong>Fecha Límite:</strong>
+                        ${formatDate(p.fechaDevolucionEsperada)}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderReservas(reservas) {
+            const tbody = document.getElementById('tbody-reservas');
+            tbody.innerHTML = '';
+
+            if (reservas.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No tienes solicitudes registradas.</td></tr>';
+                return;
+            }
+
+            reservas.forEach(r => {
+                let actionHtml = '<span class="approved-text">Sin acciones</span>';
+                
+                if (r.estado === 'PENDIENTE') {
+                    actionHtml = `
+                        <button class="btn-cancelar" onclick="cancelarReserva(${r.id})">
+                            Cancelar
+                        </button>
+                    `;
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <strong>Libro:</strong>
+                        ${r.libro.titulo}
+                    </td>
+                    <td>
+                        <strong>Categoría:</strong>
+                        ${r.libro.categoria ? r.libro.categoria.nombre : 'General'}
+                    </td>
+                    <td>
+                        <strong>Fecha:</strong>
+                        ${formatDate(r.fechaReserva)}
+                    </td>
+                    <td>
+                        <strong>Estado:</strong>
+                        <span style="font-weight: 500; color: ${getColorEstado(r.estado)}">
+                            ${getLabelEstado(r.estado)}
+                        </span>
+                    </td>
+                    <td>${actionHtml}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function aplicarFiltrosPrestamos() {
+            const filtro = document.getElementById('filtro-prestamos').value;
+            let filtrados = [...allPrestamos];
+            
+            if (filtro === 'asc') {
+                filtrados.sort((a, b) => new Date(a.fechaDevolucionEsperada) - new Date(b.fechaDevolucionEsperada));
+            } else if (filtro === 'desc') {
+                filtrados.sort((a, b) => new Date(b.fechaDevolucionEsperada) - new Date(a.fechaDevolucionEsperada));
+            }
+            
+            renderPrestamos(filtrados);
+        }
+
+        function aplicarFiltrosReservas() {
+            const estado = document.getElementById('filtro-estado').value;
+            let filtrados = [...allReservas];
+            
+            if (estado !== 'TODOS') {
+                filtrados = filtrados.filter(r => r.estado === estado);
+            }
+            
+            // Ordenar por fecha más reciente
+            filtrados.sort((a, b) => new Date(b.fechaReserva) - new Date(a.fechaReserva));
+            
+            renderReservas(filtrados);
+        }
+
+        window.cancelarReserva = function(id) {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "Cancelarás tu solicitud para este libro.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#c62828',
+                cancelButtonColor: '#e0e5eb',
+                confirmButtonText: 'Sí, cancelar',
+                cancelButtonText: '<span style="color: #444;">No, mantener</span>',
+                customClass: {
+                    confirmButton: 'btn btn-danger',
+                    cancelButton: 'btn btn-light'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+                    fetch(`/api/profesor/reservas/${id}/cancelar`, {
+                        method: 'POST',
+                        headers: {
+                            [csrfHeader]: csrfToken
+                        }
+                    })
+                    .then(res => {
+                        if (res.ok) {
+                            Swal.fire('Cancelada', 'Tu solicitud ha sido cancelada.', 'success');
+                            fetchReservas(); // Refrescar tabla
+                        } else {
+                            res.text().then(msg => Swal.fire('Error', msg, 'error'));
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        Swal.fire('Error', 'Problema de conexión al servidor.', 'error');
+                    });
+                }
+            });
+        }
+    </script>
 </body>
 
 </html>
