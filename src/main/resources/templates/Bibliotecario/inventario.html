@@ -13,7 +13,7 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
 
     <!--css-->
-        <link rel="stylesheet" th:href="@{/Bibliotecario/solicitudes.css}">
+    <link rel="stylesheet" th:href="@{/Bibliotecario/prestamos.css}">
 
     </head>
 <body>
@@ -52,7 +52,7 @@
                 </li>
 
                 <li>
-                    <a th:href="@{/panel-bibliotecario/inventario}">
+                    <a th:href="@{/panel-bibliotecario/inventario}" class="active">
                         <i class="fa-regular fa-folder"></i>
                         Consulta de inventario
                     </a>
@@ -146,17 +146,16 @@
 
             </div>
 
-            <button class="btn-search"
-                    onclick="buscarLibros()">
-
-                Buscar
-
-            </button>
+            <div class="filter-box">
+                <select id="filtroCategoria" onchange="aplicarFiltros()" style="border:1px solid #dcdcdc; border-radius:8px; padding:10px 16px; font-weight: 600; color: #102c4d; outline: none; cursor: pointer;">
+                    <option value="">Todas las categorías</option>
+                </select>
+            </div>
 
         </div>
 
         <!-- TITULO DE TABLA -->
-        <div class="subtitle">
+        <div class="subtitle-section">
 
             <h3>Inventario</h3>
 
@@ -165,26 +164,26 @@
         <!-- TABLA -->
         <div class="table-container">
 
-            <table class="table align-middle text-center mb-0">
+            <table class="table align-middle mb-0">
 
                 <thead>
-
                 <tr>
-
                     <th>Libro</th>
                     <th>Autor</th>
+                    <th>Categoría</th>
+                    <th>Año de publicación</th>
                     <th>Stock</th>
                     <th>Disponibilidad</th>
-
                 </tr>
-
                 </thead>
 
                 <tbody id="tablaInventario">
-
-                <tr th:each="libro : ${libros}">
+                <tr th:each="libro : ${libros}"
+                    th:data-autor="${libro.autor != null ? libro.autor.nombreCompleto : 'Sin autor'}">
                     <td th:text="${libro.titulo}">Historias Ancestrales</td>
                     <td th:text="${libro.autor != null ? libro.autor.nombreCompleto : 'Sin autor'}">Gabriel Huamán</td>
+                    <td th:text="${libro.categoria != null ? libro.categoria.nombre : 'Sin categoría'}">Cuento</td>
+                    <td th:text="${libro.anioPublicacion != null ? libro.anioPublicacion : '-'}">2023</td>
                     <td th:text="${libro.stock}">12</td>
                     <td>
                         <span class="estado" 
@@ -196,12 +195,25 @@
                 </tr>
 
                 <tr th:if="${#lists.isEmpty(libros)}">
-                    <td colspan="4" class="text-center text-muted py-4">No hay libros registrados en el inventario.</td>
+                    <td colspan="6" class="text-center text-muted py-4">No hay libros registrados en el inventario.</td>
                 </tr>
-
                 </tbody>
 
             </table>
+
+            <!-- Barra de paginación -->
+            <div class="pagination-bar" id="paginacionBar">
+                <span class="pagination-info" id="paginacionInfo">Mostrando 0 de 0</span>
+                <div class="pagination-controls">
+                    <button class="btn-page" id="btnAnterior" onclick="cambiarPagina(-1)" disabled>
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <span class="page-label" id="paginacionLabel">Pág. 1 / 1</span>
+                    <button class="btn-page" id="btnSiguiente" onclick="cambiarPagina(1)">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
 
         </div>
 
@@ -210,58 +222,138 @@
 </div>
 
 <script>
+    const FILAS_POR_PAGINA = 13;
+    let inventarioData = [];
+    let paginaActual = 1;
+    let filtradasActuales = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Inicializar datos del DOM si los hay
+        const rows = document.querySelectorAll('#tablaInventario tr[data-autor]');
+        if (rows.length > 0) {
+            inventarioData = Array.from(rows).map(row => {
+                const cells = row.querySelectorAll('td');
+                return {
+                    titulo: cells[0].textContent.trim(),
+                    autor: cells[1].textContent.trim(),
+                    categoria: cells[2].textContent.trim(),
+                    anioPublicacion: cells[3].textContent.trim(),
+                    stock: parseInt(cells[4].textContent.trim()) || 0
+                };
+            });
+            generarOpcionesCategoria();
+            renderPagina();
+        } else {
+            // Cargar por defecto si no hay DOM (fallback, aunque Thymeleaf ya envía data)
+            buscarLibrosAPI("");
+        }
+    });
+
+    function generarOpcionesCategoria() {
+        const select = document.getElementById('filtroCategoria');
+        if (!select) return;
+        const categoriasUnicas = new Set(inventarioData.map(l => l.categoria));
+        let html = '<option value="">Todas las categorías</option>';
+        Array.from(categoriasUnicas).sort().forEach(c => {
+            if (c && c !== 'Sin categoría') {
+                html += `<option value="${c}">${c}</option>`;
+            }
+        });
+        select.innerHTML = html;
+    }
+
+    function aplicarFiltros() {
+        renderPagina();
+    }
+
     function buscarLibros() {
         const query = document.getElementById('searchInput').value.trim();
-        
-        fetch(`/panel-bibliotecario/inventario/buscar?query=${query}`)
+        buscarLibrosAPI(query);
+    }
+
+    // Escucha el input para búsqueda en vivo
+    document.getElementById('searchInput').addEventListener('keyup', (e) => {
+        aplicarFiltros();
+    });
+
+    function buscarLibrosAPI(query) {
+        fetch(`/panel-bibliotecario/inventario/buscar?query=${encodeURIComponent(query)}`)
             .then(response => {
-                if (response.ok) {
-                    return response.json();
-                }
+                if (response.ok) return response.json();
                 throw new Error('Error al buscar');
             })
             .then(libros => {
-                if (libros.length === 0) {
-                    document.getElementById('tablaInventario').innerHTML = `
-                        <tr>
-                            <td colspan="4" class="text-center text-muted py-4">No se encontraron libros para la búsqueda "${query}".</td>
-                        </tr>
-                    `;
-                    return;
-                }
-                
-                let rowsHtml = "";
-                libros.forEach(libro => {
-                    const autorNombre = libro.autor ? libro.autor.nombreCompleto : 'Sin autor';
-                    const estadoClass = libro.stock > 0 ? 'disponible' : 'no-disponible';
-                    const estadoText = libro.stock > 0 ? 'Disponible' : 'No disponible';
-                    
-                    rowsHtml += `
-                        <tr>
-                            <td>${libro.titulo}</td>
-                            <td>${autorNombre}</td>
-                            <td>${libro.stock}</td>
-                            <td>
-                                <span class="estado ${estadoClass}">
-                                    ${estadoText}
-                                </span>
-                            </td>
-                        </tr>
-                    `;
-                });
-                document.getElementById('tablaInventario').innerHTML = rowsHtml;
+                // Actualizar los datos con lo que retorna el servidor
+                inventarioData = libros.map(l => ({
+                    titulo: l.titulo,
+                    autor: l.autor ? l.autor.nombreCompleto : 'Sin autor',
+                    categoria: l.categoria ? l.categoria.nombre : 'Sin categoría',
+                    anioPublicacion: l.anioPublicacion != null ? l.anioPublicacion : '-',
+                    stock: l.stock
+                }));
+                generarOpcionesCategoria();
+                paginaActual = 1; // resetear a página 1 tras la búsqueda
+                renderPagina();
             })
-            .catch(err => {
-                document.getElementById('tablaInventario').innerHTML = `
-                    <tr>
-                        <td colspan="4" class="text-center text-muted py-4">Ocurrió un error al realizar la búsqueda.</td>
-                    </tr>
-                `;
-            });
+            .catch(error => console.error(error));
     }
 
-    // Escuchar el evento de tipeo en el campo de búsqueda para búsqueda automática
-    document.getElementById('searchInput').addEventListener('input', buscarLibros);
+    function renderPagina() {
+        const query = document.getElementById('searchInput').value.trim().toLowerCase();
+        const categoria = document.getElementById('filtroCategoria').value;
+
+        filtradasActuales = inventarioData.filter(l => {
+            const matchQuery = !query || 
+                l.titulo.toLowerCase().includes(query) || 
+                l.autor.toLowerCase().includes(query);
+            const matchCat = !categoria || l.categoria === categoria;
+            return matchQuery && matchCat;
+        });
+
+        const total       = filtradasActuales.length;
+        const totalPags   = Math.max(1, Math.ceil(total / FILAS_POR_PAGINA));
+        paginaActual      = Math.min(paginaActual, totalPags);
+        const inicio      = (paginaActual - 1) * FILAS_POR_PAGINA;
+        const fin         = Math.min(inicio + FILAS_POR_PAGINA, total);
+        const vista       = filtradasActuales.slice(inicio, fin);
+
+        const tbody = document.getElementById('tablaInventario');
+
+        if (total === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">No se encontraron libros.</td></tr>`;
+        } else {
+            tbody.innerHTML = vista.map(l => {
+                const estadoClass = l.stock > 0 ? 'disponible' : 'no-disponible';
+                const estadoText  = l.stock > 0 ? 'Disponible' : 'No disponible';
+                return `<tr>
+                    <td>${l.titulo}</td>
+                    <td>${l.autor}</td>
+                    <td>${l.categoria}</td>
+                    <td>${l.anioPublicacion}</td>
+                    <td>${l.stock}</td>
+                    <td>
+                        <span class="estado ${estadoClass}">${estadoText}</span>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        // Paginación UI
+        const pagInfo = document.getElementById('paginacionInfo');
+        const pagLabel = document.getElementById('paginacionLabel');
+        const btnAnt = document.getElementById('btnAnterior');
+        const btnSig = document.getElementById('btnSiguiente');
+
+        if(pagInfo) pagInfo.textContent  = total === 0 ? 'Sin resultados' : `Mostrando ${inicio+1}–${fin} de ${total}`;
+        if(pagLabel) pagLabel.textContent = `Pág. ${paginaActual} / ${totalPags}`;
+        if(btnAnt) btnAnt.disabled  = paginaActual <= 1;
+        if(btnSig) btnSig.disabled = paginaActual >= totalPags;
+    }
+
+    function cambiarPagina(delta) { 
+        paginaActual += delta; 
+        renderPagina(); 
+    }
 </script>
 </body>
 </html>
