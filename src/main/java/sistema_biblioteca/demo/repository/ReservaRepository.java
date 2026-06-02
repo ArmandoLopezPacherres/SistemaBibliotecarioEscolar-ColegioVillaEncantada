@@ -16,4 +16,10 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
     List<Reserva> buscarPendientesPorUsuarioOLibro(@Param("estado") EstadoReserva estado, @Param("query") String query);
 
     List<Reserva> findByUsuarioId(Long usuarioId);
+
+    boolean existsByUsuarioIdAndLibroIdAndEstado(Long usuarioId, Long libroId, EstadoReserva estado);
+
+    long countByUsuarioIdAndEstadoIn(Long usuarioId, List<EstadoReserva> estados);
+
+    List<Reserva> findByUsuarioIdAndEstadoIn(Long usuarioId, List<EstadoReserva> estados);
 }

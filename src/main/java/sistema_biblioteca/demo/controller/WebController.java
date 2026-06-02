@@ -26,27 +26,37 @@ public class WebController {
     }
 
     @GetMapping("/")
-    public String index() {
+    public String index(Principal principal) {
+        if (principal != null) return "redirect:/dashboard";
         return "index";
     }
 
     @GetMapping("/login")
-    public String login() {
+    public String login(Principal principal, jakarta.servlet.http.HttpServletResponse response) {
+        if (principal != null) {
+            return "redirect:/dashboard";
+        }
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setHeader("Expires", "0");
         return "login";
     }
 
     @GetMapping("/about")
-    public String about() {
+    public String about(Principal principal) {
+        if (principal != null) return "redirect:/dashboard";
         return "about";
     }
 
     @GetMapping("/news")
-    public String news() {
+    public String news(Principal principal) {
+        if (principal != null) return "redirect:/dashboard";
         return "news";
     }
 
     @GetMapping("/schedules")
-    public String schedules() {
+    public String schedules(Principal principal) {
+        if (principal != null) return "redirect:/dashboard";
         return "schedules";
     }
 

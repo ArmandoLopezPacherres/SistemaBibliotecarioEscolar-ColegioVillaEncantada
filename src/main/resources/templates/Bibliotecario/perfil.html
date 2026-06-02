@@ -18,9 +18,12 @@
 
 <!--CSS-->
     <link rel="stylesheet" th:href="@{/Bibliotecario/perfil.css}">
-
-
-
+    <style>
+        /* Agregamos position relative para que el tooltip de Bootstrap se alinee al input */
+        .mb-3 {
+            position: relative;
+        }
+    </style>
 </head>
 <body>
 
@@ -255,56 +258,24 @@
 
             <div class="modal-body">
 
-                <form id="formPerfil">
-
+                <form id="formPerfil" class="needs-validation" novalidate>
                     <div class="mb-3">
-
-                        <label class="form-label">
-
-                            Contraseña Actual
-
-                        </label>
-
-                        <input type="password"
-                            class="form-control"
-                            id="inputCurrentPassword"
-                            placeholder="Ingresa tu contraseña actual..."
-                            value="">
-
+                        <label class="form-label modal-custom-label">Contraseña Actual</label>
+                        <input type="password" class="form-control modal-custom-input" id="inputCurrentPassword" placeholder="Ingresa tu contraseña actual..." required>
+                        <div class="invalid-feedback">Ingresa tu contraseña actual.</div>
                     </div>
 
                     <div class="mb-3">
-
-                        <label class="form-label">
-
-                            Nueva Contraseña
-
-                        </label>
-
-                        <input type="password"
-                            class="form-control"
-                            id="inputNewPassword"
-                            placeholder="Ingresa tu nueva contraseña..."
-                            value="">
-
+                        <label class="form-label modal-custom-label">Nueva Contraseña</label>
+                        <input type="password" class="form-control modal-custom-input" id="inputNewPassword" placeholder="Ingresa tu nueva contraseña..." required minlength="6">
+                        <div class="invalid-feedback">La contraseña debe tener al menos 6 caracteres.</div>
                     </div>
 
                     <div class="mb-3">
-
-                        <label class="form-label">
-
-                            Confirmar Nueva Contraseña
-
-                        </label>
-
-                        <input type="password"
-                            class="form-control"
-                            id="inputConfirmPassword"
-                            placeholder="Confirma tu nueva contraseña..."
-                            value="">
-
+                        <label class="form-label modal-custom-label">Confirmar Nueva Contraseña</label>
+                        <input type="password" class="form-control modal-custom-input" id="inputConfirmPassword" placeholder="Confirma tu nueva contraseña..." required>
+                        <div class="invalid-feedback">Por favor, confirma tu nueva contraseña.</div>
                     </div>
-
                 </form>
 
             </div>
@@ -358,6 +329,16 @@
         if (toastElement) {
             toastInstance = new bootstrap.Toast(toastElement, { delay: 4000 });
         }
+
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('hidden.bs.modal', function () {
+                const form = this.querySelector('form');
+                if (form) {
+                    form.classList.remove('was-validated');
+                    form.reset();
+                }
+            });
+        });
     });
 
     function showMessage(msg, isSuccess) {
@@ -378,6 +359,12 @@
     }
 
     function guardarPassword() {
+        const form = document.getElementById('formPerfil');
+        if (!form.checkValidity()) {
+            form.classList.add('was-validated');
+            return;
+        }
+
         const currentPasswordInput = document.getElementById('inputCurrentPassword');
         const newPasswordInput = document.getElementById('inputNewPassword');
         const confirmPasswordInput = document.getElementById('inputConfirmPassword');
@@ -385,11 +372,6 @@
         const currentPassword = currentPasswordInput.value.trim();
         const newPassword = newPasswordInput.value.trim();
         const confirmPassword = confirmPasswordInput.value.trim();
-
-        if (currentPassword.length === 0 || newPassword.length === 0 || confirmPassword.length === 0) {
-            showMessage("Todos los campos de contraseña son obligatorios.", false);
-            return;
-        }
 
         if (newPassword !== confirmPassword) {
             showMessage("La nueva contraseña y su confirmación no coinciden.", false);

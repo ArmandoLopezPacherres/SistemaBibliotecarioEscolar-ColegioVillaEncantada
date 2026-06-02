@@ -358,6 +358,16 @@
         const modalEl = document.getElementById('devolucionConfirmacionModal');
         if (modalEl) devolucionConfirmModalInstance = new bootstrap.Modal(modalEl);
 
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('hidden.bs.modal', function () {
+                const form = this.querySelector('form');
+                if (form) {
+                    form.classList.remove('was-validated');
+                    form.reset();
+                }
+            });
+        });
+
         // Extraer datos del DOM generado por Thymeleaf
         const rows = document.querySelectorAll('#tablaPrestamos tr[data-id]');
         rows.forEach(row => {
