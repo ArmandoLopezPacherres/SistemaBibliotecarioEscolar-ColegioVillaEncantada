@@ -300,6 +300,16 @@
         if (modalEl) {
             pagarModalInstance = new bootstrap.Modal(modalEl);
         }
+
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('hidden.bs.modal', function () {
+                const form = this.querySelector('form');
+                if (form) {
+                    form.classList.remove('was-validated');
+                    form.reset();
+                }
+            });
+        });
     });
 
     function showMessage(msg, isSuccess) {
