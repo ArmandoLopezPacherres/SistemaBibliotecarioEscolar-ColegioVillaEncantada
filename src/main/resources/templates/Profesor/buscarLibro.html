@@ -15,7 +15,16 @@
 
     <!-- CSS -->
     <link rel="stylesheet" th:href="@{/Profesor/buscarLibro.css}">
-
+    <style>
+        /* Evita que los mensajes de validación desplacen el contenido */
+        .invalid-feedback {
+            font-size: 0.8rem;
+            margin-top: 2px;
+        }
+        .mb-3 {
+            position: relative;
+        }
+    </style>
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -295,23 +304,35 @@
                 html: `
                     <div style="text-align: left; font-family: 'Segoe UI', sans-serif;">
                         <h3 style="text-align: center; margin: 0 0 25px 0; font-weight: 800; color: #072b4a; letter-spacing: 1px;">SOLICITUD</h3>
+                        <form id="formSolicitud" class="needs-validation" novalidate>
+                        <input type="hidden" id="modalLibroId" value="${libroId}">
                         
-                        <p style="margin-bottom: 5px; color: #072b4a; font-size: 15px;"><strong>Nombre del libro:</strong></p>
-                        <p style="margin-bottom: 20px; color: #666; font-size: 15px;">${titulo}</p>
+                        <div class="mb-3">
+                            <h6 style="color: #0c2947; font-weight: 700; margin-bottom: 4px;">Nombre del libro:</h6>
+                            <p style="color: #666; margin-bottom: 0; font-size: 15px;">${titulo}</p>
+                        </div>
                         
-                        <p style="margin-bottom: 5px; color: #072b4a; font-size: 15px;"><strong>Autor:</strong></p>
-                        <p style="margin-bottom: 20px; color: #666; font-size: 15px;">${autor}</p>
+                        <div class="mb-3">
+                            <h6 style="color: #0c2947; font-weight: 700; margin-bottom: 4px;">Autor:</h6>
+                            <p style="color: #666; margin-bottom: 0; font-size: 15px;">${autor}</p>
+                        </div>
                         
-                        <p style="margin-bottom: 5px; color: #072b4a; font-size: 15px;"><strong>Fecha de solicitud:</strong></p>
-                        <p style="margin-bottom: 20px; color: #666; font-size: 15px;">${fechaSolicitud}</p>
+                        <div class="mb-3">
+                            <h6 style="color: #0c2947; font-weight: 700; margin-bottom: 4px;">Fecha de solicitud:</h6>
+                            <p style="color: #666; margin-bottom: 0; font-size: 15px;">${fechaSolicitud}</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <h6 style="color: #0c2947; font-weight: 700; margin-bottom: 4px;">Fecha máxima de devolución:</h6>
+                            <p style="color: #666; margin-bottom: 0; font-size: 15px;">${fechaMaxima}</p>
+                        </div>
                         
-                        <p style="margin-bottom: 5px; color: #072b4a; font-size: 15px;"><strong>Fecha máxima de devolución:</strong></p>
-                        <p style="margin-bottom: 25px; color: #666; font-size: 15px;">${fechaMaxima}</p>
-                        
-                        <p style="margin-bottom: 8px; color: #072b4a; font-size: 15px;"><strong>Selecciona la fecha de devolución:</strong></p>
-                        <input type="date" id="fechaDevolucion" class="swal2-input" 
-                               style="width: 100%; margin: 0; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-family: 'Segoe UI'; font-size: 15px; color: #333;"
-                               min="${minInput}" max="${maxInput}">
+                        <div class="mb-4">
+                            <h6 style="color: #0c2947; font-weight: 700; margin-bottom: 8px;">Selecciona la fecha de devolución:</h6>
+                            <input type="date" class="form-control" id="modalFechaDevolucion" required style="border: 1px solid #ccc; color: #333; padding: 10px; width: 100%; box-sizing: border-box;" min="${minInput}" max="${maxInput}">
+                            <div class="invalid-feedback" style="color: red; font-size: 12px; margin-top: 5px;">Por favor, selecciona una fecha de devolución válida.</div>
+                        </div>
+                        </form>
                     </div>
                 `,
                 showCancelButton: true,
@@ -326,12 +347,12 @@
                 },
                 width: '450px',
                 preConfirm: () => {
-                    const fecha = document.getElementById('fechaDevolucion').value;
-                    if (!fecha) {
-                        Swal.showValidationMessage('Por favor selecciona una fecha de devolución');
+                    const form = document.getElementById('formSolicitud');
+                    if (!form.checkValidity()) {
+                        form.classList.add('was-validated');
                         return false;
                     }
-                    return fecha;
+                    return document.getElementById('modalFechaDevolucion').value;
                 }
             }).then((result) => {
                 if (result.isConfirmed) {

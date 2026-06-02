@@ -1,30 +1,56 @@
+<img width="1600" height="764" alt="imagen" src="https://github.com/user-attachments/assets/1e78494a-8b2f-4b0f-8ec3-fe18a582a61d" />
+
 # Sistema Bibliotecario Escolar - Colegio Villa Encantada
 
 Sistema de gestión bibliotecaria completo enfocado al entorno escolar del Colegio Villa Encantada, diseñado para administrar préstamos, reservas y catálogo de libros de manera eficiente.
 
-## Tecnologías
+##  Tecnologías y Herramientas
 
 - **Java 21** - Lenguaje de programación principal
 - **Spring Boot 3.x** - Framework principal para el backend
-- **Spring Security** - Gestión de autenticación y autorización
-- **Spring Data JPA** - Persistencia de datos
-- **Thymeleaf** - Motor de plantillas para el frontend
+- **Spring Security** - Gestión de autenticación, encriptación de contraseñas y autorización basada en roles
+- **Spring Data JPA / Hibernate** - ORM y persistencia de datos relacional
+- **Thymeleaf** - Motor de plantillas para el renderizado dinámico en el frontend
 - **MySQL** - Base de datos relacional
-- **Maven** - Gestión de dependencias y construcción
-- **HTML/CSS/JavaScript** - Tecnologías web frontend
+- **Maven** - Gestión de dependencias y construcción del proyecto
+- **HTML5, CSS3, JavaScript** - Diseño e interacción de la interfaz web (UI Responsiva)
 
-## Ramas
+## 📁 Arquitectura y Estructura del Proyecto
 
-- `main` - Rama principal con la versión estable
-- `develop` - Rama de desarrollo con las últimas características
-- `feature/ui-publica` - Rama de desarrollo de la UI pública
-- `feature/ui-privada` - Rama de desarrollo de la UI privada
-- `feature/modelos-dominio` - Rama de desarrollo de modelos de la BD
-- `feature/config-bd` - Rama de desarrollo para configuración de BD
-- `feature/seguridad-rutas` - Rama de desarrollo de autenticación y rutas
-- `feature/documentacion` - Rama de desarrollo de documentación
+El proyecto sigue un patrón de arquitectura Modelo-Vista-Controlador (MVC) bien definido y organizado en las siguientes capas principales:
 
-## Ejecución
+- **`config/`**: Configuraciones globales de la aplicación (Seguridad web en `SecurityConfig` e inicialización de datos por defecto con `DataInitializer`).
+- **`controller/`**: Controladores MVC (`WebController`, `AdminController`, `EstudianteController`, etc.) y APIs REST (`DashboardApiController`, `ProfesorApiController`) que sirven datos en formato JSON para el frontend.
+- **`dto/`**: Objetos de Transferencia de Datos (`UsuarioDTO`, `PerfilDTO`, `DashboardChartsDTO`, etc.) empleados para optimizar el paso de información entre el backend y las vistas sin exponer entidades completas.
+- **`model/`**: Entidades de dominio mapeadas a la base de datos (`Usuario`, `Libro`, `Autor`, `Categoria`, `Editorial`, `Prestamo`, `Reserva`) y Enumeraciones para estados fijos (`RolUsuario`, `EstadoPrestamo`, `EstadoReserva`).
+- **`repository/`**: Interfaces de Spring Data JPA que abstraen el acceso a la base de datos.
+- **`security/`**: Implementación personalizada de `UserDetailsService` para cargar los usuarios y validar credenciales contra la BD.
+- **`service/`**: Lógica de negocio compleja declarada a través de interfaces y resuelta en sus respectivas implementaciones (`impl/`).
+- **`resources/static/` & `resources/templates/`**: Recursos estáticos (estilos CSS e imágenes modulares) y plantillas Thymeleaf. Están rigurosamente ordenadas por rol (Administrador, Bibliotecario, Estudiante, Profesor).
+
+## Roles de Usuario y Funcionalidades
+
+El sistema está diseñado con control de acceso basado en roles (RBAC) asegurando que cada perfil tenga vistas y permisos específicos:
+
+### 1. Administrador
+- Acceso a un Dashboard estadístico (`panel-admin`) con métricas globales del sistema.
+- Gestión de usuarios y asignación de roles.
+- Gestión completa del catálogo bibliotecario (libros, autores, categorías, editoriales).
+- Generación y visualización de reportes.
+
+### 2. Bibliotecario
+- Control estricto de inventario y catálogo de libros.
+- Gestión de préstamos (entregas) y devoluciones.
+- Administración de multas y lectores.
+- Revisión de solicitudes y envío de notificaciones.
+
+### 3. Profesor / Estudiante
+- Búsqueda avanzada de libros en el catálogo.
+- Consulta del historial personal de préstamos.
+- Seguimiento en "Mi Actividad" y revisión de notificaciones.
+- Gestión y actualización del perfil de usuario.
+
+##  Ejecución y Configuración
 
 1. **Clonar el repositorio**
    ```bash
@@ -32,90 +58,31 @@ Sistema de gestión bibliotecaria completo enfocado al entorno escolar del Coleg
    cd SistemaBibliotecarioEscolar-ColegioVillaEncantada
    ```
 
-2. **Configurar la base de datos**
-   
-   **Opción A: Configuración manual**
-   - Crear la base de datos MySQL ejecutando el script en `database/script.sql`
-   - Configurar las credenciales de la base de datos en `src/main/resources/application.properties`
-   
-   **Opción B: Configuración automática**
-   - Simplemente ejecutar el proyecto (la base de datos y sus tablas se crearán automáticamente gracias a Hibernate).
+2. **Configurar la base de datos (MySQL)**
+   - Configurar las credenciales de la base de datos en `src/main/resources/application.properties`.
+   - **Nota:** La estructura de tablas y relaciones se creará automáticamente gracias a la configuración de Hibernate (`ddl-auto`) al iniciar la aplicación. Adicionalmente, el `DataInitializer` se encarga de poblar el sistema con usuarios administradores y datos de prueba.
 
 3. **Ejecutar la aplicación**
    ```bash
    ./mvnw spring-boot:run
    ```
-   O ejecutar la clase principal `DemoApplication.java` desde tu IDE.
+   *(También puedes abrir y ejecutar la clase principal `DemoApplication.java` directamente desde tu IDE como IntelliJ, Eclipse o VS Code).*
 
-4. **Acceder a la aplicación**
-   - URL: http://localhost:8080
-   - Credenciales por defecto:
+4. **Acceso Inicial**
+   - URL de despliegue local: [http://localhost:8080](http://localhost:8080)
+   - **Credenciales por defecto** (Generadas para uso inmediato en pruebas):
+     - **Admin**: Código: `A12345678` | Contraseña: `1234`
+     - **Bibliotecario**: Código: `B87654321` | Contraseña: `1234`
+     - **Profesor**: Código: `P11223344` | Contraseña: `1234`
+     - **Estudiante**: Código: `E55667788` | Contraseña: `1234`
 
-     **Administrador**
-     - Código: A12345678
-     - Nombre: Administrador 
-     - Rol: ADMINISTRADOR
-     - Contraseña: 1234 
+##  Ramas del Repositorio
 
-     **Bibliotecario**
-     - Código: B87654321
-     - Nombre: Bibliotecario 
-     - Rol: BIBLIOTECARIO
-     - Contraseña: 1234 
+- `main` - Rama principal con la versión estable
+- `develop` - Rama de desarrollo integrador de características
+- `feature/*` - Ramas dedicadas a funcionalidades específicas 
 
-     **Profesor**
-     - Código: P11223344
-     - Nombre: Profesor
-     - Rol: PROFESOR
-     - Contraseña: 1234 
+##  Evidencias y Documentación
 
-     **Estudiante**
-     - Código: E55667788
-     - Nombre: Estudiante
-     - Rol: ESTUDIANTE
-     - Contraseña: 1234 
-
-## Evidencias
-
-Ubicaciones de evidencias:
-
-- Mockups: `/docs/Mockups`
-- Imágenes del proyecto: `docs/Evidencias`
-
-
-### Capturas
-- Interfaz principal del sistema
-- Panel de administración
-- Gestión de préstamos y reservas
-- Catálogo de libros
-
-## Funcionalidades
-
-### Gestión de Usuarios 
-- **Autenticación y autorización** con Spring Security
-- **Roles de usuario**: Administrador, Bibliotecario, Estudiante, Profesor
-- **Redirección según el rol** del usuario
-
-### Gestión de Libros
-- **Catálogo completo** con información detallada
-- **Gestión de autores, categorías y editoriales**
-- **Control de stock** y disponibilidad
-
-### Gestión de Préstamos
-- **Sistema de préstamos** con fechas de devolución
-- **Control de estados**: Activo, Devuelto, Retrasado 
-- **Historial de préstamos** por usuario
-
-### Gestión de Reservas
-- **Sistema de reservas** para libros no disponibles
-- **Control de estados**: Cancelada, Pendiente, Recogida, Vencida
-- **Fechas límite** para recojo de reservas
-
-### Interfaz Web
-- **Diseño responsivo** con Thymeleaf
-- **Navegación intuitiva** entre secciones
-- **Páginas específicas** para cada rol de usuario
-
-
-
-
+- **Mockups y Diseño de Interfaces:** Se encuentran en el directorio `/docs/Mockups`
+- **Imágenes y Capturas del Sistema:** Ubicadas en `docs/Evidencias`

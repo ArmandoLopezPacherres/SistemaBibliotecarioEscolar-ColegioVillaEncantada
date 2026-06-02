@@ -65,6 +65,31 @@
             </form>
         </section>
     </main>
+
+    <script>
+        // Validaciones de Bootstrap
+        (function () {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms).forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+
+            // Convertir código a mayúsculas
+            var codigoInput = document.getElementById('codigo');
+            if(codigoInput) {
+                codigoInput.addEventListener('input', function() {
+                    this.value = this.value.toUpperCase();
+                });
+            }
+        })()
+    </script>
 </body>
 
 </html>

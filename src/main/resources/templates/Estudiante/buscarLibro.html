@@ -15,7 +15,16 @@
 
     <!-- CSS -->
     <link rel="stylesheet" th:href="@{/Estudiante/buscarLibros.css}">
-
+    <style>
+        /* Evita que los mensajes de validación desplacen el contenido */
+        .invalid-feedback {
+            font-size: 0.8rem;
+            margin-top: 2px;
+        }
+        .mb-3 {
+            position: relative;
+        }
+    </style>
     <!-- CSRF Tokens -->
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
@@ -204,7 +213,7 @@
                     <h4 class="modal-title" style="color: #0c2947; font-weight: 800; letter-spacing: 2px;">SOLICITUD</h4>
                 </div>
                 <div class="modal-body" style="padding-top: 15px;">
-                    <form id="formSolicitud">
+                    <form id="formSolicitud" class="needs-validation" novalidate>
                         <input type="hidden" id="modalLibroId">
                         
                         <div class="mb-3">
@@ -230,6 +239,7 @@
                         <div class="mb-4">
                             <h6 style="color: #0c2947; font-weight: 700; margin-bottom: 8px;">Selecciona la fecha de devolución:</h6>
                             <input type="date" class="form-control" id="modalFechaDevolucion" required style="border: 1px solid #ccc; color: #333; padding: 10px;">
+                            <div class="invalid-feedback">Por favor, selecciona una fecha de devolución válida.</div>
                         </div>
                         
                         <div class="d-flex justify-content-center gap-2">
@@ -279,6 +289,16 @@
                 option.value = cat;
                 option.textContent = cat;
                 select.appendChild(option);
+            });
+
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('hidden.bs.modal', function () {
+                    const form = this.querySelector('form');
+                    if (form) {
+                        form.classList.remove('was-validated');
+                        form.reset();
+                    }
+                });
             });
 
             aplicarFiltros();
@@ -392,6 +412,12 @@
         }
 
         function enviarSolicitud() {
+            const form = document.getElementById('formSolicitud');
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                return;
+            }
+            
             const id = document.getElementById('modalLibroId').value;
             const fechaDevolucion = document.getElementById('modalFechaDevolucion').value;
             if (!fechaDevolucion) {
