@@ -1,3 +1,5 @@
+<img width="1600" height="764" alt="imagen" src="https://github.com/user-attachments/assets/1e78494a-8b2f-4b0f-8ec3-fe18a582a61d" />
+
 # Sistema Bibliotecario Escolar - Colegio Villa Encantada
 
 Sistema de gestión bibliotecaria completo enfocado al entorno escolar del Colegio Villa Encantada, diseñado para administrar préstamos, reservas y catálogo de libros de manera eficiente.
