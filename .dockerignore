@@ -1,7 +1,6 @@
 .git
 .gitignore
 target/
-.mvn/
 .vscode/
 .idea/
 *.iml
