@@ -45,10 +45,22 @@ public class EstudianteController {
     @Autowired
     private ReservaService reservaService;
 
+    @Autowired
+    private sistema_biblioteca.demo.service.UsuarioService usuarioService;
+
+    private String calcularInsignia(Integer puntos) {
+        if (puntos == null || puntos < 40) return "Lector Novato";
+        if (puntos < 100) return "Explorador Literario";
+        return "Maestro de la Lectura";
+    }
+
     private void cargarUsuarioEnModelo(Model model, Principal principal) {
         if (principal != null) {
             usuarioRepository.findByCodigo(principal.getName()).ifPresent(usuario -> {
                 model.addAttribute("usuario", usuario);
+                Integer puntos = usuario.getPuntosLectura() != null ? usuario.getPuntosLectura() : 0;
+                model.addAttribute("puntosLectura", puntos);
+                model.addAttribute("insignia", calcularInsignia(puntos));
             });
         }
     }
@@ -174,6 +186,15 @@ public class EstudianteController {
             });
         }
         return "Estudiante/perfil";
+    }
+
+    @GetMapping("/top-lectores")
+    public String topLectores(Model model, Principal principal) {
+        cargarUsuarioEnModelo(model, principal);
+        if (principal != null) {
+            model.addAttribute("topLectores", usuarioService.obtenerTodosLectoresEstudiantes());
+        }
+        return "Estudiante/topLectores";
     }
 
     @PostMapping("/perfil/cambiar-password")

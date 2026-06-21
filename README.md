@@ -76,7 +76,19 @@ El sistema está diseñado con control de acceso basado en roles (RBAC) aseguran
      - **Profesor**: Código: `P11223344` | Contraseña: `1234`
      - **Estudiante**: Código: `E55667788` | Contraseña: `1234`
 
-##  Ramas del Repositorio
+## Configuración del Asistente IA (Gemini)
+
+El módulo de Inteligencia Artificial requiere una API Key de Google Gemini para funcionar. Por seguridad, esta llave **nunca debe subirse al repositorio público**.
+
+Para configurarlo en tu entorno de desarrollo local:
+1. Crea un archivo llamado `application-local.properties` en la carpeta `src/main/resources/`.
+2. Añade tu API Key dentro del archivo con este formato:
+   ```properties
+   GEMINI_API_KEY=tu_llave_real_aqui
+   ```
+*(Nota: Este archivo ya está excluido en el `.gitignore` para proteger tu información).*
+
+## Ramas del Repositorio
 
 - `main` - Rama principal con la versión estable
 - `develop` - Rama de desarrollo integrador de características

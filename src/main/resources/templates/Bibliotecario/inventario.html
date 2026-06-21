@@ -59,6 +59,13 @@
                 </li>
 
                 <li>
+                    <a th:href="@{/panel-bibliotecario/escaner}">
+                        <i class="fa-solid fa-qrcode"></i>
+                        Escáner Inteligente
+                    </a>
+                </li>
+
+                <li>
                     <a th:href="@{/panel-bibliotecario/prestamos}">
                         <i class="fa-regular fa-calendar-check"></i>
                         Gestión de préstamos
@@ -174,12 +181,14 @@
                     <th>Año de publicación</th>
                     <th>Stock</th>
                     <th>Disponibilidad</th>
+                    <th>Acción</th>
                 </tr>
                 </thead>
 
                 <tbody id="tablaInventario">
                 <tr th:each="libro : ${libros}"
-                    th:data-autor="${libro.autor != null ? libro.autor.nombreCompleto : 'Sin autor'}">
+                    th:data-autor="${libro.autor != null ? libro.autor.nombreCompleto : 'Sin autor'}"
+                    th:data-id="${libro.id}">
                     <td th:text="${libro.titulo}">Historias Ancestrales</td>
                     <td th:text="${libro.autor != null ? libro.autor.nombreCompleto : 'Sin autor'}">Gabriel Huamán</td>
                     <td th:text="${libro.categoria != null ? libro.categoria.nombre : 'Sin categoría'}">Cuento</td>
@@ -191,6 +200,12 @@
                               th:text="${libro.stock > 0 ? 'Disponible' : 'No disponible'}">
                             Disponible
                         </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm" style="border: 1px solid #dcdcdc; background: white; border-radius: 6px; padding: 4px 10px;"
+                                th:attr="onclick=|verQR(${libro.id}, '${#strings.escapeJavaScript(libro.titulo)}')|" title="Ver QR">
+                            <i class="fa-solid fa-qrcode"></i> QR
+                        </button>
                     </td>
                 </tr>
 
@@ -221,6 +236,55 @@
 
 </div>
 
+<!-- MODAL CÓDIGO QR -->
+<div class="modal fade" id="qrModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center pb-4">
+                <h5 class="fw-bold mb-1" id="qrTituloLibro">Título del Libro</h5>
+                <p class="text-muted small mb-3">Etiqueta para inventario físico</p>
+                
+                <div style="background: white; padding: 10px; border: 1px solid #eee; border-radius: 8px; display: inline-block;">
+                    <img id="qrImage" src="" alt="QR Libro" style="width: 200px; height: 200px;">
+                </div>
+                
+                <p class="mt-3 mb-0 fw-bold text-primary" id="qrIdLibro" style="letter-spacing: 1px;">LIBRO-ID</p>
+                
+                <button class="btn btn-dark w-100 mt-4" onclick="window.print()">
+                    <i class="fa-solid fa-print"></i> Imprimir Etiqueta
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        #qrModal .modal-content, #qrModal .modal-content * {
+            visibility: visible;
+        }
+        #qrModal .modal-content {
+            position: absolute;
+            left: 0;
+            top: 0;
+            border: none;
+            box-shadow: none;
+        }
+        #qrModal .modal-header, #qrModal .btn-dark {
+            display: none !important;
+        }
+    }
+</style>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
     const FILAS_POR_PAGINA = 13;
     let inventarioData = [];
@@ -234,6 +298,7 @@
             inventarioData = Array.from(rows).map(row => {
                 const cells = row.querySelectorAll('td');
                 return {
+                    id: parseInt(row.getAttribute('data-id')) || 0,
                     titulo: cells[0].textContent.trim(),
                     autor: cells[1].textContent.trim(),
                     categoria: cells[2].textContent.trim(),
@@ -285,6 +350,7 @@
             .then(libros => {
                 // Actualizar los datos con lo que retorna el servidor
                 inventarioData = libros.map(l => ({
+                    id: l.id,
                     titulo: l.titulo,
                     autor: l.autor ? l.autor.nombreCompleto : 'Sin autor',
                     categoria: l.categoria ? l.categoria.nombre : 'Sin categoría',
@@ -334,6 +400,12 @@
                     <td>
                         <span class="estado ${estadoClass}">${estadoText}</span>
                     </td>
+                    <td>
+                        <button class="btn btn-sm" style="border: 1px solid #dcdcdc; background: white; border-radius: 6px; padding: 4px 10px;"
+                                onclick="verQR(${l.id}, '${l.titulo.replace(/'/g, "\\'")}')" title="Ver QR">
+                            <i class="fa-solid fa-qrcode"></i> QR
+                        </button>
+                    </td>
                 </tr>`;
             }).join('');
         }
@@ -353,6 +425,15 @@
     function cambiarPagina(delta) { 
         paginaActual += delta; 
         renderPagina(); 
+    }
+
+    function verQR(idLibro, titulo) {
+        document.getElementById('qrTituloLibro').textContent = titulo;
+        document.getElementById('qrIdLibro').textContent = "LIBRO-" + idLibro;
+        document.getElementById('qrImage').src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=LIBRO-" + idLibro;
+        
+        const qrModal = new bootstrap.Modal(document.getElementById('qrModal'));
+        qrModal.show();
     }
 </script>
 </body>

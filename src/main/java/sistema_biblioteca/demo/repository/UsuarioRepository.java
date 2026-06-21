@@ -12,4 +12,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     List<Usuario> findByRol(RolUsuario rol);
 
     List<Usuario> findByCodigoContainingIgnoreCase(String codigo);
+
+    List<Usuario> findByRolAndPuntosLecturaGreaterThanOrderByPuntosLecturaDesc(RolUsuario rol, Integer puntosLectura);
 }

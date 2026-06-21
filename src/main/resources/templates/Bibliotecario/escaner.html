@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escáner Inteligente QR</title>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/Bibliotecario/prestamos.css}">
+    
+    <!-- Librería HTML5 QR Code -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+    <style>
+        .scanner-container {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        #reader {
+            width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #072b4a;
+        }
+        .step-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: 0.3s;
+        }
+        .step-card.active {
+            border-color: #072b4a;
+            box-shadow: 0 0 0 3px rgba(7, 43, 74, 0.1);
+        }
+        .list-group-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .badge-devolucion { background-color: #198754; }
+        .badge-prestamo { background-color: #0dcaf0; color: #000; }
+        
+        #btnConfirmar {
+            background-color: #072b4a;
+            border: none;
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 10px;
+            color: white;
+        }
+        #btnConfirmar:hover {
+            background-color: #0a3d69;
+        }
+        .btn-theme-dark {
+            background-color: #072b4a;
+            border-color: #072b4a;
+            color: white;
+        }
+        .btn-theme-dark:hover {
+            background-color: #0a3d69;
+            border-color: #0a3d69;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div>
+            <div class="logo-section">
+                <img th:src="@{/img/logo-CVE.png}" alt="logo">
+                <h5>Bibliotecario</h5>
+            </div>
+            <hr>
+            <ul class="menu">
+                <li><a th:href="@{/panel-bibliotecario/lectores}"><i class="fa-regular fa-address-book"></i> Gestión de Lectores</a></li>
+                <li><a th:href="@{/panel-bibliotecario/solicitudes}"><i class="fa-regular fa-rectangle-list"></i> Solicitudes Pendientes</a></li>
+                <li><a th:href="@{/panel-bibliotecario/inventario}"><i class="fa-regular fa-folder"></i> Consulta de inventario</a></li>
+                <li><a th:href="@{/panel-bibliotecario/escaner}" class="active"><i class="fa-solid fa-qrcode"></i> Escáner Inteligente</a></li>
+                <li><a th:href="@{/panel-bibliotecario/prestamos}"><i class="fa-regular fa-calendar-check"></i> Gestión de préstamos</a></li>
+                <li><a th:href="@{/panel-bibliotecario/devoluciones}"><i class="fa-regular fa-calendar"></i> Gestión de devoluciones</a></li>
+                <li><a th:href="@{/panel-bibliotecario/multas}"><i class="fa-regular fa-pen-to-square"></i> Lista blanca y multas</a></li>
+                <li><a th:href="@{/panel-bibliotecario/notificaciones}"><i class="fa-regular fa-bell"></i> Notificaciones</a></li>
+                <li><a th:href="@{/panel-bibliotecario/perfil}"><i class="fa-regular fa-user"></i> Perfil</a></li>
+            </ul>
+        </div>
+        <div class="logout">
+            <form th:action="@{/logout}" method="post" id="logoutForm" style="display: none;"></form>
+            <a href="javascript:document.getElementById('logoutForm').submit();" class="text-white text-decoration-none"><i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión</a>
+        </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="content">
+        <div class="top-header">
+            <div class="title">
+                <h1><i class="fa-solid fa-bolt text-warning"></i> Escáner Inteligente</h1>
+                <p>Préstamos y devoluciones express</p>
+            </div>
+            <div class="user">
+                <i class="fa-regular fa-user"></i> ¡Bienvenido <strong th:text="${usuario.nombre}">Juan</strong>!
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <!-- Columna Izquierda: Escáner y Controles -->
+            <div class="col-md-5">
+                <div class="scanner-container">
+                    <h5 class="fw-bold mb-3 text-center">Cámara</h5>
+                    <div id="reader">
+                        <div class="p-5 text-center" style="min-height: 250px; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #f8f9fa; border-radius: 10px;">
+                            <i class="fa-solid fa-camera fa-3x mb-3 text-muted"></i>
+                            <button class="btn btn-theme-dark" onclick="iniciarCamara()"><i class="fa-solid fa-power-off"></i> Activar Cámara</button>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <p class="text-center text-muted small mb-2">O ingresa el código manualmente:</p>
+                        <div class="input-group">
+                            <input type="text" id="manualInput" class="form-control" placeholder="Ej. E55667788 o LIBRO-1">
+                            <button class="btn btn-outline-dark" onclick="procesarEscaneoManual()"><i class="fa-solid fa-arrow-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Proceso -->
+            <div class="col-md-7">
+                
+                <!-- Paso 1: Usuario -->
+                <div class="step-card active" id="step1">
+                    <h5 class="fw-bold"><span class="badge bg-dark rounded-circle me-2">1</span> Identificar Lector</h5>
+                    <p class="text-muted mb-0">Escanea el Carnet Digital (QR) del estudiante o profesor.</p>
+                    
+                    <div id="userInfo" class="mt-3 p-3 bg-white border rounded" style="display: none;">
+                        <h4 id="userNombre" class="text-primary fw-bold mb-0">Nombre</h4>
+                        <p id="userCodigo" class="text-muted mb-2">Código</p>
+                        <p class="mb-0 fw-bold"><i class="fa-solid fa-book"></i> Libros en su poder: <span id="userLibrosCount" class="text-danger">0</span></p>
+                        <button class="btn btn-sm btn-outline-danger mt-2" onclick="reiniciarProceso()"><i class="fa-solid fa-xmark"></i> Cambiar usuario</button>
+                    </div>
+                </div>
+
+                <!-- Paso 2: Libros -->
+                <div class="step-card" id="step2" style="opacity: 0.5; pointer-events: none;">
+                    <h5 class="fw-bold"><span class="badge bg-dark rounded-circle me-2">2</span> Escanear Libros</h5>
+                    <p class="text-muted mb-3">Escanea los libros a prestar o devolver.</p>
+                    
+                    <ul class="list-group mb-3" id="listaLibros">
+                        <li class="list-group-item text-muted text-center" id="listaVacia">Aún no hay libros escaneados</li>
+                    </ul>
+                    
+                    <!-- Fecha de devolución integrada -->
+                    <div id="dateConfig" class="mb-3 p-3 bg-white border rounded" style="display: none;">
+                        <h6 class="fw-bold mb-2 text-dark"><i class="fa-regular fa-calendar-days"></i> Fecha de Devolución</h6>
+                        <p class="text-muted small mb-2">Válido para los nuevos libros a prestar:</p>
+                        <input type="date" id="fechaDevolucion" class="form-control">
+                    </div>
+                    
+                    <button class="btn btn-primary w-100" id="btnConfirmar" onclick="confirmarTransaccion()" disabled>
+                        Confirmar Transacción
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Toast para notificaciones -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055">
+    <div id="statusToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true" style="transition: 0.3s;">
+        <div class="d-flex">
+            <div class="toast-body" id="toastMessage">Mensaje</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    let html5QrCode;
+    let currentUser = null;
+    let librosPrestadosUser = []; // Lista de IDs de prestamos activos del user
+    
+    // Listas a enviar al backend
+    let librosADevolver = []; // Array de objetos {idPrestamo, titulo}
+    let librosAPrestar = []; // Array de objetos {idLibro, titulo}
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Mostrar botón de activación inicial
+        document.getElementById("reader").innerHTML = `
+            <div class="p-5 text-center" style="min-height: 250px; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #f8f9fa; border-radius: 10px;">
+                <i class="fa-solid fa-camera fa-3x mb-3 text-muted"></i>
+                <button class="btn btn-theme-dark" onclick="iniciarCamara()"><i class="fa-solid fa-power-off"></i> Activar Cámara</button>
+            </div>
+        `;
+        
+        // Fecha por defecto +7 días, bloqueando fechas inválidas
+        const hoy = new Date();
+        const minInput = hoy.toISOString().split('T')[0];
+        
+        const defaultDate = new Date();
+        defaultDate.setDate(defaultDate.getDate() + 7);
+        const maxInput = defaultDate.toISOString().split('T')[0];
+        
+        const fechaInput = document.getElementById('fechaDevolucion');
+        fechaInput.min = minInput;
+        fechaInput.max = maxInput;
+        fechaInput.value = maxInput;
+    });
+
+    const L_ESTUDIANTE = 3;
+    const L_PROFESOR = 20;
+
+    function limiteAlcanzado(nuevosAAgregar) {
+        if (!currentUser) return true;
+        const limite = currentUser.rol === 'PROFESOR' ? L_PROFESOR : L_ESTUDIANTE;
+        const tienePrestados = librosPrestadosUser.length;
+        const devuelve = librosADevolver.length;
+        const prestadosActivos = tienePrestados - devuelve;
+        const sumNuevos = librosAPrestar.reduce((sum, l) => sum + (l.cantidad || 1), 0);
+        return (prestadosActivos + sumNuevos + nuevosAAgregar) > limite;
+    }
+
+    function iniciarCamara() {
+        document.getElementById("reader").innerHTML = ''; // Limpiar div para la cámara
+
+        if (!html5QrCode) {
+            html5QrCode = new Html5Qrcode("reader");
+        }
+
+        html5QrCode.start(
+            { facingMode: "environment" }, // Usa la cámara trasera por defecto
+            {
+                fps: 10,
+                qrbox: { width: 250, height: 250 }
+            },
+            onScanSuccess,
+            onScanFailure
+        ).catch(err => {
+            console.error("Error iniciando cámara", err);
+            document.getElementById("reader").innerHTML = `
+                <div class="p-4 text-center text-danger" style="min-height: 250px; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #f8f9fa; border-radius: 10px;">
+                    <i class="fa-solid fa-camera-retro fa-2x mb-2"></i>
+                    <p>No se pudo acceder a la cámara. Por favor, asegúrate de dar los permisos necesarios en tu navegador.</p>
+                    <button class="btn btn-outline-dark mt-2" onclick="iniciarCamara()">Reintentar</button>
+                </div>
+            `;
+        });
+    }
+
+    function showToast(msg, isSuccess) {
+        const toastEl = document.getElementById('statusToast');
+        document.getElementById('toastMessage').textContent = msg;
+        toastEl.className = `toast align-items-center text-white border-0 ${isSuccess ? 'bg-success' : 'bg-danger'}`;
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+    }
+
+    function onScanSuccess(decodedText, decodedResult) {
+        procesarCodigoEscaneado(decodedText);
+        // Pausar un momento para evitar escaneos múltiples
+        if (html5QrCode && html5QrCode.getState() === Html5QrcodeScannerState.SCANNING) {
+            html5QrCode.pause();
+            setTimeout(() => { 
+                if (html5QrCode && html5QrCode.getState() === Html5QrcodeScannerState.PAUSED) {
+                    html5QrCode.resume(); 
+                }
+            }, 2000);
+        }
+    }
+
+    function onScanFailure(error) {
+        // ignorar errores constantes de lectura
+    }
+
+    function procesarEscaneoManual() {
+        const text = document.getElementById('manualInput').value.trim();
+        if (text) {
+            procesarCodigoEscaneado(text);
+            document.getElementById('manualInput').value = '';
+        }
+    }
+
+    function procesarCodigoEscaneado(codigoRaw) {
+        // 1. Identificar si es Alumno o Libro
+        if (codigoRaw.startsWith("LIBRO-")) {
+            if (!currentUser) {
+                Swal.fire('¡Atención!', 'Primero debes escanear el carnet del estudiante.', 'warning');
+                return;
+            }
+            const idLibro = codigoRaw.replace("LIBRO-", "");
+            procesarLibro(idLibro);
+        } else {
+            // Asumimos que es codigo de estudiante (E... o P...)
+            if (currentUser) {
+                Swal.fire('¡Atención!', 'Ya tienes un usuario activo. Presiona "Cambiar usuario" si deseas empezar de nuevo.', 'warning');
+                return;
+            }
+            procesarUsuario(codigoRaw);
+        }
+    }
+
+    function procesarUsuario(codigo) {
+        fetch(`/panel-bibliotecario/escaner/usuario?codigo=${codigo}`)
+            .then(res => {
+                if(!res.ok) throw new Error('Usuario no encontrado');
+                return res.json();
+            })
+            .then(data => {
+                currentUser = data;
+                librosPrestadosUser = data.prestados; // [{idPrestamo, idLibro, titulo}]
+                
+                // Actualizar UI
+                document.getElementById('userNombre').textContent = data.nombre;
+                document.getElementById('userCodigo').textContent = data.codigo + " (" + data.rol + ")";
+                document.getElementById('userLibrosCount').textContent = librosPrestadosUser.length;
+                document.getElementById('userInfo').style.display = 'block';
+                
+                // Cambiar a paso 2
+                document.getElementById('step1').classList.remove('active');
+                document.getElementById('step2').classList.add('active');
+                document.getElementById('step2').style.opacity = '1';
+                document.getElementById('step2').style.pointerEvents = 'auto';
+                document.getElementById('dateConfig').style.display = 'block';
+                
+                showToast(`Usuario ${data.nombre} detectado correctamente`, true);
+                
+                // Play sound
+                new Audio('https://www.soundjay.com/buttons/sounds/button-3.mp3').play().catch(e=>{});
+            })
+            .catch(err => {
+                showToast(err.message, false);
+            });
+    }
+
+    function agregarDevolucion(prestamoActivo) {
+        librosADevolver.push({ idPrestamo: prestamoActivo.idPrestamo, titulo: prestamoActivo.titulo });
+        actualizarListaUI();
+        showToast("Devolución detectada", true);
+        new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3').play().catch(e=>{});
+    }
+
+    function agregarNuevoPrestamo(idLibroNum) {
+        if (limiteAlcanzado(1)) {
+            Swal.fire('Límite Alcanzado', `No puedes llevar más de ${currentUser.rol === 'PROFESOR' ? L_PROFESOR : L_ESTUDIANTE} libros en total (activos + nuevos).`, 'error');
+            return;
+        }
+        
+        fetch(`/panel-bibliotecario/escaner/libro?id=${idLibroNum}`)
+            .then(res => {
+                if(!res.ok) throw new Error('Libro no encontrado en BD');
+                return res.json();
+            })
+            .then(libro => {
+                if(libro.stock <= 0) {
+                    Swal.fire('Sin Stock', 'Este libro no tiene stock disponible', 'error');
+                    return;
+                }
+                librosAPrestar.push({ idLibro: libro.id, titulo: libro.titulo, cantidad: 1, stock: libro.stock });
+                actualizarListaUI();
+                showToast("Nuevo préstamo detectado", true);
+                new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3').play().catch(e=>{});
+            })
+            .catch(err => {
+                showToast(err.message, false);
+            });
+    }
+
+    function procesarLibro(idLibro) {
+        const idLibroNum = parseInt(idLibro);
+        
+        // Verificar si ya está en las listas de nuevos préstamos
+        if (librosAPrestar.find(l => l.idLibro === idLibroNum)) {
+            if (currentUser && currentUser.rol === 'PROFESOR') {
+                showToast("Para llevar más copias, usa el botón '+' en la lista", false);
+            } else {
+                showToast("Ya escaneaste este libro para préstamo. Los estudiantes solo pueden llevar 1 copia.", false);
+            }
+            return;
+        }
+        
+        // ¿El usuario TIENE este libro prestado actualmente?
+        const prestamoActivo = librosPrestadosUser.find(p => p.idLibro === idLibroNum);
+        
+        if (prestamoActivo) {
+            const yaEnDevolucion = librosADevolver.find(l => l.idPrestamo === prestamoActivo.idPrestamo);
+            
+            if (currentUser && currentUser.rol === 'PROFESOR') {
+                // El profesor puede devolver o pedir más copias
+                Swal.fire({
+                    title: 'Libro ya prestado',
+                    text: 'El profesor ya tiene este libro. ¿Qué deseas hacer?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    showDenyButton: true,
+                    confirmButtonText: 'Prestar más copias',
+                    denyButtonText: 'Devolver copia',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#0dcaf0',
+                    denyButtonColor: '#198754'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        agregarNuevoPrestamo(idLibroNum);
+                    } else if (result.isDenied) {
+                        if (yaEnDevolucion) {
+                            showToast("Ya escaneaste este libro para devolución", false);
+                        } else {
+                            agregarDevolucion(prestamoActivo);
+                        }
+                    }
+                });
+            } else {
+                // Estudiante: Siempre es devolución
+                if (yaEnDevolucion) {
+                    showToast("Ya escaneaste este libro para devolución", false);
+                    return;
+                }
+                agregarDevolucion(prestamoActivo);
+            }
+        } else {
+            // ES UN PRESTAMO NUEVO
+            agregarNuevoPrestamo(idLibroNum);
+        }
+    }
+
+    function actualizarListaUI() {
+        const ul = document.getElementById('listaLibros');
+        ul.innerHTML = ''; // Limpiar
+        
+        if (librosADevolver.length === 0 && librosAPrestar.length === 0) {
+            ul.innerHTML = '<li class="list-group-item text-muted text-center" id="listaVacia">Aún no hay libros escaneados</li>';
+            document.getElementById('btnConfirmar').disabled = true;
+            return;
+        }
+
+        document.getElementById('btnConfirmar').disabled = false;
+
+        librosADevolver.forEach(l => {
+            ul.innerHTML += `
+                <li class="list-group-item">
+                    <div class="d-flex align-items-center">
+                        <i class="fa-solid fa-book me-2"></i> 
+                        <span class="text-truncate" style="max-width: 200px;" title="${l.titulo}">${l.titulo}</span>
+                    </div>
+                    <div>
+                        <span class="badge badge-devolucion rounded-pill">DEVOLUCIÓN</span>
+                        <button class="btn btn-sm btn-link text-danger ms-1" onclick="removerDevolucion(${l.idPrestamo})"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </li>
+            `;
+        });
+
+        librosAPrestar.forEach(l => {
+            let cantidadHTML = '';
+            if (currentUser && currentUser.rol === 'PROFESOR') {
+                cantidadHTML = `
+                    <div class="btn-group btn-group-sm me-2">
+                        <button class="btn btn-outline-secondary" onclick="cambiarCantidad(${l.idLibro}, -1)">-</button>
+                        <span class="btn btn-light disabled text-dark border" style="min-width: 30px;">${l.cantidad}</span>
+                        <button class="btn btn-outline-secondary" onclick="cambiarCantidad(${l.idLibro}, 1)">+</button>
+                    </div>
+                `;
+            }
+            ul.innerHTML += `
+                <li class="list-group-item">
+                    <div class="d-flex align-items-center">
+                        <i class="fa-solid fa-book me-2"></i> 
+                        <span class="text-truncate" style="max-width: 200px;" title="${l.titulo}">${l.titulo}</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        ${cantidadHTML}
+                        <span class="badge badge-prestamo rounded-pill">PRÉSTAMO</span>
+                        <button class="btn btn-sm btn-link text-danger ms-1" onclick="removerPrestamo(${l.idLibro})"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </li>
+            `;
+        });
+    }
+
+    window.cambiarCantidad = function(idLibro, delta) {
+        const index = librosAPrestar.findIndex(l => l.idLibro === idLibro);
+        if (index === -1) return;
+        const libro = librosAPrestar[index];
+        
+        const nuevaCantidad = libro.cantidad + delta;
+        if (nuevaCantidad < 1) return;
+        
+        if (delta > 0) {
+            if (nuevaCantidad > libro.stock) {
+                showToast("No hay más stock disponible de este libro", false);
+                return;
+            }
+            if (limiteAlcanzado(1)) {
+                showToast("Límite máximo de préstamos alcanzado", false);
+                return;
+            }
+        }
+        
+        libro.cantidad = nuevaCantidad;
+        actualizarListaUI();
+    };
+
+    window.removerPrestamo = function(idLibro) {
+        librosAPrestar = librosAPrestar.filter(l => l.idLibro !== idLibro);
+        actualizarListaUI();
+    };
+
+    window.removerDevolucion = function(idPrestamo) {
+        librosADevolver = librosADevolver.filter(l => l.idPrestamo !== idPrestamo);
+        actualizarListaUI();
+    };
+
+    function reiniciarProceso() {
+        currentUser = null;
+        librosPrestadosUser = [];
+        librosADevolver = [];
+        librosAPrestar = [];
+        
+        document.getElementById('userInfo').style.display = 'none';
+        document.getElementById('step2').classList.remove('active');
+        document.getElementById('step1').classList.add('active');
+        document.getElementById('step2').style.opacity = '0.5';
+        document.getElementById('step2').style.pointerEvents = 'none';
+        document.getElementById('dateConfig').style.display = 'none';
+        
+        actualizarListaUI();
+    }
+
+    function confirmarTransaccion() {
+        if (!currentUser) return;
+
+        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+        
+        const fechaDevolucion = document.getElementById('fechaDevolucion').value;
+        const formData = new FormData();
+        formData.append("codigoUsuario", currentUser.codigo);
+        formData.append("fechaDevolucion", fechaDevolucion);
+        
+        librosADevolver.forEach(l => formData.append("idsDevolver", l.idPrestamo));
+        librosAPrestar.forEach(l => {
+            const qty = l.cantidad || 1;
+            for (let i = 0; i < qty; i++) {
+                formData.append("idsPrestar", l.idLibro);
+            }
+        });
+
+        document.getElementById('btnConfirmar').disabled = true;
+        document.getElementById('btnConfirmar').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...';
+
+        fetch('/panel-bibliotecario/escaner/procesar', {
+            method: 'POST',
+            headers: {
+                [csrfHeader]: csrfToken
+            },
+            body: formData
+        })
+        .then(async response => {
+            const text = await response.text();
+            if (response.ok) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Transacción Exitosa!',
+                    text: 'Préstamos y devoluciones registrados correctamente.',
+                    confirmButtonColor: '#072b4a'
+                }).then(() => {
+                    reiniciarProceso();
+                });
+                new Audio('https://www.soundjay.com/buttons/sounds/button-10.mp3').play().catch(e=>{});
+            } else {
+                throw new Error(text);
+            }
+        })
+        .catch(err => {
+            Swal.fire('Error', err.message, 'error');
+            document.getElementById('btnConfirmar').disabled = false;
+            document.getElementById('btnConfirmar').innerHTML = 'Confirmar Transacción';
+        });
+    }
+</script>
+</body>
+</html>
