@@ -49,4 +49,9 @@ public class UsuarioServiceImpl implements UsuarioService {
             .filter(u -> !u.getId().equals(idExcluir))
             .isPresent();
     }
+
+    @Override
+    public List<Usuario> obtenerTodosLectoresEstudiantes() {
+        return usuarioRepository.findByRolAndPuntosLecturaGreaterThanOrderByPuntosLecturaDesc(RolUsuario.ESTUDIANTE, 0);
+    }
 }
