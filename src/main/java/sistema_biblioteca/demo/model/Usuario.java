@@ -72,11 +72,22 @@ public class Usuario {
     @Transient
     private String estadoLector;
 
+    @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+    private Integer puntosLectura = 0;
+
     public String getEstadoLector() {
         return estadoLector;
     }
 
     public void setEstadoLector(String estadoLector) {
         this.estadoLector = estadoLector;
+    }
+
+    public Integer getPuntosLectura() {
+        return puntosLectura;
+    }
+
+    public void setPuntosLectura(Integer puntosLectura) {
+        this.puntosLectura = puntosLectura;
     }
 }
