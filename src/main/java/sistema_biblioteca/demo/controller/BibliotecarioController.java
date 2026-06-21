@@ -477,6 +477,16 @@ public class BibliotecarioController {
             libro.setDisponible(true);
             libroRepository.save(libro);
         }
+
+        // Gamificación: Otorgar 10 puntos si la fecha de devolución es posterior a la de préstamo (mínimo 1 día)
+        Usuario usuario = prestamo.getUsuario();
+        if (usuario != null && prestamo.getFechaPrestamo() != null) {
+            if (prestamo.getFechaDevolucionReal().isAfter(prestamo.getFechaPrestamo())) {
+                Integer puntos = usuario.getPuntosLectura() != null ? usuario.getPuntosLectura() : 0;
+                usuario.setPuntosLectura(puntos + 10);
+                usuarioRepository.save(usuario);
+            }
+        }
         
         return ResponseEntity.ok("Libro registrado como devuelto con éxito.");
     }
@@ -508,5 +518,171 @@ public class BibliotecarioController {
         }
         
         return ResponseEntity.ok("Multa de 30 soles pagada y libro registrado como devuelto con éxito.");
+    }
+
+    @GetMapping("/escaner")
+    public String escaner(Model model, Principal principal) {
+        cargarUsuarioEnModelo(model, principal);
+        return "Bibliotecario/escaner";
+    }
+
+    @GetMapping("/escaner/usuario")
+    @ResponseBody
+    public ResponseEntity<?> buscarUsuarioEscaner(@RequestParam("codigo") String codigo) {
+        Optional<Usuario> optUsuario = usuarioRepository.findByCodigo(codigo);
+        if (optUsuario.isEmpty()) {
+            return ResponseEntity.badRequest().body("Usuario no encontrado.");
+        }
+        Usuario usuario = optUsuario.get();
+        // Obtener libros actualmente prestados (ACTIVO o RETRASADO)
+        List<Prestamo> prestados = prestamoRepository.findByUsuarioId(usuario.getId()).stream()
+            .filter(p -> p.getEstado() == EstadoPrestamo.ACTIVO || p.getEstado() == EstadoPrestamo.RETRASADO)
+            .toList();
+        
+        return ResponseEntity.ok(new java.util.HashMap<String, Object>() {{
+            put("nombre", usuario.getNombre());
+            put("codigo", usuario.getCodigo());
+            put("rol", usuario.getRol().name());
+            put("prestados", prestados.stream().map(p -> new java.util.HashMap<String, Object>() {{
+                put("idPrestamo", p.getId());
+                put("idLibro", p.getLibro() != null ? p.getLibro().getId() : null);
+                put("titulo", p.getLibro() != null ? p.getLibro().getTitulo() : "Libro desconocido");
+            }}).toList());
+        }});
+    }
+
+    @GetMapping("/escaner/libro")
+    @ResponseBody
+    public ResponseEntity<?> buscarLibroEscaner(@RequestParam("id") Long id) {
+        Optional<Libro> optLibro = libroRepository.findById(id);
+        if (optLibro.isEmpty()) {
+            return ResponseEntity.badRequest().body("Libro no encontrado.");
+        }
+        return ResponseEntity.ok(optLibro.get());
+    }
+
+    @org.springframework.beans.factory.annotation.Value("${biblioteca.limite.estudiante:3}")
+    private int limiteEstudiante;
+
+    @org.springframework.beans.factory.annotation.Value("${biblioteca.limite.profesor:20}")
+    private int limiteProfesor;
+
+    @PostMapping("/escaner/procesar")
+    @ResponseBody
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<String> procesarEscaner(
+            @RequestParam("codigoUsuario") String codigoUsuario,
+            @RequestParam(value = "idsDevolver", required = false) List<Long> idsDevolver,
+            @RequestParam(value = "idsPrestar", required = false) List<Long> idsPrestar,
+            @RequestParam(value = "fechaDevolucion", required = false) String fechaDevolucionStr) {
+
+        Optional<Usuario> optUsuario = usuarioRepository.findByCodigo(codigoUsuario);
+        if (optUsuario.isEmpty()) {
+            return ResponseEntity.badRequest().body("Usuario no encontrado.");
+        }
+        Usuario usuario = optUsuario.get();
+
+        int puntosGanados = 0;
+        long cantidadADevolver = 0;
+
+        // Procesar Devoluciones (recibimos IDs de prestamos)
+        if (idsDevolver != null && !idsDevolver.isEmpty()) {
+            for (Long idPrestamo : idsDevolver) {
+                Optional<Prestamo> optPrestamo = prestamoRepository.findById(idPrestamo);
+                if (optPrestamo.isPresent()) {
+                    Prestamo prestamo = optPrestamo.get();
+                    if (prestamo.getEstado() != EstadoPrestamo.DEVUELTO) {
+                        cantidadADevolver += prestamo.getCantidad() > 0 ? prestamo.getCantidad() : 1;
+                        prestamo.setEstado(EstadoPrestamo.DEVUELTO);
+                        prestamo.setFechaDevolucionReal(LocalDate.now());
+                        prestamoRepository.save(prestamo);
+                        
+                        Libro libro = prestamo.getLibro();
+                        if (libro != null) {
+                            libro.setStock(libro.getStock() + (prestamo.getCantidad() > 0 ? prestamo.getCantidad() : 1));
+                            libro.setDisponible(true);
+                            libroRepository.save(libro);
+                        }
+
+                        // Puntos gamificación
+                        if (prestamo.getFechaPrestamo() != null && prestamo.getFechaDevolucionReal().isAfter(prestamo.getFechaPrestamo())) {
+                            puntosGanados += 10;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Agrupar IDs para saber las cantidades (ej. [5, 5, 5] -> Libro 5, cantidad 3)
+        java.util.Map<Long, Long> cantidades = idsPrestar == null ? java.util.Collections.emptyMap() : 
+            idsPrestar.stream().collect(java.util.stream.Collectors.groupingBy(id -> id, java.util.stream.Collectors.counting()));
+
+        // Validar límite total
+        int limite = usuario.getRol() == RolUsuario.ESTUDIANTE ? limiteEstudiante : limiteProfesor;
+        
+        long totalPrestamosActivos = prestamoRepository.findByUsuarioId(usuario.getId()).stream()
+                .filter(p -> p.getEstado() == EstadoPrestamo.ACTIVO || p.getEstado() == EstadoPrestamo.RETRASADO)
+                .mapToLong(p -> p.getCantidad() > 0 ? p.getCantidad() : 1)
+                .sum();
+                
+        long totalNuevos = cantidades.values().stream().mapToLong(Long::longValue).sum();
+
+        if ((totalPrestamosActivos - cantidadADevolver + totalNuevos) > limite) {
+            return ResponseEntity.badRequest().body("Límite de préstamos excedido. El límite máximo es " + limite + " libros.");
+        }
+
+        // Validar duplicados para estudiante
+        if (usuario.getRol() == RolUsuario.ESTUDIANTE) {
+            for (Long count : cantidades.values()) {
+                if (count > 1) {
+                    return ResponseEntity.badRequest().body("Los estudiantes solo pueden llevar 1 copia de cada libro.");
+                }
+            }
+        }
+
+        // Procesar Nuevos Préstamos agrupados
+        if (!cantidades.isEmpty()) {
+            LocalDate fechaDevolucion = LocalDate.now().plusDays(7);
+            if (fechaDevolucionStr != null && !fechaDevolucionStr.trim().isEmpty()) {
+                try {
+                    fechaDevolucion = LocalDate.parse(fechaDevolucionStr);
+                } catch (Exception e) {}
+            }
+
+            for (java.util.Map.Entry<Long, Long> entry : cantidades.entrySet()) {
+                Long idLibro = entry.getKey();
+                int cantidadPedida = entry.getValue().intValue();
+
+                Optional<Libro> optLibro = libroRepository.findById(idLibro);
+                if (optLibro.isPresent()) {
+                    Libro libro = optLibro.get();
+                    if (libro.getStock() >= cantidadPedida) {
+                        libro.setStock(libro.getStock() - cantidadPedida);
+                        if (libro.getStock() == 0) libro.setDisponible(false);
+                        libroRepository.save(libro);
+
+                        Prestamo prestamo = new Prestamo();
+                        prestamo.setUsuario(usuario);
+                        prestamo.setLibro(libro);
+                        prestamo.setFechaPrestamo(LocalDate.now());
+                        prestamo.setFechaDevolucionEsperada(fechaDevolucion);
+                        prestamo.setEstado(EstadoPrestamo.ACTIVO);
+                        prestamo.setEntregado(true);
+                        prestamo.setCantidad(cantidadPedida);
+                        prestamoRepository.save(prestamo);
+                    } else {
+                        return ResponseEntity.badRequest().body("Stock insuficiente para el libro: " + libro.getTitulo());
+                    }
+                }
+            }
+        }
+
+        if (puntosGanados > 0) {
+            Integer puntosAnteriores = usuario.getPuntosLectura() != null ? usuario.getPuntosLectura() : 0;
+            usuario.setPuntosLectura(puntosAnteriores + puntosGanados);
+            usuarioRepository.save(usuario);
+        }
+
+        return ResponseEntity.ok("Operación completada con éxito.");
     }
 }
