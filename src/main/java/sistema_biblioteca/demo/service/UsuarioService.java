@@ -17,4 +17,6 @@ public interface UsuarioService {
     void eliminarUsuario(Long id);
 
     boolean existePorCodigo(String codigo, Long idExcluir);
+
+    List<Usuario> obtenerTodosLectoresEstudiantes();
 }
