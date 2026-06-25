@@ -276,9 +276,7 @@ body {
         width: 220px;
     }
 
-    .content {
-        padding: 25px;
-    }
+    .content { margin-left: 0; padding: 15px; }
 
     .title h1 {
         font-size: 30px;
@@ -292,9 +290,7 @@ body {
         flex-direction: column;
     }
 
-    .sidebar {
-        width: 100%;
-    }
+    .sidebar { width: 100%; position: relative; height: auto; padding: 15px; z-index: 100; } .menu { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; } .menu li { margin-bottom: 0; } .menu a { font-size: 13px; padding: 8px 10px; }
 
     .top-header {
         flex-direction: column;
