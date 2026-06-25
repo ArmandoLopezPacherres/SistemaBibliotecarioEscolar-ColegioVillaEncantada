@@ -98,10 +98,11 @@ public class BibliotecarioController {
     @ResponseBody
     public ResponseEntity<List<Libro>> buscarLibrosAjax(@RequestParam("query") String query) {
         List<Libro> libros;
+        org.springframework.data.domain.Pageable limite = org.springframework.data.domain.PageRequest.of(0, 20); 
         if (query == null || query.trim().isEmpty()) {
-            libros = libroRepository.findAll();
+            libros = libroRepository.findAll(limite).getContent();
         } else {
-            libros = libroRepository.findByTituloContainingIgnoreCaseOrAutorNombreCompletoContainingIgnoreCase(query.trim(), query.trim());
+            libros = libroRepository.findByTituloContainingIgnoreCaseOrAutorNombreCompletoContainingIgnoreCase(query.trim(), query.trim(), limite);
         }
         return ResponseEntity.ok(libros);
     }
@@ -567,122 +568,23 @@ public class BibliotecarioController {
     @org.springframework.beans.factory.annotation.Value("${biblioteca.limite.profesor:20}")
     private int limiteProfesor;
 
+    @Autowired
+    private sistema_biblioteca.demo.service.PrestamoService prestamoService;
+
     @PostMapping("/escaner/procesar")
     @ResponseBody
-    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<String> procesarEscaner(
             @RequestParam("codigoUsuario") String codigoUsuario,
             @RequestParam(value = "idsDevolver", required = false) List<Long> idsDevolver,
             @RequestParam(value = "idsPrestar", required = false) List<Long> idsPrestar,
             @RequestParam(value = "fechaDevolucion", required = false) String fechaDevolucionStr) {
-
-        Optional<Usuario> optUsuario = usuarioRepository.findByCodigo(codigoUsuario);
-        if (optUsuario.isEmpty()) {
-            return ResponseEntity.badRequest().body("Usuario no encontrado.");
+        try {
+            int limiteEstudianteConfig = this.limiteEstudiante;
+            int limiteProfesorConfig = this.limiteProfesor;
+            prestamoService.procesarEscaner(codigoUsuario, idsDevolver, idsPrestar, fechaDevolucionStr, limiteEstudianteConfig, limiteProfesorConfig);
+            return ResponseEntity.ok("Operación completada con éxito.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-        Usuario usuario = optUsuario.get();
-
-        int puntosGanados = 0;
-        long cantidadADevolver = 0;
-
-        // Procesar Devoluciones (recibimos IDs de prestamos)
-        if (idsDevolver != null && !idsDevolver.isEmpty()) {
-            for (Long idPrestamo : idsDevolver) {
-                Optional<Prestamo> optPrestamo = prestamoRepository.findById(idPrestamo);
-                if (optPrestamo.isPresent()) {
-                    Prestamo prestamo = optPrestamo.get();
-                    if (prestamo.getEstado() != EstadoPrestamo.DEVUELTO) {
-                        cantidadADevolver += prestamo.getCantidad() > 0 ? prestamo.getCantidad() : 1;
-                        prestamo.setEstado(EstadoPrestamo.DEVUELTO);
-                        prestamo.setFechaDevolucionReal(LocalDate.now());
-                        prestamoRepository.save(prestamo);
-                        
-                        Libro libro = prestamo.getLibro();
-                        if (libro != null) {
-                            libro.setStock(libro.getStock() + (prestamo.getCantidad() > 0 ? prestamo.getCantidad() : 1));
-                            libro.setDisponible(true);
-                            libroRepository.save(libro);
-                        }
-
-                        // Puntos gamificación
-                        if (prestamo.getFechaPrestamo() != null && prestamo.getFechaDevolucionReal().isAfter(prestamo.getFechaPrestamo())) {
-                            puntosGanados += 10;
-                        }
-                    }
-                }
-            }
-        }
-
-        // Agrupar IDs para saber las cantidades (ej. [5, 5, 5] -> Libro 5, cantidad 3)
-        java.util.Map<Long, Long> cantidades = idsPrestar == null ? java.util.Collections.emptyMap() : 
-            idsPrestar.stream().collect(java.util.stream.Collectors.groupingBy(id -> id, java.util.stream.Collectors.counting()));
-
-        // Validar límite total
-        int limite = usuario.getRol() == RolUsuario.ESTUDIANTE ? limiteEstudiante : limiteProfesor;
-        
-        long totalPrestamosActivos = prestamoRepository.findByUsuarioId(usuario.getId()).stream()
-                .filter(p -> p.getEstado() == EstadoPrestamo.ACTIVO || p.getEstado() == EstadoPrestamo.RETRASADO)
-                .mapToLong(p -> p.getCantidad() > 0 ? p.getCantidad() : 1)
-                .sum();
-                
-        long totalNuevos = cantidades.values().stream().mapToLong(Long::longValue).sum();
-
-        if ((totalPrestamosActivos - cantidadADevolver + totalNuevos) > limite) {
-            return ResponseEntity.badRequest().body("Límite de préstamos excedido. El límite máximo es " + limite + " libros.");
-        }
-
-        // Validar duplicados para estudiante
-        if (usuario.getRol() == RolUsuario.ESTUDIANTE) {
-            for (Long count : cantidades.values()) {
-                if (count > 1) {
-                    return ResponseEntity.badRequest().body("Los estudiantes solo pueden llevar 1 copia de cada libro.");
-                }
-            }
-        }
-
-        // Procesar Nuevos Préstamos agrupados
-        if (!cantidades.isEmpty()) {
-            LocalDate fechaDevolucion = LocalDate.now().plusDays(7);
-            if (fechaDevolucionStr != null && !fechaDevolucionStr.trim().isEmpty()) {
-                try {
-                    fechaDevolucion = LocalDate.parse(fechaDevolucionStr);
-                } catch (Exception e) {}
-            }
-
-            for (java.util.Map.Entry<Long, Long> entry : cantidades.entrySet()) {
-                Long idLibro = entry.getKey();
-                int cantidadPedida = entry.getValue().intValue();
-
-                Optional<Libro> optLibro = libroRepository.findById(idLibro);
-                if (optLibro.isPresent()) {
-                    Libro libro = optLibro.get();
-                    if (libro.getStock() >= cantidadPedida) {
-                        libro.setStock(libro.getStock() - cantidadPedida);
-                        if (libro.getStock() == 0) libro.setDisponible(false);
-                        libroRepository.save(libro);
-
-                        Prestamo prestamo = new Prestamo();
-                        prestamo.setUsuario(usuario);
-                        prestamo.setLibro(libro);
-                        prestamo.setFechaPrestamo(LocalDate.now());
-                        prestamo.setFechaDevolucionEsperada(fechaDevolucion);
-                        prestamo.setEstado(EstadoPrestamo.ACTIVO);
-                        prestamo.setEntregado(true);
-                        prestamo.setCantidad(cantidadPedida);
-                        prestamoRepository.save(prestamo);
-                    } else {
-                        return ResponseEntity.badRequest().body("Stock insuficiente para el libro: " + libro.getTitulo());
-                    }
-                }
-            }
-        }
-
-        if (puntosGanados > 0) {
-            Integer puntosAnteriores = usuario.getPuntosLectura() != null ? usuario.getPuntosLectura() : 0;
-            usuario.setPuntosLectura(puntosAnteriores + puntosGanados);
-            usuarioRepository.save(usuario);
-        }
-
-        return ResponseEntity.ok("Operación completada con éxito.");
     }
 }
