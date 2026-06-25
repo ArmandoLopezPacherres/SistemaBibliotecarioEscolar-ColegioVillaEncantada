@@ -14,4 +14,6 @@ public interface PrestamoService {
     Prestamo obtenerPorId(Long id);
 
     void eliminarPrestamo(Long id);
+
+    void procesarEscaner(String codigoUsuario, List<Long> idsDevolver, List<Long> idsPrestar, String fechaDevolucionStr, int limiteEstudiante, int limiteProfesor);
 }

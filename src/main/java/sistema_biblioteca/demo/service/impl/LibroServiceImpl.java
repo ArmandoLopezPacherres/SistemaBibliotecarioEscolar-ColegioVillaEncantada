@@ -9,6 +9,7 @@ import sistema_biblioteca.demo.service.LibroService;
 import java.util.List;
 
 @Service
+@org.springframework.transaction.annotation.Transactional
 public class LibroServiceImpl implements LibroService {
 
     @Autowired

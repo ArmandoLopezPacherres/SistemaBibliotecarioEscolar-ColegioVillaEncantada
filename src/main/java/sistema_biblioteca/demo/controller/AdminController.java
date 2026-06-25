@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.validation.BindingResult;
+import jakarta.validation.Valid;
 import sistema_biblioteca.demo.dto.UsuarioDTO;
 import sistema_biblioteca.demo.dto.TopUsuarioDTO;
 import sistema_biblioteca.demo.model.Usuario;
@@ -63,6 +65,9 @@ public class AdminController {
     @Autowired
     private PrestamoService prestamoService;
 
+    @Autowired
+    private sistema_biblioteca.demo.repository.PrestamoRepository prestamoRepository;
+
     private void cargarUsuarioEnModelo(Model model, Principal principal) {
         if (principal != null) {
             usuarioRepository.findByCodigo(principal.getName()).ifPresent(usuario -> {
@@ -75,15 +80,15 @@ public class AdminController {
     public String panelAdmin(Model model, Principal principal) {
         cargarUsuarioEnModelo(model, principal);
         
-        long totalLibros = libroService.listarLibros().size();
+        long totalLibros = libroRepository.count();
         model.addAttribute("totalLibros", totalLibros);
         
-        long totalUsuarios = usuarioService.listarUsuarios().stream().filter(Usuario::isActivo).count();
+        long totalUsuarios = usuarioRepository.countByActivoTrue();
         model.addAttribute("totalUsuarios", totalUsuarios);
         
         var todosPrestamos = prestamoService.listarPrestamos();
-        long prestamosActivos = todosPrestamos.stream().filter(p -> p.getEstado() == EstadoPrestamo.ACTIVO).count();
-        long usuariosMorosos = todosPrestamos.stream().filter(p -> p.getEstado() == EstadoPrestamo.RETRASADO).map(p -> p.getUsuario().getId()).distinct().count();
+        long prestamosActivos = prestamoRepository.countByEstado(EstadoPrestamo.ACTIVO);
+        long usuariosMorosos = prestamoRepository.countDistinctUsuariosByEstado(EstadoPrestamo.RETRASADO);
         
         model.addAttribute("prestamosActivos", prestamosActivos);
         model.addAttribute("usuariosMorosos", usuariosMorosos);
@@ -128,20 +133,20 @@ public class AdminController {
         model.addAttribute("listaUsuarios", usuarioService.listarUsuarios());
         model.addAttribute("nuevoUsuario", new UsuarioDTO());
 
-        model.addAttribute("totalAdmins",
-            usuarioService.buscarPorRol(RolUsuario.ADMINISTRADOR).stream().filter(Usuario::isActivo).count());
-        model.addAttribute("totalBibliotecarios",
-            usuarioService.buscarPorRol(RolUsuario.BIBLIOTECARIO).stream().filter(Usuario::isActivo).count());
-        model.addAttribute("totalProfesores",
-            usuarioService.buscarPorRol(RolUsuario.PROFESOR).stream().filter(Usuario::isActivo).count());
-        model.addAttribute("totalEstudiantes",
-            usuarioService.buscarPorRol(RolUsuario.ESTUDIANTE).stream().filter(Usuario::isActivo).count());
+        model.addAttribute("totalAdmins", usuarioRepository.countByRolAndActivoTrue(RolUsuario.ADMINISTRADOR));
+        model.addAttribute("totalBibliotecarios", usuarioRepository.countByRolAndActivoTrue(RolUsuario.BIBLIOTECARIO));
+        model.addAttribute("totalProfesores", usuarioRepository.countByRolAndActivoTrue(RolUsuario.PROFESOR));
+        model.addAttribute("totalEstudiantes", usuarioRepository.countByRolAndActivoTrue(RolUsuario.ESTUDIANTE));
 
         return "Administrador/GestionUsuario";
     }
 
     @PostMapping("/panel-admin/usuarios/guardar")
-    public String guardarUsuario(@ModelAttribute("nuevoUsuario") UsuarioDTO dto, RedirectAttributes redirectAttributes) {
+    public String guardarUsuario(@Valid @ModelAttribute("nuevoUsuario") UsuarioDTO dto, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("mensajeError", "Errores de validación: " + bindingResult.getAllErrors().get(0).getDefaultMessage());
+            return "redirect:/panel-admin/usuarios";
+        }
         try {
             Usuario usuario = new Usuario();
             if (dto.getId() != null) {
