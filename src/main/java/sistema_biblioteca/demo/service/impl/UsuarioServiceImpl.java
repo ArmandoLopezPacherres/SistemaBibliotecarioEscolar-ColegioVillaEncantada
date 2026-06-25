@@ -10,6 +10,7 @@ import sistema_biblioteca.demo.service.UsuarioService;
 import java.util.List;
 
 @Service
+@org.springframework.transaction.annotation.Transactional
 public class UsuarioServiceImpl implements UsuarioService {
 
     @Autowired
